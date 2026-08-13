@@ -31,7 +31,8 @@ class HealthController extends Controller
     {
         return response()->json([
             'success' => true,
-            'message' => 'API E-Ticket Sarangan aktif',
+            'message' => 'Backend API berjalan',
+            'environment' => app()->environment(),
         ]);
     }
 
@@ -43,10 +44,16 @@ class HealthController extends Controller
     {
         $connected = $this->databaseStatus() === 'connected';
 
-        return response()->json([
+        $payload = [
             'success' => $connected,
             'database' => $connected ? 'connected' : 'disconnected',
-        ], $connected ? 200 : 503);
+        ];
+
+        if (! $connected) {
+            $payload['error'] = 'Database connection failed. Check DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, and DB_SSLMODE.';
+        }
+
+        return response()->json($payload, $connected ? 200 : 503);
     }
 
     private function databaseStatus(): string
