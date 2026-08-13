@@ -19,11 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_values(array_filter([
+    'allowed_origins' => array_values(array_unique(array_filter(array_merge([
         'http://localhost:5173',
         'http://127.0.0.1:5173',
-        env('FRONTEND_URL'),
-    ])),
+    ], preg_split('/\s*,\s*/', (string) env('FRONTEND_URL', '')) ?: [])))),
 
     'allowed_origins_patterns' => [],
 

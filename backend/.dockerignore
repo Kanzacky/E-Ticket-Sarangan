@@ -1,0 +1,37 @@
+.git
+.gitignore
+.github
+
+# Environment & secrets never enter the image
+.env
+.env.*
+!.env.example
+
+# Local dependencies (rebuilt inside the image)
+/vendor
+node_modules
+
+# Build & test artifacts
+/public/build
+/public/hot
+/public/storage
+/tests
+/.phpunit.result.cache
+/.phpunit.cache
+/coverage
+
+# Storage contents (recreated by entrypoint)
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Docker / docs / local configs not needed at runtime
+Dockerfile
+docker-compose.yml
+.dockerignore
+.vercel
+README.md
+docs
+.editorconfig

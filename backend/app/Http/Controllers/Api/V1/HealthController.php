@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class HealthController extends Controller
 {
+    /**
+     * GET /api/v1/health — status aplikasi + status database.
+     */
     public function __invoke(): JsonResponse
     {
         $data = [
@@ -19,6 +22,31 @@ class HealthController extends Controller
         ];
 
         return ApiResponse::success('E-Ticket Sarangan API is running', $data);
+    }
+
+    /**
+     * GET /api/health — liveness check, TANPA query database.
+     */
+    public function app(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'API E-Ticket Sarangan aktif',
+        ]);
+    }
+
+    /**
+     * GET /api/health/database — cek koneksi Supabase PostgreSQL.
+     * Tidak pernah mengekspos detail koneksi/kredensial.
+     */
+    public function database(): JsonResponse
+    {
+        $connected = $this->databaseStatus() === 'connected';
+
+        return response()->json([
+            'success' => $connected,
+            'database' => $connected ? 'connected' : 'disconnected',
+        ], $connected ? 200 : 503);
     }
 
     private function databaseStatus(): string

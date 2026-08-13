@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            require __DIR__.'/../routes/health.php';
+        },
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();

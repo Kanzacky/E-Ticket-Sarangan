@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+
+# ─────────────────────────────────────────────────────────────
+# Stage 1: PHP production dependencies (no dev tools in runtime)
+# ─────────────────────────────────────────────────────────────
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist \
+        --optimize-autoloader --no-scripts
+
+# ─────────────────────────────────────────────────────────────
+# Stage 2: Runtime — FrankenPHP (Caddy + PHP) on Vercel Container
+# ─────────────────────────────────────────────────────────────
+FROM dunglas/frankenphp:1-php8.4-alpine
+WORKDIR /app
+
+# PostgreSQL extension (Supabase) + required Laravel extensions.
+# pgsql / pdo_pgsql are mandatory for DB_CONNECTION=pgsql.
+RUN install-php-extensions pdo pdo_pgsql pgsql mbstring intl zip bcmath opcache
+
+# Install application code. `.env` is intentionally excluded via
+# .dockerignore — real credentials are injected by Vercel at runtime.
+COPY --from=vendor /app/vendor ./vendor
+COPY . .
+
+# FrankenPHP/Caddy config
+COPY Caddyfile /etc/caddy/Caddyfile
+
+# Run package discovery at build time so Laravel knows about Sanctum.
+# config/route/view caches are built at runtime (after env is injected).
+RUN php artisan package:discover --ansi \
+    && mkdir -p storage/framework/cache/data \
+              storage/framework/sessions \
+              storage/framework/views \
+              storage/logs \
+              storage/app/public \
+              bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# Entrypoint handles storage:link, APP_KEY guard, migrations, optimize.
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint
+RUN chmod +x /usr/local/bin/entrypoint
+
+# Vercel injects $PORT. 80 is only the local default — never hardcoded for prod.
+ENV PORT=80
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD php -r '$port = getenv("PORT") ?: "80"; exit(@file_get_contents("http://127.0.0.1:".$port."/up") === false ? 1 : 0);'
+
+ENTRYPOINT ["entrypoint"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
