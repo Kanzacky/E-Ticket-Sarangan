@@ -2,37 +2,26 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class HealthTest extends TestCase
 {
-    use RefreshDatabase;
-
-    public function test_health_endpoint_returns_ok(): void
+    public function test_public_health_endpoint_returns_ok_without_database(): void
     {
-        $response = $this->getJson('/api/v1/health');
+        $response = $this->getJson('/api/health');
 
         $response->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('message', 'E-Ticket Sarangan API is running')
-            ->assertJsonPath('data.status', 'ok')
-            ->assertJsonPath('data.database', 'connected');
+            ->assertJsonPath('message', 'API e-Ticket Sarangan aktif');
     }
 
-    public function test_health_endpoint_has_consistent_json_shape(): void
+    public function test_database_health_endpoint_reports_db_status(): void
     {
-        $response = $this->getJson('/api/v1/health');
+        $response = $this->getJson('/api/health/database');
 
         $response->assertJsonStructure([
             'success',
-            'message',
-            'data' => [
-                'status',
-                'app',
-                'version',
-                'database',
-            ],
+            'database',
         ]);
     }
 }

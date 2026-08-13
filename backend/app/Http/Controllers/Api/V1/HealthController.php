@@ -3,42 +3,43 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class HealthController extends Controller
 {
     /**
-     * GET /api/v1/health — status aplikasi + status database.
+     * GET /api/v1/health — status aplikasi, tanpa gagal saat DB belum siap.
      */
     public function __invoke(): JsonResponse
     {
-        $data = [
-            'status' => 'ok',
-            'app' => config('app.name'),
-            'version' => config('app.version') ?? 'v1',
-            'database' => $this->databaseStatus(),
-        ];
+        $databaseStatus = $this->databaseStatus();
 
-        return ApiResponse::success('E-Ticket Sarangan API is running', $data);
+        return response()->json([
+            'success' => true,
+            'message' => 'E-Ticket Sarangan API is running',
+            'data' => [
+                'status' => 'ok',
+                'app' => config('app.name'),
+                'version' => config('app.version') ?? 'v1',
+                'database' => $databaseStatus,
+            ],
+        ]);
     }
 
     /**
-     * GET /api/health — liveness check, TANPA query database.
+     * GET /api/health — liveness check yang aman di serverless/Vercel.
      */
     public function app(): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'message' => 'Backend API berjalan',
-            'environment' => app()->environment(),
+            'message' => 'API e-Ticket Sarangan aktif',
         ]);
     }
 
     /**
-     * GET /api/health/database — cek koneksi Supabase PostgreSQL.
-     * Tidak pernah mengekspos detail koneksi/kredensial.
+     * GET /api/health/database — status koneksi database dipisah dari health check.
      */
     public function database(): JsonResponse
     {
@@ -62,7 +63,7 @@ class HealthController extends Controller
             DB::connection()->getPdo();
 
             return 'connected';
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             return 'disconnected';
         }
     }
