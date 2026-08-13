@@ -1,0 +1,46 @@
+{
+  "app": {
+    "name": "e-Ticket Sarangan",
+    "tagline": "Sistem tiket digital untuk wisata Sarangan",
+    "inotek": "INOTEK Award 2026"
+  },
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "search": "Cari",
+    "loading": "Memuat...",
+    "submit": "Kirim",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "confirm": "Konfirmasi",
+    "retry": "Coba lagi"
+  },
+  "nav": {
+    "home": "Beranda",
+    "login": "Masuk",
+    "register": "Daftar",
+    "logout": "Keluar"
+  },
+  "home": {
+    "title": "e-Ticket Sarangan",
+    "subtitle": "Sistem digital ticketing dan manajemen pengunjung untuk wisata Sarangan.",
+    "status": {
+      "title": "Status Sistem",
+      "frontend": "Frontend berhasil dijalankan",
+      "api": "API",
+      "connected": "Terhubung",
+      "disconnected": "Tidak terhubung",
+      "database": "Database"
+    }
+  },
+  "auth": {
+    "loginTitle": "Masuk",
+    "registerTitle": "Daftar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "name": "Nama",
+    "comingSoon": "Fitur login dan pendaftaran akan tersedia pada fase berikutnya."
+  }
+}

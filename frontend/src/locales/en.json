@@ -1,0 +1,46 @@
+{
+  "app": {
+    "name": "e-Ticket Sarangan",
+    "tagline": "Digital ticketing system for Sarangan tourism",
+    "inotek": "INOTEK Award 2026"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "retry": "Retry"
+  },
+  "nav": {
+    "home": "Home",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "home": {
+    "title": "e-Ticket Sarangan",
+    "subtitle": "Digital ticketing and visitor management system for Sarangan tourism.",
+    "status": {
+      "title": "System Status",
+      "frontend": "Frontend is running",
+      "api": "API",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "database": "Database"
+    }
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "registerTitle": "Register",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "comingSoon": "Login and registration features will be available in the next phase."
+  }
+}
