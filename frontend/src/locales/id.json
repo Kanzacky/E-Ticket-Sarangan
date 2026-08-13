@@ -40,7 +40,13 @@
     "registerTitle": "Daftar",
     "email": "Email",
     "password": "Kata Sandi",
-    "name": "Nama",
-    "comingSoon": "Fitur login dan pendaftaran akan tersedia pada fase berikutnya."
+    "name": "Nama Lengkap",
+    "phone": "No. Handphone (Opsional)",
+    "passwordConfirmation": "Konfirmasi Kata Sandi",
+    "hasAccount": "Sudah punya akun?",
+    "noAccount": "Belum punya akun?",
+    "loginSuccess": "Berhasil masuk",
+    "registerSuccess": "Pendaftaran berhasil, silakan masuk",
+    "loginError": "Email atau kata sandi salah"
   }
 }

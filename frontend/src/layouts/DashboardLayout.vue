@@ -11,8 +11,8 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const sidebarOpen = ref(false)
 
-function handleLogout(): void {
-  authStore.logout()
+async function handleLogout() {
+  await authStore.logout()
   void router.push({ name: 'login' })
 }
 </script>

@@ -40,7 +40,13 @@
     "registerTitle": "Register",
     "email": "Email",
     "password": "Password",
-    "name": "Name",
-    "comingSoon": "Login and registration features will be available in the next phase."
+    "name": "Full Name",
+    "phone": "Phone Number (Optional)",
+    "passwordConfirmation": "Confirm Password",
+    "hasAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Registration successful, please login",
+    "loginError": "Invalid email or password"
   }
 }
