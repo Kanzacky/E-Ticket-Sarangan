@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 class HealthController extends Controller
 {
     /**
-     * GET /api/v1/health — status aplikasi, tanpa gagal saat DB belum siap.
+     * GET /api/health — status aplikasi + koneksi database.
+     * Bentuk response mengikuti kontrak frontend:
+     *   { success, message, data: { status, app, version, database } }
      */
     public function __invoke(): JsonResponse
     {
@@ -42,17 +44,6 @@ class HealthController extends Controller
     }
 
     /**
-     * GET /api/health — liveness check yang aman di serverless/Vercel.
-     */
-    public function app(): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'message' => 'API e-Ticket Sarangan aktif',
-        ]);
-    }
-
-    /**
      * GET /api/health/database — status koneksi database dipisah dari health check.
      */
     public function database(): JsonResponse
@@ -64,10 +55,6 @@ class HealthController extends Controller
             'database' => $connected ? 'connected' : 'disconnected',
         ];
 
-        if (! $connected) {
-            $payload['error'] = 'Database connection failed. Check DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, and DB_SSLMODE.';
-        }
-
         return response()->json($payload, $connected ? 200 : 503);
     }
 
@@ -77,7 +64,7 @@ class HealthController extends Controller
             DB::connection()->getPdo();
 
             return 'connected';
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return 'disconnected';
         }
     }

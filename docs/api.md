@@ -1,16 +1,19 @@
 # API — e-Ticket Sarangan
 
-Base URL: `/api/v1`
+Base URL: `/api`
 
-Prefix versi dikonfigurasi di `backend/bootstrap/app.php`:
+Prefix dikonfigurasi di `backend/bootstrap/app.php`:
 
 ```php
 ->withRouting(
     api: __DIR__.'/../routes/api.php',
-    apiPrefix: 'api/v1',
+    apiPrefix: 'api',
     ...
 )
 ```
+
+Endpoint publik (`/`, `/api/health`, `/api/health/database`) didaftarkan di
+`backend/routes/health.php` (di luar grup middleware web/api).
 
 ## Format Response
 
@@ -37,15 +40,21 @@ Prefix versi dikonfigurasi di `backend/bootstrap/app.php`:
 
 Helper: `App\Support\ApiResponse` (`ApiResponse::success()` / `ApiResponse::error()`).
 
-## Endpoint Fase 1
+## Endpoint
 
 | Method | Endpoint | Deskripsi | Auth |
 |---|---|---|---|
-| GET | `/api/v1/health` | Health check (app + database) | Publik |
+| GET | `/` | Root JSON (status + database) | Publik |
+| GET | `/api/health` | Health check (app + database) | Publik |
+| GET | `/api/health/database` | Cek koneksi database saja | Publik |
+| POST | `/api/auth/register` | Registrasi user (`wisatawan`) | Publik |
+| POST | `/api/auth/login` | Login → `access_token` (Sanctum) | Publik |
+| POST | `/api/auth/logout` | Revoke token | Sanctum |
+| GET | `/api/auth/me` | Data user saat ini | Sanctum |
 
 ### Health Check
 
-`GET /api/v1/health`
+`GET /api/health`
 
 ```json
 {
@@ -63,28 +72,23 @@ Helper: `App\Support\ApiResponse` (`ApiResponse::success()` / `ApiResponse::erro
 ## Roadmap Endpoint (fase berikutnya)
 
 ```
-POST   /api/v1/auth/login
-POST   /api/v1/auth/register
-POST   /api/v1/auth/logout
-GET    /api/v1/auth/me
+GET    /api/ticket-categories
 
-GET    /api/v1/ticket-categories
+POST   /api/bookings
+GET    /api/bookings
+GET    /api/bookings/{id}
 
-POST   /api/v1/bookings
-GET    /api/v1/bookings
-GET    /api/v1/bookings/{id}
+GET    /api/tickets
+GET    /api/tickets/{id}
 
-GET    /api/v1/tickets
-GET    /api/v1/tickets/{id}
+POST   /api/payments
+POST   /api/payments/webhook
 
-POST   /api/v1/payments
-POST   /api/v1/payments/webhook
+POST   /api/checkins
+GET    /api/checkins
 
-POST   /api/v1/checkins
-GET    /api/v1/checkins
+POST   /api/tickets/{id}/upgrade
 
-POST   /api/v1/tickets/{id}/upgrade
-
-GET    /api/v1/admin/dashboard
-GET    /api/v1/admin/analytics
+GET    /api/admin/dashboard
+GET    /api/admin/analytics
 ```

@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\HealthController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', HealthController::class);
-
+// Prefix grup: `api` (dari withRouting apiPrefix) → /api/auth/*.
+// Health endpoints (/api/health, /api/health/database) didaftarkan di
+// routes/health.php (tanpa middleware grup web/api).
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

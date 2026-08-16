@@ -41,7 +41,7 @@ php artisan tinker --execute="echo DB::connection()->getDriverName();"
 Cek health endpoint:
 
 ```bash
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/health
 ```
 
 `data.database` harus bernilai `connected`.

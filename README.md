@@ -9,7 +9,7 @@ Vue 3 (frontend / SPA)
    │
    │ Axios
    ▼
-Laravel 12 REST API (/api/v1)
+Laravel 12 REST API (/api)
    │
    │ Eloquent
    ▼
@@ -131,8 +131,8 @@ npm run dev                # http://localhost:5173
 ## Verifikasi Fase 1
 
 1. Buka `http://localhost:5173` → halaman beranda menampilkan status frontend.
-2. Kartu status mengecek `GET /api/v1/health` → tampil **API: Terhubung**.
-3. Endpoint health langsung: `http://localhost:8000/api/v1/health`
+2. Kartu status mengecek `GET /api/health` → tampil **API: Terhubung**.
+3. Endpoint health langsung: `http://localhost:8000/api/health`
 
 ## Testing
 
@@ -155,11 +155,13 @@ npm run build       # production build
 
 ## API Overview
 
-Base URL: `/api/v1`
+Base URL: `/api`
 
 | Method | Endpoint | Deskripsi |
 |---|---|---|
-| GET | `/api/v1/health` | Health check aplikasi + database |
+| GET | `/api/health` | Health check aplikasi + database |
+| POST | `/api/auth/login` | Login user |
+| POST | `/api/auth/register` | Registrasi user |
 
 Response format konsisten: `{ success, message, data, meta }`.
 Lihat `docs/api.md` untuk detail dan roadmap endpoint.
@@ -216,7 +218,7 @@ MIDTRANS_IS_PRODUCTION=false
 
 ```env
 VITE_APP_NAME="e-Ticket Sarangan"
-VITE_API_URL=http://localhost:8000/api/v1
+VITE_API_URL=http://localhost:8000/api
 VITE_DEFAULT_LOCALE=id
 ```
 

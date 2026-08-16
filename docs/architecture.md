@@ -78,7 +78,7 @@ e-ticket-sarangan/
 │   │   ├── migrations/
 │   │   └── seeders/
 │   ├── routes/
-│   │   ├── api.php                    # /api/v1/*
+│   │   ├── api.php                    # /api/*
 │   │   └── web.php
 │   ├── tests/
 │   │   ├── Feature/

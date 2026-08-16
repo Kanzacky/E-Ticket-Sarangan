@@ -4,14 +4,17 @@ use App\Http\Controllers\Api\V1\HealthController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints — registered OUTSIDE the web/api middleware groups
-// (via withRouting then:), so they never start a session, encrypt cookies,
-// or depend on APP_KEY. This makes them reliable even if the web group
-// (Blade + session) is unavailable.
+// (via withRouting then:), sehingga tidak bergantung pada session, cookie,
+// Blade view, atau APP_KEY. Header CORS tetap dipasang oleh HandleCors
+// (global middleware) untuk semua path di bawah `api/*`.
 
-// Root endpoint — returns JSON instead of the Blade welcome page, which
-// previously rendered inside the `web` middleware group and produced HTTP 500.
-Route::get('/', [HealthController::class, 'root']);
+// Root endpoint — JSON sederhana.
+Route::get('/', HealthController::class.'@root');
 
-Route::get('/api/health', [HealthController::class, 'app']);
+// Health check lengkap (status aplikasi + koneksi database).
+// Bentuk response mengikuti kontrak frontend:
+//   { success, message, data: { status, app, version, database } }
+Route::get('/api/health', HealthController::class);
 
-Route::get('/api/health/database', [HealthController::class, 'database']);
+// Cek koneksi database saja (dipisah agar health check tetap ringan).
+Route::get('/api/health/database', HealthController::class.'@database');
