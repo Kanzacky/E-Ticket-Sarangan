@@ -3,21 +3,22 @@ import axios, { type AxiosInstance } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 // Base URL backend production (Vercel Container):
-//   https://e-ticket-sarangan-backend.vercel.app/api/v1
+//   https://e-ticket-sarangan-backend.vercel.app/api
 // Di-set via env VITE_API_URL (Vite convention) — lihat .env.production
 // atau Environment Variables di Vercel Dashboard (frontend project).
+// JANGAN pakai localhost atau URL frontend sebagai base URL production.
 const apiBaseUrl = import.meta.env.VITE_API_URL
 
 if (!apiBaseUrl) {
   console.warn(
-    '[api] VITE_API_URL belum dikonfigurasi. Fallback ke "/api/v1". ' +
+    '[api] VITE_API_URL belum dikonfigurasi. Fallback ke "/api". ' +
       'Set VITE_API_URL di .env.production atau Vercel env agar request ' +
       'mengarah ke backend production.',
   )
 }
 
 const api: AxiosInstance = axios.create({
-  baseURL: apiBaseUrl || '/api/v1',
+  baseURL: apiBaseUrl || '/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -61,7 +62,21 @@ export interface HealthData {
   database: string
 }
 
-export const getHealth = () => api.get<ApiResponse<HealthData>>('/health').then((response) => response.data)
+export interface HealthResponse {
+  success?: boolean
+  message?: string
+  data?: HealthData
+}
+
+/**
+ * GET /health — health check backend.
+ *
+ * Robust terhadap bentuk JSON: status "Terhubung" ditentukan dari HTTP 2xx
+ * (axios resolve), bukan dari field `success`. Semua field opsional agar
+ * tidak error bila backend mengembalikan struktur berbeda.
+ */
+export const getHealth = () =>
+  api.get<HealthResponse>('/health').then((response) => response.data)
 
 // --- Auth Endpoints ---
 
