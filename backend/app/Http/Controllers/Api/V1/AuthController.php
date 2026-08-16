@@ -10,6 +10,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -33,9 +34,19 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->validated('email'))->first();
+        $credentials = $request->validated();
 
-        if (! $user || ! Hash::check($request->validated('password'), $user->password)) {
+        $user = User::where('email', $credentials['email'])->first();
+        $passwordVerified = $user ? Hash::check($credentials['password'], $user->password) : false;
+
+        // TEMPORARY diagnostic log — jangan pernah menampilkan password/hash.
+        Log::info('[Auth] login attempt', [
+            'email' => $credentials['email'],
+            'user_found' => $user !== null,
+            'password_verified' => $passwordVerified,
+        ]);
+
+        if (! $user || ! $passwordVerified) {
             return ApiResponse::error('Kredensial tidak valid', 401);
         }
 
