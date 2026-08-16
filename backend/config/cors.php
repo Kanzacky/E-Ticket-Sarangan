@@ -34,6 +34,7 @@ return [
     'allowed_methods' => ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => array_values(array_unique(array_filter(array_merge([
+        'http://localhost:3000',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'https://e-ticket-sarangan-anx4.vercel.app',
@@ -41,7 +42,7 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'X-CSRF-TOKEN'],
+    'allowed_headers' => ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'X-CSRF-TOKEN'],
 
     'exposed_headers' => [],
 
