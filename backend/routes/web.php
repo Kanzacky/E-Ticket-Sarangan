@@ -2,5 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Route::view (bukan closure) agar kompatibel dengan `php artisan route:cache`.
-Route::view('/', 'welcome');
+// Semua route public (termasuk `/` dan health check) didaftarkan di
+// routes/health.php (via withRouting `then:`), di luar grup middleware
+// web/api, agar tidak bergantung pada session/cookie/Blade view.

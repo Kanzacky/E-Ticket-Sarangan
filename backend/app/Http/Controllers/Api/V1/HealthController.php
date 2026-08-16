@@ -28,6 +28,20 @@ class HealthController extends Controller
     }
 
     /**
+     * GET / — root endpoint sederhana. Tanpa session/middleware (didaftarkan
+     * di routes/health.php via `then`), sehingga tidak bergantung pada
+     * Blade view atau cookie/session.
+     */
+    public function root(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'e-Ticket Sarangan API',
+            'database' => $this->databaseStatus(),
+        ]);
+    }
+
+    /**
      * GET /api/health — liveness check yang aman di serverless/Vercel.
      */
     public function app(): JsonResponse

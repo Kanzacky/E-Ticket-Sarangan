@@ -2,8 +2,22 @@ import axios, { type AxiosInstance } from 'axios'
 
 import { useAuthStore } from '@/stores/auth'
 
+// Base URL backend production (Vercel Container):
+//   https://e-ticket-sarangan-backend.vercel.app/api/v1
+// Di-set via env VITE_API_URL (Vite convention) — lihat .env.production
+// atau Environment Variables di Vercel Dashboard (frontend project).
+const apiBaseUrl = import.meta.env.VITE_API_URL
+
+if (!apiBaseUrl) {
+  console.warn(
+    '[api] VITE_API_URL belum dikonfigurasi. Fallback ke "/api/v1". ' +
+      'Set VITE_API_URL di .env.production atau Vercel env agar request ' +
+      'mengarah ke backend production.',
+  )
+}
+
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: apiBaseUrl || '/api/v1',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
