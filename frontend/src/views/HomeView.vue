@@ -13,41 +13,41 @@ const { status, data, message } = useApiHealth()
 
 <template>
   <main class="flex min-h-screen flex-col bg-gradient-to-b from-sky-50 via-white to-emerald-50">
-    <header class="flex items-center justify-between px-6 py-4">
+    <header class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
       <div class="flex items-center gap-2">
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white">
           <Ticket class="h-5 w-5" />
         </div>
-        <span class="text-lg font-semibold text-slate-800">{{ t('app.name') }}</span>
+        <span class="text-base font-semibold text-slate-800 sm:text-lg">{{ t('app.name') }}</span>
       </div>
 
-      <nav class="flex items-center gap-3">
+      <nav class="flex flex-wrap items-center gap-2 sm:gap-3">
         <template v-if="authStore.isAuthenticated">
           <router-link
             to="/my-bookings"
-            class="flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-50 hover:text-sky-700"
+            class="flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-50 hover:text-sky-700 sm:px-3.5"
           >
             <History class="h-4 w-4" />
-            Tiket Saya
+            <span class="hidden sm:inline">Tiket Saya</span>
           </router-link>
           <router-link
             to="/booking"
-            class="flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
+            class="flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700 sm:px-4"
           >
             <PlusCircle class="h-4 w-4" />
-            Pesan Tiket
+            <span>Pesan</span>
           </router-link>
         </template>
         <template v-else>
           <router-link
             to="/login"
-            class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-100 hover:text-sky-700"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-100 hover:text-sky-700 sm:px-4"
           >
             {{ t('nav.login') }}
           </router-link>
           <router-link
             to="/register"
-            class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
+            class="rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700 sm:px-4"
           >
             {{ t('nav.register') }}
           </router-link>

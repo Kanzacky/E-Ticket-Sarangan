@@ -129,18 +129,19 @@ async function handleLogout() {
           <Menu class="h-5 w-5" />
         </button>
         <div class="flex-1" />
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
           <span class="hidden text-sm font-medium text-slate-700 sm:block">{{ authStore.user?.name }}</span>
           <span class="hidden rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 sm:block uppercase">
             {{ authStore.role }}
           </span>
           <button
-            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 sm:px-3.5"
             type="button"
+            aria-label="Logout"
             @click="handleLogout"
           >
-            <LogOut class="h-3.5 w-3.5" />
-            {{ t('nav.logout') }}
+            <LogOut class="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span class="hidden sm:inline">{{ t('nav.logout') }}</span>
           </button>
         </div>
       </header>
