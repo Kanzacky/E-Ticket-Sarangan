@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class HealthTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_health_endpoint_returns_ok_with_full_shape(): void
     {
         $response = $this->getJson('/api/health');
