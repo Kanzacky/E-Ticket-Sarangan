@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { getMeApi, loginApi, logoutApi, registerApi, type AuthUser, type LoginRequest, type RegisterRequest } from '@/services/api'
+import { getMeApi, loginApi, logoutApi, registerApi, getCsrfCookie, type AuthUser, type LoginRequest, type RegisterRequest } from '@/services/api'
 
 export type UserRole = 'wisatawan' | 'petugas' | 'admin'
 
@@ -30,6 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials: LoginRequest) {
     isLoading.value = true
     try {
+      await getCsrfCookie()
       const response = await loginApi(credentials)
       setToken(response.data.access_token)
       setUser(response.data.user)
@@ -42,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function register(data: RegisterRequest) {
     isLoading.value = true
     try {
+      await getCsrfCookie()
       const response = await registerApi(data)
       setToken(response.data.access_token)
       setUser(response.data.user)

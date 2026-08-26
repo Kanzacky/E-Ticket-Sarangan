@@ -1,299 +1,380 @@
 <script setup lang="ts">
 import { 
-  CreditCard, 
-  History, 
-  Leaf, 
   LoaderCircle, 
   MapPin,
   MountainSnow, 
-  PlusCircle, 
-  Ticket, 
-  Timer,
-  CheckCircle2,
-  ArrowRight
+  Menu,
+  X
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import { onMounted, ref } from 'vue'
 
 import { useApiHealth } from '@/composables/useApiHealth'
 import { useAuthStore } from '@/stores/auth'
+import { getTicketTypesApi } from '@/services/order.service'
+import type { TicketType } from '@/types/booking.types'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
-const { status, data } = useApiHealth()
+const { check } = useApiHealth()
+
+const isMobileMenuOpen = ref(false)
+const ticketTypes = ref<TicketType[]>([])
+const isLoadingTickets = ref(true)
+
+onMounted(async () => {
+  void check()
+  try {
+    const res = await getTicketTypesApi()
+    ticketTypes.value = res.filter(t => t.status === 'ACTIVE')
+  } catch (error) {
+    console.error('Failed to fetch ticket types', error)
+  } finally {
+    isLoadingTickets.value = false
+  }
+})
 
 const features = [
   {
-    title: 'Tanpa Antrean Panjang',
-    description: 'Beli tiket dari mana saja. Cukup scan QR code di gerbang masuk dan nikmati liburan Anda seketika.',
-    icon: Timer,
-    color: 'text-orange-500',
-    bg: 'bg-orange-50',
-    border: 'border-orange-100'
+    title: 'Tiket Digital',
+    description: 'Pesan dari mana saja tanpa antrean panjang.',
   },
   {
-    title: 'Pembayaran Digital',
-    description: 'Bebas ribet dengan dukungan metode pembayaran instan seperti QRIS, GoPay, dan Virtual Account.',
-    icon: CreditCard,
-    color: 'text-blue-500',
-    bg: 'bg-blue-50',
-    border: 'border-blue-100'
+    title: 'Booking Online',
+    description: 'Pilih tanggal kunjungan dan amankan tiketmu.',
   },
   {
-    title: 'Peduli Lingkungan',
-    description: 'Dukung inisiatif pariwisata hijau dengan e-ticket yang sepenuhnya paperless.',
-    icon: Leaf,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-100'
+    title: 'QR Check-in',
+    description: 'Scan cepat di gerbang, langsung masuk.',
+  },
+  {
+    title: 'Pembayaran Aman',
+    description: 'Beragam pilihan metode pembayaran digital.',
   }
 ]
 
-const tickets = [
-  {
-    name: 'Pengunjung Dewasa',
-    price: '20.000',
-    popular: true,
-    features: ['Akses seluruh area publik telaga', 'Termasuk asuransi keselamatan', 'Berlaku untuk 1 hari kunjungan', 'Usia di atas 12 tahun']
-  },
-  {
-    name: 'Pengunjung Anak',
-    price: '10.000',
-    popular: false,
-    features: ['Akses seluruh area publik telaga', 'Termasuk asuransi keselamatan', 'Berlaku untuk 1 hari kunjungan', 'Usia 3 - 12 tahun']
-  }
-]
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('id-ID').format(price)
+}
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-sky-200">
+  <main class="min-h-screen bg-[#F7F5EF] font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white">
     <!-- Navbar -->
-    <header class="sticky top-6 z-50 mx-auto max-w-6xl px-4 sm:px-6 bg-white/90 backdrop-blur-xl border-b border-slate-200">
-      <div class="flex items-center justify-between rounded-full bg-white/80 px-4 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl border border-white">
-        <div class="flex items-center gap-3 pl-2">
-          <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/20">
-            <MountainSnow class="h-5 w-5" />
+    <header class="fixed top-0 w-full z-50 bg-[#F7F5EF]/90 backdrop-blur-md border-b border-[#173B35]/10">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#173B35] text-[#F7F5EF]">
+              <MountainSnow class="h-6 w-6" />
+            </div>
+            <span class="text-xl font-bold tracking-tight text-[#173B35]">{{ t('app.name') }}</span>
           </div>
-          <span class="text-lg font-extrabold tracking-tight text-slate-800">{{ t('app.name') }}</span>
-        </div>
 
-        <nav class="flex items-center gap-2 sm:gap-3 pr-1">
-          <template v-if="authStore.isAuthenticated">
-            <router-link
-              to="/wisatawan/history"
-              class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            >
-              <History class="h-4 w-4" />
-              <span class="hidden sm:inline">Pesanan Saya</span>
-            </router-link>
-            <router-link
-              to="/wisatawan/booking"
-              class="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5"
-            >
-              <PlusCircle class="h-4 w-4" />
-              <span>Pesan Tiket</span>
-            </router-link>
-          </template>
-          <template v-else>
-            <router-link
-              to="/login"
-              class="rounded-full px-5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            >
-              Masuk
-            </router-link>
-            <router-link
-              to="/register"
-              class="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5"
-            >
-              Daftar Akun
-            </router-link>
-          </template>
-        </nav>
+          <!-- Desktop Nav -->
+          <nav class="hidden lg:flex items-center gap-8">
+            <a href="#beranda" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Beranda</a>
+            <a href="#tiket" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Tiket</a>
+            <a href="#cara-pesan" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Cara Pesan</a>
+            <a href="#tentang" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Tentang Sarangan</a>
+          </nav>
+
+          <div class="hidden lg:flex items-center gap-4">
+            <template v-if="authStore.isAuthenticated">
+              <router-link
+                to="/wisatawan/history"
+                class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors"
+              >
+                Pesanan Saya
+              </router-link>
+              <router-link
+                to="/wisatawan/booking"
+                class="flex items-center gap-2 rounded-lg bg-[#173B35] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#1D2724]"
+              >
+                Pesan Tiket
+              </router-link>
+            </template>
+            <template v-else>
+              <router-link
+                to="/login"
+                class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors"
+              >
+                Masuk
+              </router-link>
+              <router-link
+                to="/login"
+                class="flex items-center gap-2 rounded-lg bg-[#173B35] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#1D2724]"
+              >
+                Pesan Tiket
+              </router-link>
+            </template>
+          </div>
+
+          <!-- Mobile menu button -->
+          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 text-[#173B35]">
+            <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
+            <X v-else class="h-6 w-6" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Nav -->
+      <div v-if="isMobileMenuOpen" class="lg:hidden bg-[#F7F5EF] border-t border-[#173B35]/10 px-5 pt-4 pb-6 space-y-4 shadow-lg absolute w-full">
+        <a href="#beranda" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Beranda</a>
+        <a href="#tiket" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Tiket</a>
+        <a href="#cara-pesan" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Cara Pesan</a>
+        <a href="#tentang" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Tentang Sarangan</a>
+        <hr class="border-[#173B35]/10" />
+        <template v-if="authStore.isAuthenticated">
+          <router-link to="/wisatawan/history" class="block text-base font-semibold text-[#1D2724]">Pesanan Saya</router-link>
+          <router-link to="/wisatawan/booking" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="block text-base font-semibold text-[#1D2724]">Masuk</router-link>
+          <router-link to="/login" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
+        </template>
       </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="relative pt-6 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-      <!-- Decorative blobs -->
-      <div class="absolute -top-[20%] -right-[10%] -z-10 h-[600px] w-[600px] rounded-full bg-sky-200/50 blur-[100px]"></div>
-      <div class="absolute top-[20%] -left-[10%] -z-10 h-[500px] w-[500px] rounded-full bg-blue-200/40 blur-[100px]"></div>
-
-      <div class="mx-auto max-w-7xl px-6 lg:px-12">
-        <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
-          <!-- Text Content -->
-          <div class="max-w-2xl">
-            <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 mb-8 shadow-sm">
-              <Ticket class="h-4 w-4" /> 
-              <span>Wisata Digital Telaga Sarangan</span>
-            </div>
-            
-            <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-7xl leading-[1.1]">
-              Cara modern <br>
-              menikmati <br>
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-600">Telaga Sarangan.</span>
-            </h1>
-            
-            <p class="mt-6 text-lg text-slate-600 leading-relaxed sm:text-xl">
-              Tinggalkan cara lama. Pesan tiket masuk dan penginapan secara online, hindari antrean, dan nikmati liburan yang sepenuhnya tanpa beban.
-            </p>
-            
-            <div class="mt-10 flex flex-col sm:flex-row items-center gap-4">
-              <router-link
-                to="/login"
-                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-sky-600 px-8 py-4 text-base font-bold text-white shadow-lg shadow-sky-600/30 transition-all hover:bg-sky-700 hover:shadow-sky-600/40 hover:-translate-y-1"
-              >
-                Mulai Petualangan <ArrowRight class="h-5 w-5" />
-              </router-link>
-              <router-link
-                to="/wisatawan/accommodations"
-                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-1"
-              >
-                Lihat Penginapan
-              </router-link>
-            </div>
-          </div>
-
-          <!-- Image/Visual -->
-          <div class="relative lg:h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-900/10 border-8 border-white">
-            <img 
-              src="/images/sarangan-hero.png" 
-              alt="Pemandangan Telaga Sarangan" 
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
-            
-            <!-- Floating Info Card -->
-            <div class="absolute bottom-6 left-6 right-6 rounded-2xl bg-white/90 p-5 backdrop-blur-md shadow-lg border border-white/50 flex items-center justify-between">
-              <div>
-                <p class="text-sm font-bold text-slate-900">Pesona Alam Magetan</p>
-                <p class="text-xs text-slate-600 font-medium">Buka Setiap Hari, 24 Jam</p>
-              </div>
-              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-                <MapPin class="h-5 w-5" />
-              </div>
-            </div>
-          </div>
-        </div>
+    <section id="beranda" class="relative pt-20 lg:pt-0 lg:h-screen lg:min-h-[700px] flex items-center">
+      <div class="absolute inset-0 z-0">
+        <img 
+          src="/images/sarangan-hero-2.jpg" 
+          alt="Telaga Sarangan" 
+          class="h-full w-full object-cover"
+        />
+        <div class="absolute inset-0 bg-[#1D2724]/60 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#1D2724]/80 via-transparent to-transparent"></div>
       </div>
-    </section>
 
-    <!-- Features Bento Grid -->
-    <section class="py-24 bg-white px-6 lg:px-12 relative">
-      <div class="mx-auto max-w-7xl">
-        <div class="mb-16 max-w-3xl">
-          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-            Sistem pintar untuk pengalaman liburan terbaik.
-          </h2>
-          <p class="mt-6 text-lg text-slate-600">
-            Kami mendesain ulang setiap aspek dari perjalanan Anda. Dari pembelian tiket hingga memasuki area wisata, semuanya kini ada di genggaman Anda.
+      <div class="relative z-10 mx-auto w-full max-w-[1240px] px-5 sm:px-6 lg:px-8 py-20 mt-10 md:mt-0 lg:py-0">
+        <div class="max-w-2xl text-white">
+          <div class="inline-block border border-white/40 bg-black/30 backdrop-blur-md rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm">
+            Wisata Alam Magetan
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white drop-shadow-md">
+            Nikmati Sarangan,<br />mulai perjalananmu dari sini.
+          </h1>
+          
+          <p class="text-lg md:text-xl mb-10 text-white/90 font-medium max-w-xl leading-relaxed">
+            Pesan tiket kunjungan dengan mudah, tentukan tanggal kedatangan, dan simpan e-ticket langsung di perangkatmu tanpa perlu antre panjang.
           </p>
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-3">
-          <div v-for="(feat, index) in features" :key="index" class="group relative overflow-hidden rounded-3xl p-8 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50" :class="[feat.bg, feat.border, 'border']">
-            <div class="absolute top-0 right-0 p-6 opacity-10 transition-transform duration-500 group-hover:scale-110 group-hover:opacity-20">
-              <component :is="feat.icon" class="h-32 w-32" :class="feat.color" />
-            </div>
-            
-            <div class="relative z-10">
-              <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
-                <component :is="feat.icon" class="h-7 w-7" :class="feat.color" />
-              </div>
-              <h3 class="mb-3 text-2xl font-bold text-slate-900">{{ feat.title }}</h3>
-              <p class="text-slate-700 font-medium leading-relaxed">{{ feat.description }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section class="py-24 px-6 lg:px-12 bg-slate-50">
-      <div class="mx-auto max-w-7xl">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Harga Tiket Resmi</h2>
-          <p class="mt-4 text-lg text-slate-600">Satu harga terjangkau untuk akses penuh ke keindahan alam Telaga Sarangan.</p>
-        </div>
-
-        <div class="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-          <div
-v-for="ticket in tickets" :key="ticket.name" 
-               class="relative flex flex-col rounded-[2rem] bg-white p-8 sm:p-10 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50"
-               :class="ticket.popular ? 'border-sky-200 ring-4 ring-sky-50' : 'border-slate-200'">
-            
-            <div v-if="ticket.popular" class="absolute -top-4 right-8 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-              Paling Sering Dibeli
-            </div>
-
-            <h3 class="text-xl font-bold text-slate-500">{{ ticket.name }}</h3>
-            <div class="mt-4 flex items-baseline gap-2">
-              <span class="text-5xl font-extrabold tracking-tight text-slate-900">Rp{{ ticket.price }}</span>
-              <span class="text-base font-semibold text-slate-500">/ orang</span>
-            </div>
-
-            <div class="my-8 h-px w-full bg-slate-100"></div>
-
-            <ul class="mb-8 flex-1 space-y-4">
-              <li v-for="feat in ticket.features" :key="feat" class="flex items-start gap-3">
-                <CheckCircle2 class="h-6 w-6 text-sky-500 shrink-0" />
-                <span class="font-medium text-slate-700">{{ feat }}</span>
-              </li>
-            </ul>
-
+          
+          <div class="flex flex-col sm:flex-row gap-4">
             <router-link
-to="/login" 
-                 class="block w-full rounded-2xl px-6 py-4 text-center text-sm font-bold transition-all"
-                 :class="ticket.popular ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-md shadow-sky-600/20' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'">
-              Pilih Tiket Ini
+              to="/login"
+              class="flex items-center justify-center rounded-lg bg-[#C9965B] px-8 py-4 text-base font-bold text-white transition-colors hover:bg-[#b0804b]"
+            >
+              Pesan Tiket
             </router-link>
+            <a
+              href="#tentang"
+              class="flex items-center justify-center rounded-lg bg-white/10 backdrop-blur-md border border-white/30 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-white/20"
+            >
+              Lihat Informasi
+            </a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Minimal Footer -->
-    <footer class="bg-white border-t border-slate-200 pt-16 pb-8 px-6 lg:px-12">
-      <div class="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-8">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
-            <MountainSnow class="h-5 w-5" />
+    <!-- Information Strip -->
+    <section class="bg-[#173B35] py-8 border-t-4 border-[#C9965B]">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
+          <div v-for="feat in features" :key="feat.title" class="flex flex-col items-center">
+            <span class="text-lg font-bold mb-1">{{ feat.title }}</span>
+            <span class="text-sm text-white/70">{{ feat.description }}</span>
           </div>
-          <div>
-            <span class="block text-lg font-bold text-slate-900">{{ t('app.name') }}</span>
-            <span class="block text-xs font-medium text-slate-500">Pariwisata Magetan</span>
-          </div>
-        </div>
-        
-        <div class="flex flex-wrap items-center justify-center gap-6 text-sm font-semibold text-slate-600">
-          <router-link to="/login" class="hover:text-sky-600 transition-colors">Pesan Tiket</router-link>
-          <router-link to="/wisatawan/accommodations" class="hover:text-sky-600 transition-colors">Penginapan</router-link>
-          <a href="#" class="hover:text-sky-600 transition-colors">Bantuan</a>
         </div>
       </div>
+    </section>
 
-      <!-- System Status Bar -->
-      <div class="mx-auto max-w-7xl mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-sm font-medium text-slate-500">&copy; {{ new Date().getFullYear() }} {{ t('app.name') }}. All rights reserved.</p>
+    <!-- Storytelling Section -->
+    <section id="tentang" class="py-24">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div class="relative overflow-hidden rounded-2xl h-[300px] md:h-[400px] lg:h-[600px] shadow-xl">
+            <img src="/images/sarangan-story-2.jpg" alt="Danau Sarangan" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+          </div>
+          <div class="order-first lg:order-none">
+            <h2 class="text-3xl md:text-4xl font-bold text-[#173B35] mb-6">
+              Satu tempat, banyak cerita.
+            </h2>
+            <div class="space-y-6 text-lg text-[#66706C] leading-relaxed">
+              <p>
+                Terletak di lereng Gunung Lawu, Telaga Sarangan menawarkan pesona alam yang tenang dengan udara sejuk khas pegunungan. Tempat yang sempurna untuk melepas penat dan menciptakan kenangan bersama keluarga.
+              </p>
+              <p>
+                Rasakan harmoni alam dengan berbagai aktivitas, dari menyusuri telaga dengan perahu tradisional hingga menikmati kuliner lokal yang menghangatkan suasana. Perjalanan wisata Anda kini dimulai dengan langkah yang lebih mudah melalui sistem tiket digital.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ticket Preview Section -->
+    <section id="tiket" class="py-24 bg-white">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="text-center mb-16 max-w-2xl mx-auto">
+          <h2 class="text-3xl md:text-4xl font-bold text-[#173B35] mb-4">Pilih Tiket Kunjungan</h2>
+          <p class="text-lg text-[#66706C]">Dapatkan akses penuh ke area publik Telaga Sarangan dengan harga resmi.</p>
+        </div>
+
+        <div v-if="isLoadingTickets" class="flex justify-center py-12">
+          <LoaderCircle class="h-8 w-8 animate-spin text-[#4F7465]" />
+        </div>
         
-        <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-200">
-          <span class="flex items-center gap-1.5">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            Sistem Aktif
-          </span>
-          <span class="w-px h-3 bg-slate-300"></span>
-          <span class="flex items-center gap-1.5">
-            <LoaderCircle v-if="status === 'checking'" class="h-3 w-3 animate-spin text-sky-500" />
-            <span v-else-if="status === 'connected'" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-            <span v-else class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-            API: {{ status === 'connected' ? 'OK' : status === 'checking' ? 'Mengecek...' : 'Down' }}
-          </span>
-          <span v-if="status === 'connected'" class="flex items-center gap-1.5">
-            <span class="w-px h-3 bg-slate-300 mr-1"></span>
-            <span :class="['h-2.5 w-2.5 rounded-full', data?.database === 'connected' ? 'bg-emerald-500' : 'bg-red-500']"></span>
-            Database: {{ data?.database === 'connected' ? 'OK' : 'Down' }}
-          </span>
+        <div v-else-if="ticketTypes.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+          <div v-for="ticket in ticketTypes" :key="ticket.id" class="border border-[#173B35]/10 rounded-2xl p-8 hover:border-[#4F7465]/30 transition-colors flex flex-col bg-[#F7F5EF]">
+            <h3 class="text-xl font-bold text-[#1D2724] mb-2">{{ ticket.name }}</h3>
+            <p class="text-sm text-[#66706C] mb-6 h-10">{{ ticket.description || 'Akses masuk Telaga Sarangan' }}</p>
+            
+            <div class="mb-8">
+              <span class="text-3xl font-bold text-[#173B35]">Rp{{ formatPrice(ticket.price) }}</span>
+            </div>
+            
+            <div class="mt-auto">
+              <router-link to="/login" class="block w-full text-center rounded-lg bg-[#173B35] px-4 py-3 text-sm font-semibold text-white hover:bg-[#1D2724] transition-colors">
+                Pilih Tiket
+              </router-link>
+            </div>
+          </div>
+        </div>
+        
+        <div v-else class="text-center text-[#66706C] py-8">
+          Belum ada tiket yang tersedia saat ini.
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="cara-pesan" class="py-24 bg-white border-t border-[#173B35]/10">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row gap-12 lg:gap-24">
+          <div class="lg:w-1/3">
+            <h2 class="text-3xl md:text-4xl font-bold text-[#173B35] mb-6">Cara Pemesanan</h2>
+            <p class="text-lg text-[#66706C]">Langkah mudah untuk mendapatkan tiket digital Telaga Sarangan tanpa perlu mengantre di lokasi.</p>
+          </div>
+          
+          <div class="lg:w-2/3 grid sm:grid-cols-2 gap-x-12 gap-y-16">
+            <div class="relative pl-6 border-l border-[#173B35]/20">
+              <span class="text-[#4F7465] font-bold text-sm tracking-widest absolute -left-[-1px] top-0 -translate-x-full pr-6">01</span>
+              <h3 class="text-xl font-bold text-[#1D2724] mb-3">Pilih Tanggal</h3>
+              <p class="text-[#66706C] text-sm leading-relaxed">Tentukan hari kunjungan terbaik Anda bersama keluarga atau kerabat.</p>
+            </div>
+            <div class="relative pl-6 border-l border-[#173B35]/20">
+              <span class="text-[#4F7465] font-bold text-sm tracking-widest absolute -left-[-1px] top-0 -translate-x-full pr-6">02</span>
+              <h3 class="text-xl font-bold text-[#1D2724] mb-3">Pilih Tiket</h3>
+              <p class="text-[#66706C] text-sm leading-relaxed">Tentukan jumlah pengunjung dewasa dan anak sesuai kebutuhan.</p>
+            </div>
+            <div class="relative pl-6 border-l border-[#173B35]/20">
+              <span class="text-[#4F7465] font-bold text-sm tracking-widest absolute -left-[-1px] top-0 -translate-x-full pr-6">03</span>
+              <h3 class="text-xl font-bold text-[#1D2724] mb-3">Bayar</h3>
+              <p class="text-[#66706C] text-sm leading-relaxed">Selesaikan pembayaran secara online dengan metode digital pilihan Anda.</p>
+            </div>
+            <div class="relative pl-6 border-l border-[#173B35]/20">
+              <span class="text-[#4F7465] font-bold text-sm tracking-widest absolute -left-[-1px] top-0 -translate-x-full pr-6">04</span>
+              <h3 class="text-xl font-bold text-[#1D2724] mb-3">Scan QR</h3>
+              <p class="text-[#66706C] text-sm leading-relaxed">Tunjukkan e-ticket pada petugas di gerbang masuk, dan nikmati waktu Anda.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Maps Location -->
+    <section class="py-24 bg-white">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row gap-12 items-center">
+          <div class="w-full md:w-1/3">
+            <div class="flex items-center gap-3 text-[#173B35] mb-4">
+              <MapPin class="w-8 h-8" />
+              <h2 class="text-3xl font-bold">Lokasi Kami</h2>
+            </div>
+            <p class="text-lg text-[#66706C] mb-6">
+              Telaga Sarangan berlokasi di lereng Gunung Lawu, Kabupaten Magetan, Jawa Timur. Akses jalan yang mulus menjadikannya destinasi yang mudah dikunjungi.
+            </p>
+            <div class="bg-[#F7F5EF] p-6 rounded-xl border border-[#173B35]/10">
+              <h4 class="font-bold text-[#1D2724] mb-2">Alamat</h4>
+              <p class="text-[#66706C] text-sm leading-relaxed">
+                Jl. Raya Telaga Sarangan,<br/>
+                Kec. Plaosan, Kabupaten Magetan,<br/>
+                Jawa Timur 63361
+              </p>
+            </div>
+          </div>
+          <div class="w-full md:w-2/3 h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-lg border border-[#173B35]/10">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15814.708891583348!2d111.2064972!3d-7.6653878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e798e3b48455555%3A0x6b29eb9e4f526367!2sTelaga%20Sarangan!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid" 
+              width="100%" 
+              height="100%" 
+              style="border:0;" 
+              allowfullscreen="false" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Storytelling Tambahan -->
+    <section class="py-24 bg-[#173B35] text-white">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+          <div>
+            <h2 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">Keindahan yang menanti untuk dijelajahi.</h2>
+            <p class="text-lg text-white/80 mb-8 max-w-md">Jalan setapak berkabut, aroma pinus, dan udara pagi yang segar. Sarangan bukan sekadar tempat, melainkan ruang untuk kembali terhubung dengan alam.</p>
+          </div>
+          <div class="h-[500px] rounded-2xl overflow-hidden shadow-xl">
+            <img src="/images/sarangan-trail-2.png" alt="Keindahan Sarangan" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Akhir -->
+    <section class="py-32 bg-[#F7F5EF] text-center border-b border-[#173B35]/10">
+      <div class="mx-auto max-w-[800px] px-5">
+        <h2 class="text-4xl md:text-5xl font-bold text-[#173B35] mb-6">Siap menikmati Sarangan?</h2>
+        <p class="text-xl text-[#66706C] mb-10">Pesan tiketmu sekarang sebelum berangkat, dan rasakan kemudahannya.</p>
+        <router-link
+          to="/login"
+          class="inline-flex items-center justify-center rounded-lg bg-[#173B35] px-10 py-5 text-lg font-bold text-white transition-colors hover:bg-[#1D2724]"
+        >
+          Pesan Tiket
+        </router-link>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-16">
+      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#173B35] text-white">
+              <MountainSnow class="h-6 w-6" />
+            </div>
+            <div>
+              <span class="block text-xl font-bold text-[#173B35]">{{ t('app.name') }}</span>
+              <span class="block text-sm text-[#66706C]">Sistem Tiket Wisata Digital</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap justify-center gap-8 text-sm font-semibold text-[#1D2724]">
+            <a href="#beranda" class="hover:text-[#C9965B]">Beranda</a>
+            <a href="#tiket" class="hover:text-[#C9965B]">Tiket</a>
+            <a href="#tentang" class="hover:text-[#C9965B]">Tentang</a>
+            <router-link to="/login" class="hover:text-[#C9965B]">Pesan Tiket</router-link>
+          </div>
+        </div>
+        
+        <div class="pt-8 border-t border-[#173B35]/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#8B928F]">
+          <p>&copy; {{ new Date().getFullYear() }} {{ t('app.name') }}. Pariwisata Magetan.</p>
         </div>
       </div>
     </footer>

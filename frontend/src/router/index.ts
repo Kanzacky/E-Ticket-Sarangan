@@ -41,17 +41,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/wisatawan',
-    component: () => import('@/layouts/DashboardLayout.vue'),
+    component: () => import('@/layouts/WisatawanLayout.vue'),
     meta: { requiresAuth: true, role: 'wisatawan' as UserRole },
     children: [
       {
         path: '',
-        redirect: '/my-bookings',
+        redirect: '/wisatawan/dashboard',
       },
       {
         path: 'dashboard',
         name: 'wisatawan.dashboard',
-        component: () => import('@/views/booking/MyBookingsView.vue'),
+        component: () => import('@/views/wisatawan/DashboardView.vue'),
       },
       {
         path: 'booking',
@@ -87,7 +87,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/petugas',
-    component: () => import('@/layouts/DashboardLayout.vue'),
+    component: () => import('@/layouts/PetugasLayout.vue'),
     meta: { requiresAuth: true, role: 'petugas' as UserRole },
     children: [
       {
@@ -114,7 +114,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    component: () => import('@/layouts/DashboardLayout.vue'),
+    component: () => import('@/layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, role: 'admin' as UserRole },
     children: [
       {

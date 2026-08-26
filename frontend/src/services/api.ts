@@ -24,6 +24,8 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
+  withCredentials: true,
+  withXSRFToken: true,
 })
 
 api.interceptors.request.use((config) => {
@@ -79,6 +81,9 @@ export const getHealth = () =>
   api.get<HealthResponse>('/health').then((response) => response.data)
 
 // --- Auth Endpoints ---
+
+export const getCsrfCookie = () => 
+  axios.get(apiBaseUrl ? apiBaseUrl.replace('/api', '/sanctum/csrf-cookie') : '/sanctum/csrf-cookie', { withCredentials: true })
 
 export interface AuthUser {
   id: number

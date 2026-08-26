@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { LoaderCircle } from 'lucide-vue-next'
+import { LoaderCircle, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next'
 import { reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-
 import axios from 'axios'
-
 import { useAuthStore } from '@/stores/auth'
 
-const { t } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -18,6 +14,7 @@ const form = reactive({
 })
 
 const errorMsg = ref('')
+const showPassword = ref(false)
 
 async function handleSubmit() {
   errorMsg.value = ''
@@ -36,62 +33,117 @@ async function handleSubmit() {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMsg.value = error.response.data.message as string
     } else {
-      errorMsg.value = t('auth.loginError')
+      errorMsg.value = 'Email atau password tidak valid.'
     }
   }
 }
 </script>
 
 <template>
-  <main class="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white px-6 py-12">
-    <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 class="text-2xl font-bold text-slate-900">{{ t('auth.loginTitle') }}</h1>
-      
-      <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
-        {{ errorMsg }}
-      </div>
+  <main class="min-h-screen bg-white font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white flex flex-col lg:flex-row">
+    
+    <!-- Mobile/Tablet Banner (Hidden on lg) -->
+    <div class="lg:hidden w-full h-48 sm:h-64 relative">
+      <img src="/images/sarangan-hero-2.jpg" alt="Sarangan" class="w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-[#1D2724]/40"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+    </div>
 
-      <form class="mt-6 space-y-4" @submit.prevent="handleSubmit">
+    <!-- Form Section -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-24 relative">
+      <div class="w-full max-w-[440px]">
+        
+        <!-- Back Navigation -->
+        <router-link to="/" class="inline-flex items-center gap-2 text-sm font-medium text-[#66706C] hover:text-[#173B35] transition-colors mb-12">
+          <ArrowLeft class="w-4 h-4" />
+          Kembali ke Beranda
+        </router-link>
+
         <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700" for="email">{{ t('auth.email') }}</label>
-          <input
-            id="email"
-            v-model="form.email"
-            type="email"
-            required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
-            :disabled="authStore.isLoading"
-          />
+          <h1 class="text-3xl font-bold text-[#173B35] tracking-tight mb-2">Selamat datang kembali</h1>
+          <p class="text-[#66706C]">Masuk untuk melanjutkan pemesanan tiket Sarangan.</p>
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium text-slate-700" for="password">{{ t('auth.password') }}</label>
-          <input
-            id="password"
-            v-model="form.password"
-            type="password"
-            required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
-            :disabled="authStore.isLoading"
-          />
+        
+        <div v-if="errorMsg" class="mt-8 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100/50 flex items-start gap-3">
+          <span class="mt-0.5">⚠️</span>
+          {{ errorMsg }}
         </div>
-        <button
-          type="submit"
-          class="flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700 disabled:opacity-70"
-          :disabled="authStore.isLoading"
-        >
-          <LoaderCircle v-if="authStore.isLoading" class="h-4 w-4 animate-spin" />
-          {{ t('auth.loginTitle') }}
-        </button>
-      </form>
 
-      <div class="mt-6 text-center text-sm text-slate-600">
-        {{ t('auth.noAccount') }}
-        <router-link to="/register" class="font-medium text-sky-600 hover:text-sky-700">{{ t('auth.registerTitle') }}</router-link>
-      </div>
+        <form class="mt-8 space-y-5" @submit.prevent="handleSubmit">
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-[#1D2724]" for="email">Email</label>
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="Masukkan email"
+              class="w-full rounded-xl border border-[#173B35]/20 bg-white px-4 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+              :disabled="authStore.isLoading"
+            />
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-[#1D2724]" for="password">Password</label>
+            <div class="relative">
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                autocomplete="current-password"
+                placeholder="Masukkan password"
+                class="w-full rounded-xl border border-[#173B35]/20 bg-white pl-4 pr-12 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+                :disabled="authStore.isLoading"
+              />
+              <button 
+                type="button" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#66706C] hover:text-[#1D2724] focus:outline-none rounded-md"
+                @click="showPassword = !showPassword"
+                title="Toggle password visibility"
+              >
+                <EyeOff v-if="showPassword" class="w-4 h-4" />
+                <Eye v-else class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
 
-      <div class="mt-4 text-center text-sm">
-        <router-link to="/" class="font-medium text-slate-400 hover:text-slate-600">{{ t('common.back') }}</router-link>
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#173B35] px-4 py-3.5 text-sm font-bold text-white transition-all hover:bg-[#1D2724] hover:shadow-lg hover:shadow-[#173B35]/20 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none"
+              :disabled="authStore.isLoading"
+            >
+              <template v-if="authStore.isLoading">
+                <LoaderCircle class="h-4 w-4 animate-spin" />
+                <span>Memproses...</span>
+              </template>
+              <template v-else>
+                <span>Masuk</span>
+              </template>
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-8 text-center text-sm text-[#66706C]">
+          Belum punya akun?
+          <router-link to="/register" class="font-bold text-[#173B35] hover:text-[#4F7465] transition-colors ml-1">
+            Daftar sekarang
+          </router-link>
+        </div>
       </div>
     </div>
+
+    <!-- Visual Section (Desktop) -->
+    <div class="hidden lg:block lg:w-1/2 relative bg-[#1D2724]">
+      <img 
+        src="/images/sarangan-story-2.jpg" 
+        alt="Pemandangan Sarangan" 
+        class="h-full w-full object-cover opacity-90"
+      />
+      <div class="absolute inset-0 bg-gradient-to-tr from-[#173B35]/60 to-transparent"></div>
+    </div>
+
   </main>
 </template>
