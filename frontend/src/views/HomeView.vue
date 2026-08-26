@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { LoaderCircle, MountainSnow, Ticket } from 'lucide-vue-next'
+import { History, LoaderCircle, MountainSnow, PlusCircle, Ticket } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import { useApiHealth } from '@/composables/useApiHealth'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 const { status, data, message } = useApiHealth()
 </script>
 
@@ -18,23 +20,42 @@ const { status, data, message } = useApiHealth()
         </div>
         <span class="text-lg font-semibold text-slate-800">{{ t('app.name') }}</span>
       </div>
+
       <nav class="flex items-center gap-3">
-        <router-link
-          to="/login"
-          class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-100 hover:text-sky-700"
-        >
-          {{ t('nav.login') }}
-        </router-link>
-        <router-link
-          to="/register"
-          class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
-        >
-          {{ t('nav.register') }}
-        </router-link>
+        <template v-if="authStore.isAuthenticated">
+          <router-link
+            to="/my-bookings"
+            class="flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-50 hover:text-sky-700"
+          >
+            <History class="h-4 w-4" />
+            Tiket Saya
+          </router-link>
+          <router-link
+            to="/booking"
+            class="flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
+          >
+            <PlusCircle class="h-4 w-4" />
+            Pesan Tiket
+          </router-link>
+        </template>
+        <template v-else>
+          <router-link
+            to="/login"
+            class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-100 hover:text-sky-700"
+          >
+            {{ t('nav.login') }}
+          </router-link>
+          <router-link
+            to="/register"
+            class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
+          >
+            {{ t('nav.register') }}
+          </router-link>
+        </template>
       </nav>
     </header>
 
-    <section class="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+    <section class="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
       <div
         class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-200"
       >
@@ -46,6 +67,25 @@ const { status, data, message } = useApiHealth()
         {{ t('app.inotek') }}
       </span>
 
+      <!-- Action Buttons CTA -->
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <router-link
+          to="/booking"
+          class="flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-base font-semibold text-white shadow-md shadow-sky-200 transition hover:bg-sky-700"
+        >
+          <PlusCircle class="h-5 w-5" />
+          Pesan Tiket Sekarang
+        </router-link>
+        <router-link
+          to="/my-bookings"
+          class="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
+          <Ticket class="h-5 w-5 text-sky-600" />
+          Riwayat Booking
+        </router-link>
+      </div>
+
+      <!-- System Status Card -->
       <div class="mt-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
         <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('home.status.title') }}</h2>
 

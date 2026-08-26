@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\TicketCategory;
+use App\Models\TicketType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -42,6 +43,37 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'wisatawan',
                 'phone' => '083333333333',
+            ]
+        );
+
+        // Default Ticket Types (Fase Pemesanan)
+        TicketType::firstOrCreate(
+            ['name' => 'Tiket Dewasa'],
+            [
+                'description' => 'Tiket masuk untuk pengunjung dewasa (> 12 tahun)',
+                'price' => 20000,
+                'quota' => 500,
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        TicketType::firstOrCreate(
+            ['name' => 'Tiket Anak'],
+            [
+                'description' => 'Tiket masuk untuk anak-anak (usia 3 - 12 tahun)',
+                'price' => 10000,
+                'quota' => 300,
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        TicketType::firstOrCreate(
+            ['name' => 'Tiket Mancanegara'],
+            [
+                'description' => 'Tiket masuk untuk wisatawan mancanegara / WNA',
+                'price' => 50000,
+                'quota' => 100,
+                'status' => 'ACTIVE',
             ]
         );
 

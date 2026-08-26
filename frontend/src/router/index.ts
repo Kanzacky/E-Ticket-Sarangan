@@ -22,24 +22,46 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true, guest: true },
   },
   {
+    path: '/booking',
+    name: 'booking',
+    component: () => import('@/views/booking/BookingView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/booking/success/:orderCode',
+    name: 'booking.success',
+    component: () => import('@/views/booking/BookingSuccessView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/my-bookings',
+    name: 'my-bookings',
+    component: () => import('@/views/booking/MyBookingsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/wisatawan',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true, role: 'wisatawan' as UserRole },
     children: [
       {
+        path: '',
+        redirect: '/my-bookings',
+      },
+      {
         path: 'dashboard',
         name: 'wisatawan.dashboard',
-        component: () => import('@/views/wisatawan/DashboardView.vue'),
+        component: () => import('@/views/booking/MyBookingsView.vue'),
       },
       {
         path: 'booking',
         name: 'wisatawan.booking',
-        component: () => import('@/views/wisatawan/BookingView.vue'),
+        component: () => import('@/views/booking/BookingView.vue'),
       },
       {
         path: 'tickets',
         name: 'wisatawan.tickets',
-        component: () => import('@/views/wisatawan/TicketsView.vue'),
+        component: () => import('@/views/booking/MyBookingsView.vue'),
       },
       {
         path: 'tickets/:id',
@@ -49,7 +71,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'history',
         name: 'wisatawan.history',
-        component: () => import('@/views/wisatawan/HistoryView.vue'),
+        component: () => import('@/views/booking/MyBookingsView.vue'),
       },
       {
         path: 'profile',
