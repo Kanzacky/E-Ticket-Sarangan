@@ -2,7 +2,6 @@
 import {
   AlertCircle,
   Calendar,
-  Check,
   ChevronRight,
   Info,
   LoaderCircle,

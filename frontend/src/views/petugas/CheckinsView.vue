@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { Calendar, Clock, CheckCircle2, XCircle, QrCode, Search, Ticket, Users } from 'lucide-vue-next'
+import { Clock, CheckCircle2, XCircle, QrCode, Search, Ticket, Users } from 'lucide-vue-next'
 import { getScanHistoryApi } from '@/services/scanner.service'
-import { formatDateTime, formatDate } from '@/utils/formatters'
+import { formatDateTime } from '@/utils/formatters'
 
 const logs = ref<any[]>([])
 const isLoading = ref(true)
