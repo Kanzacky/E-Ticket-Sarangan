@@ -3,7 +3,6 @@ import {
   CreditCard, 
   History, 
   Leaf, 
-  LoaderCircle, 
   MountainSnow, 
   PlusCircle, 
   Ticket, 
@@ -13,12 +12,10 @@ import {
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
-import { useApiHealth } from '@/composables/useApiHealth'
 import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
-const { status, data } = useApiHealth()
 
 const features = [
   {
@@ -194,8 +191,8 @@ const tickets = [
     <!-- Footer & System Status -->
     <footer class="bg-slate-900 pt-20 pb-10 px-6 lg:px-12 text-slate-400">
       <div class="mx-auto max-w-7xl">
-        <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4 mb-16">
-          <div class="lg:col-span-2">
+        <div class="grid gap-12 md:grid-cols-3 mb-16">
+          <div class="md:col-span-2">
             <div class="flex items-center gap-2 mb-6 text-white">
               <MountainSnow class="h-6 w-6" />
               <span class="text-xl font-bold tracking-wide">{{ t('app.name') }}</span>
@@ -212,27 +209,6 @@ const tickets = [
               <li><router-link to="/login" class="hover:text-white transition">Login Wisatawan</router-link></li>
               <li><router-link to="/register" class="hover:text-white transition">Daftar Akun</router-link></li>
             </ul>
-          </div>
-
-          <!-- System Status Compact -->
-          <div>
-            <h4 class="text-white font-semibold mb-6">Status Sistem</h4>
-            <div class="space-y-3 rounded-2xl bg-slate-800/50 p-5 border border-slate-700/50">
-              <div class="flex items-center justify-between">
-                <span class="text-sm">Frontend</span>
-                <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm">API Server</span>
-                <LoaderCircle v-if="status === 'checking'" class="h-3 w-3 animate-spin text-sky-500" />
-                <div v-else-if="status === 'connected'" class="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-                <div v-else class="h-2.5 w-2.5 rounded-full bg-red-500"></div>
-              </div>
-              <div v-if="status === 'connected'" class="flex items-center justify-between">
-                <span class="text-sm">Database</span>
-                <div :class="['h-2.5 w-2.5 rounded-full', data?.database === 'connected' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-red-500']"></div>
-              </div>
-            </div>
           </div>
         </div>
 
