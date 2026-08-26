@@ -1,238 +1,164 @@
-# e-Ticket Sarangan
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/ticket.svg" width="80" alt="Ticket Icon" />
+  <h1>e-Ticket Sarangan</h1>
+  <p>Sistem Digital Ticketing dan Manajemen Pengunjung untuk Wisata Telaga Sarangan<br/><b>Pemenang INOTEK Award 2026</b></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D" alt="Vue.js" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
+    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  </p>
+</div>
 
-Sistem digital ticketing dan manajemen pengunjung untuk wisata Sarangan — **INOTEK Award 2026**.
+---
 
-## Architecture
+## 📋 Ikhtisar Proyek
 
-```
-Vue 3 (frontend / SPA)
-   │
-   │ Axios
-   ▼
-Laravel 12 REST API (/api)
-   │
-   │ Eloquent
-   ▼
-PostgreSQL (Supabase-ready)
-```
+**e-Ticket Sarangan** adalah platform manajemen tiket berbasis web yang dirancang untuk modernisasi infrastruktur pariwisata Telaga Sarangan. Sistem ini menggunakan arsitektur monorepo yang memisahkan *backend* (API) dan *frontend* (SPA) dengan performa tinggi.
 
-Frontend dan backend dipisah dalam satu monorepo:
+Sistem ini mendukung integrasi gerbang pembayaran otomatis, pembuatan QR Code tiket, dan manajemen pengunjung secara terpusat untuk berbagai peran pengguna (Wisatawan, Petugas, dan Administrator).
 
-```
-e-ticket-sarangan/
-├── backend/     # Laravel 12 REST API
-├── frontend/    # Vue 3 + TypeScript SPA
-├── docs/        # Dokumentasi teknis
-└── README.md
-```
+## 🏗 Arsitektur Sistem
 
-## Database
+Aplikasi ini menggunakan pendekatan arsitektur klien-peladen (*client-server*) modern:
 
-Database: **Supabase PostgreSQL** (main database).
-
-Architecture:
-
-```
-Vue
- ↓
-Laravel REST API
- ↓
-Eloquent
- ↓
-Supabase PostgreSQL
+```mermaid
+graph TD;
+    Vue["Vue 3 (Frontend SPA)"] -->|Axios REST| Laravel["Laravel 12 (REST API)"];
+    Laravel -->|Eloquent ORM| Postgres["Supabase PostgreSQL"];
+    Laravel <-->|Webhook| Midtrans["Midtrans Payment Gateway"];
 ```
 
-Environment setup (backend) — isi dengan nilai Supabase Anda, jangan commit nilai asli:
+Struktur Monorepo:
+- `backend/` : Layanan REST API berbasis Laravel 12 dan PHP 8.3+.
+- `frontend/` : Antarmuka Single Page Application berbasis Vue 3, Vite, dan TypeScript.
+- `docs/` : Dokumentasi teknis terperinci.
 
-```env
-DB_CONNECTION=pgsql
-DB_HOST=<SUPABASE_HOST>
-DB_PORT=5432
-DB_DATABASE=postgres
-DB_USERNAME=<SUPABASE_USERNAME>
-DB_PASSWORD=<SUPABASE_PASSWORD>
-DB_SSLMODE=require
-```
+## 💻 Tumpukan Teknologi (Tech Stack)
 
-> Gunakan **Supabase pooler** (session `5432` / transaction `6543`) untuk akses
-> IPv4 yang stabil. Format username pooler: `postgres.<project_reference>`.
-> Detail lengkap: `docs/supabase.md`.
+### Antarmuka (Frontend)
+- **Framework:** Vue 3 (Composition API)
+- **Bahasa:** TypeScript (Strict Mode)
+- **Build Tool:** Vite
+- **Manajemen State:** Pinia
+- **Pengaturan Rute:** Vue Router
+- **HTTP Client:** Axios
+- **Gaya Desain:** Tailwind CSS
+- **Ikonografi:** Lucide Vue Next
 
-## Tech Stack
+### Layanan Latar Belakang (Backend)
+- **Framework:** Laravel 12
+- **Bahasa:** PHP 8.3+
+- **Keamanan:** Laravel Sanctum (Autentikasi Berbasis Token)
+- **Basis Data:** PostgreSQL (Optimasi untuk Supabase)
+- **Payment Gateway:** Midtrans Snap API
 
-### Frontend — `frontend/`
+## ⚙️ Persyaratan Sistem (Prerequisites)
 
-- Vue 3 (Composition API, `<script setup lang="ts">`)
-- TypeScript (strict)
-- Vite
-- Vue Router
-- Pinia
-- Axios
-- Tailwind CSS
-- Vue I18n (default `id`, fallback `en`)
-- Lucide Vue Next
+Sebelum melakukan instalasi, pastikan sistem Anda telah memiliki komponen berikut:
 
-### Backend — `backend/`
+- PHP versi 8.3 atau yang lebih baru (dengan ekstensi `pdo_pgsql`, `pgsql`).
+- Composer versi 2.x.
+- Node.js versi 20.19 atau yang lebih baru (versi 22 disarankan).
+- NPM versi 10 atau yang lebih baru.
+- Layanan PostgreSQL (Bisa menggunakan instalasi lokal atau layanan *cloud* seperti Supabase).
 
-- Laravel 12
-- PHP 8.3
-- Laravel Sanctum
-- Eloquent ORM
-- PostgreSQL (Supabase-ready)
+## 🚀 Panduan Instalasi
 
-## Prerequisites
-
-- PHP >= 8.3 (dengan ekstensi `pdo_pgsql`, `pgsql`)
-- Composer 2.x
-- Node.js >= 20.19 (Node 22 disarankan)
-- npm 10+
-- PostgreSQL (lokal atau Supabase)
-
-## Installation
-
-### 1. Clone / masuk direktori project
+### 1. Kloning Repositori
 
 ```bash
-cd D:\Project\e-ticket-sarangan
+git clone https://github.com/Kanzacky/E-Ticket-Sarangan.git
+cd E-Ticket-Sarangan
 ```
 
-### 2. Backend
+### 2. Konfigurasi Backend
+
+Masuk ke direktori backend dan jalankan perintah instalasi dependensi:
 
 ```bash
 cd backend
 composer install
-
-# siapkan environment
-copy .env.example .env    # Windows
-# cp .env.example .env    # Linux/Mac
-
-php artisan key:generate
-
-# default menggunakan PostgreSQL lokal (lihat docs/database.md)
-# contoh: buat database e_ticket_sarangan lalu sesuaikan .env
-
-php artisan migrate
-php artisan serve          # http://localhost:8000
 ```
 
-### 3. Frontend
+Salin pengaturan lingkungan dan sesuaikan nilainya:
 
 ```bash
-cd frontend
-npm install
-
-# siapkan environment
-copy .env.example .env    # Windows
-# cp .env.example .env    # Linux/Mac
-
-npm run dev                # http://localhost:5173
+cp .env.example .env
+php artisan key:generate
 ```
 
-## Verifikasi Fase 1
+Ubah berkas `.env` Anda dengan kredensial basis data PostgreSQL Anda. Setelah selesai, jalankan migrasi:
 
-1. Buka `http://localhost:5173` → halaman beranda menampilkan status frontend.
-2. Kartu status mengecek `GET /api/health` → tampil **API: Terhubung**.
-3. Endpoint health langsung: `http://localhost:8000/api/health`
+```bash
+php artisan migrate
+php artisan serve
+```
+Layanan API akan berjalan di `http://localhost:8000`.
 
-## Testing
+### 3. Konfigurasi Frontend
 
-### Backend
+Masuk ke direktori frontend:
 
+```bash
+cd ../frontend
+npm install
+```
+
+Salin pengaturan lingkungan:
+
+```bash
+cp .env.example .env
+```
+
+Jalankan server pengembangan:
+
+```bash
+npm run dev
+```
+Aplikasi klien akan berjalan di `http://localhost:5173`.
+
+## 🧪 Pengujian Perangkat Lunak (Testing)
+
+Kami menjaga kualitas kode perangkat lunak melalui pengujian otomatis (*automated testing*).
+
+**Pengujian Backend (PHPUnit):**
 ```bash
 cd backend
 php artisan test
-# ./vendor/bin/pint --test   # code style (Laravel Pint)
 ```
 
-### Frontend
-
+**Pengujian Frontend:**
 ```bash
 cd frontend
-npm run lint        # ESLint
-npm run type-check  # Vue + TypeScript strict
-npm run build       # production build
+npm run type-check  # Pengecekan tipe data statis
+npm run lint        # Analisis kualitas kode sumber
 ```
 
-## API Overview
+## 🔐 Manajemen Akses dan Peran (Role-Based Access Control)
 
-Base URL: `/api`
+Sistem ini memfasilitasi tiga lapisan hak akses:
 
-| Method | Endpoint | Deskripsi |
-|---|---|---|
-| GET | `/api/health` | Health check aplikasi + database |
-| POST | `/api/auth/login` | Login user |
-| POST | `/api/auth/register` | Registrasi user |
+| Peran | Deskripsi Fungsionalitas |
+|:---|:---|
+| **Wisatawan** | Memiliki akses untuk melakukan reservasi tiket, melihat status pembayaran, dan menampilkan QR Code tiket digital. |
+| **Petugas** | Memiliki kewenangan untuk memindai QR Code, memvalidasi tiket masuk, dan melakukan pencatatan (*check-in*) kehadiran. |
+| **Administrator** | Memiliki kendali penuh atas manajemen harga tiket, pemantauan transaksi, pelaporan, dan audit aktivitas. |
 
-Response format konsisten: `{ success, message, data, meta }`.
-Lihat `docs/api.md` untuk detail dan roadmap endpoint.
+## 🌐 Dokumentasi API
 
-## Role & Permission
+Layanan antarmuka pemrograman aplikasi berakar pada URL awalan `/api`. Respons data selalu dibungkus dalam format standar JSON yang konsisten: `{ success, message, data, meta }`.
 
-Fase 1 belum mengimplementasikan autentikasi penuh. Rencana tiga role:
+Untuk penjelasan mendalam mengenai setiap rute REST (seperti `/api/auth/register`, `/api/orders`, `/api/payments/midtrans/notification`), silakan rujuk berkas [Dokumentasi API](docs/api.md) kami.
 
-| Role | Deskripsi |
-|---|---|
-| `wisatawan` | Melakukan booking, melihat tiket & status pembayaran |
-| `petugas` | Scan QR, validasi & check-in tiket |
-| `admin` | Manajemen sistem, laporan, analitik |
+## 📚 Tautan Dokumentasi Tambahan
 
-Infrastruktur tersedia: Sanctum terpasang, `app/Policies` dan
-`app/Http/Middleware` disiapkan di `backend/`.
+- [Arsitektur Perangkat Lunak](docs/architecture.md)
+- [Struktur Skema Basis Data](docs/database.md)
+- [Konfigurasi Cloud Supabase](docs/supabase.md)
 
-## Localization
-
-- Bahasa default: **Indonesia (`id`)**.
-- Bahasa kedua: **English (`en`)**.
-- File: `frontend/src/locales/{id,en}.json`.
-- Semua teks UI memakai translation key (mis. `{{ t('common.save') }}`).
-- Format tanggal `DD MMMM YYYY`, waktu 24-jam, mata uang `IDR` (Intl API) — lihat `frontend/src/utils/formatters.ts`.
-
-## Environment
-
-Salin `.env.example` → `.env` di masing-masing direktori dan sesuaikan.
-
-`backend/.env.example` (ringkas):
-
-```env
-APP_NAME="e-Ticket Sarangan"
-APP_ENV=local
-APP_LOCALE=id
-APP_FALLBACK_LOCALE=en
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=e_ticket_sarangan
-DB_USERNAME=postgres
-DB_PASSWORD=
-
-SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173
-FRONTEND_URL=http://localhost:5173
-
-MIDTRANS_SERVER_KEY=
-MIDTRANS_CLIENT_KEY=
-MIDTRANS_IS_PRODUCTION=false
-```
-
-`frontend/.env.example`:
-
-```env
-VITE_APP_NAME="e-Ticket Sarangan"
-VITE_API_URL=http://localhost:8000/api
-VITE_DEFAULT_LOCALE=id
-```
-
-> Jangan pernah meng-commit `.env`. Kredensial asli (Supabase, Midtrans) hanya
-> disimpan di `.env` lokal. Lihat `docs/supabase.md` untuk panduan alih ke Supabase.
-
-## Documentation
-
-- `docs/architecture.md` — arsitektur & tanggung jawab layer
-- `docs/database.md` — schema, konvensi, koneksi
-- `docs/api.md` — format response & daftar endpoint
-- `docs/supabase.md` — setup & alih koneksi ke Supabase
-
-## Deployment
-
-(Disiapkan pada fase berikutnya — struktur, env, dan build sudah siap untuk
-deploy backend ke host PHP/Laravel dan frontend ke static hosting/edge.)
+---
+<div align="center">
+  <p>Dikembangkan untuk mendukung pariwisata <b>Telaga Sarangan</b>.</p>
+</div>
