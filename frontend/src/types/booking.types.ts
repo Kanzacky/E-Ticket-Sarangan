@@ -46,6 +46,9 @@ export interface Order {
   total_quantity: number
   total_amount: number
   status: OrderStatus
+  payment_id?: string | null
+  payment_url?: string | null
+  qr_expires_at?: string | null
   created_at: string
   updated_at?: string
   items?: OrderItem[]

@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
+import QrcodeVue from 'qrcode.vue'
 
 import { getMyOrdersApi } from '@/services/order.service'
 import type { Order, OrderStatus } from '@/types/booking.types'
@@ -347,12 +348,25 @@ function closeDetail() {
             </div>
           </div>
           
+          <!-- Action for PENDING -->
+          <div v-if="selectedOrder.status === 'PENDING' && selectedOrder.payment_url" class="pt-6 border-t border-[#173B35]/10 flex flex-col items-center">
+            <p class="text-sm font-bold text-orange-600 mb-3 text-center">Tiket belum dibayar.</p>
+            <a 
+              :href="selectedOrder.payment_url" 
+              class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#C9965B] py-3.5 text-sm font-bold text-[#173B35] shadow-md hover:bg-[#b0814a] transition-all"
+            >
+              Bayar Sekarang
+            </a>
+            <p class="mt-3 text-center text-xs text-[#66706C]">Segera selesaikan pembayaran untuk mendapatkan QR Code tiket Anda.</p>
+          </div>
+          
           <!-- QR Placeholder for PAID -->
           <div v-if="selectedOrder.status === 'PAID'" class="pt-6 border-t border-[#173B35]/10 flex flex-col items-center justify-center text-center">
-            <div class="w-40 h-40 bg-white border-4 border-[#173B35] rounded-xl flex items-center justify-center mb-3">
-              <QrCode class="w-16 h-16 text-[#173B35]" />
+            <div class="bg-white p-3 border-2 border-[#173B35]/20 rounded-xl mb-3 shadow-sm inline-block">
+              <qrcode-vue :value="selectedOrder.order_code" :size="160" level="H" />
             </div>
             <p class="text-xs font-bold text-[#66706C] max-w-xs">Tunjukkan QR Code ini kepada petugas di pintu masuk telaga Sarangan.</p>
+            <p v-if="selectedOrder.qr_expires_at" class="mt-2 text-xs font-bold text-red-500">Kedaluwarsa: {{ formatDate(selectedOrder.qr_expires_at) }} 23:59</p>
           </div>
         </div>
       </div>

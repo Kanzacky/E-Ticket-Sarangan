@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('orders')) {
-            $table->timestamp('scanned_at')->nullable();
-            $table->foreignId('scanned_by')->nullable()->constrained('users')->nullOnDelete();
+            Schema::table('orders', function (Blueprint $table) {
+                $table->timestamp('scanned_at')->nullable();
+                $table->foreignId('scanned_by')->nullable()->constrained('users')->nullOnDelete();
+            });
         }
     }
 
@@ -23,8 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('orders')) {
-            $table->dropForeign(['scanned_by']);
-            $table->dropColumn(['scanned_at', 'scanned_by']);
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropForeign(['scanned_by']);
+                $table->dropColumn(['scanned_at', 'scanned_by']);
+            });
         }
     }
 };

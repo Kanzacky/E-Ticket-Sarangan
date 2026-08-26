@@ -34,6 +34,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/booking/:orderCode/success',
+    redirect: (to) => {
+      return { path: `/booking/success/${to.params.orderCode}` }
+    }
+  },
+  {
     path: '/my-bookings',
     name: 'my-bookings',
     component: () => import('@/views/booking/MyBookingsView.vue'),
@@ -193,8 +199,13 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore()
+  
+  if (!authStore.isInitialized) {
+    await authStore.initialize()
+  }
+
   const isPublic = to.meta.public === true
 
   if (isPublic && !to.meta.guest) {

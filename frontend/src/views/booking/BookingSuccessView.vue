@@ -8,9 +8,12 @@ import {
   Home,
   LoaderCircle,
   Ticket,
+  QrCode,
+  ExternalLink,
 } from 'lucide-vue-next'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import QrcodeVue from 'qrcode.vue'
 
 import axios from 'axios'
 
@@ -72,8 +75,9 @@ function copyOrderCode() {
       <div v-else-if="errorMessage" class="rounded-3xl border border-red-200 bg-white p-8 text-center shadow-sm">
         <p class="text-sm font-semibold text-red-600">{{ errorMessage }}</p>
         <router-link
+        <router-link
           to="/"
-          class="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-900"
+          class="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#173B35] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#1D2724]"
         >
           <Home class="h-4 w-4" /> Kembali ke Beranda
         </router-link>
@@ -82,12 +86,12 @@ function copyOrderCode() {
       <!-- Success Card -->
       <div v-else-if="order" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-md">
         <!-- Top Banner -->
-        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 px-6 py-8 text-center text-white">
+        <div class="bg-[#173B35] px-6 py-8 text-center text-white">
           <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-inner">
             <CheckCircle2 class="h-10 w-10 text-white" />
           </div>
-          <h1 class="mt-4 text-2xl font-extrabold tracking-tight">Booking Berhasil Dibuat</h1>
-          <p class="mt-1 text-sm text-emerald-100">Pesanan Anda telah tercatat dalam sistem e-Ticket Sarangan</p>
+          <h1 class="mt-4 text-2xl font-extrabold tracking-tight">Booking Terkirim</h1>
+          <p class="mt-1 text-sm text-[#F7F5EF]">Pesanan Anda telah tercatat dalam sistem e-Ticket Sarangan</p>
         </div>
 
         <div class="p-6 sm:p-8 space-y-6">
@@ -133,22 +137,49 @@ function copyOrderCode() {
 
             <div class="flex justify-between items-center py-3">
               <span class="text-slate-500">Status Pesanan</span>
-              <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
+              <span v-if="order.status === 'PENDING'" class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
                 MENUNGGU PEMBAYARAN
+              </span>
+              <span v-else-if="order.status === 'PAID'" class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                LUNAS
+              </span>
+              <span v-else class="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 border border-red-200">
+                {{ order.status }}
               </span>
             </div>
           </div>
 
+          <!-- Pending Payment Actions -->
+          <div v-if="order.status === 'PENDING' && order.payment_url" class="rounded-xl bg-amber-50 p-6 text-center border border-amber-200">
+            <p class="text-sm text-amber-800 font-medium mb-4">Silakan selesaikan pembayaran untuk mendapatkan QR Code tiket Anda.</p>
+            <a :href="order.payment_url" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D6AD60] px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#c29c55] transition w-full">
+              Bayar Sekarang
+              <ExternalLink class="h-4 w-4" />
+            </a>
+          </div>
+
+          <!-- QR Code Section -->
+          <div v-if="order.status === 'PAID'" class="rounded-2xl bg-slate-50 p-6 border border-slate-200/80 text-center">
+            <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center justify-center gap-2">
+              <QrCode class="h-4 w-4" /> QR Code Tiket
+            </h3>
+            <div class="flex justify-center bg-white p-4 rounded-xl border border-slate-200 inline-block shadow-sm">
+              <qrcode-vue :value="order.order_code" :size="200" level="H" />
+            </div>
+            <p class="mt-4 text-xs text-slate-500">Tunjukkan QR Code ini kepada petugas di loket masuk Sarangan.</p>
+            <p v-if="order.qr_expires_at" class="mt-1 text-xs font-medium text-red-500">Berlaku s/d: {{ formatDate(order.qr_expires_at) }} 23:59</p>
+          </div>
+
           <!-- Next Step Info -->
-          <div class="rounded-xl bg-sky-50/70 p-4 text-xs text-sky-800 border border-sky-100 leading-relaxed">
-            💡 <strong>Informasi:</strong> Saat ini tiket berstatus <em>Menunggu Pembayaran</em>. Tiket elektronik (e-Ticket) akan diterbitkan setelah pembayaran diselesaikan pada tahap berikutnya.
+          <div v-if="order.status === 'PENDING'" class="rounded-xl bg-[#F7F5EF] p-4 text-xs text-[#173B35] border border-[#173B35]/20 leading-relaxed">
+            💡 <strong>Informasi:</strong> Saat ini tiket berstatus <em>Menunggu Pembayaran</em>. Tiket elektronik (e-Ticket) akan diterbitkan setelah pembayaran diselesaikan.
           </div>
 
           <!-- Actions -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <router-link
               to="/my-bookings"
-              class="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition"
+              class="flex items-center justify-center gap-2 rounded-xl bg-[#173B35] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#1D2724] transition"
             >
               <FileText class="h-4 w-4" />
               Lihat Detail Booking

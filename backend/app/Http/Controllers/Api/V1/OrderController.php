@@ -13,6 +13,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Xendit\Configuration;
+use Xendit\Invoice\InvoiceApi;
+use Xendit\Invoice\CreateInvoiceRequest;
 
 class OrderController extends Controller
 {
@@ -121,6 +124,30 @@ class OrderController extends Controller
                 // Create Order Items
                 foreach ($orderItemsData as $itemData) {
                     $order->items()->create($itemData);
+                }
+
+                // Generate Xendit Invoice
+                Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
+                $apiInstance = new InvoiceApi();
+                
+                $createInvoiceRequest = new CreateInvoiceRequest([
+                    'external_id' => $orderCode,
+                    'amount' => $totalAmount,
+                    'payer_email' => $request->validated('customer_email'),
+                    'description' => "Pembayaran e-Ticket Sarangan - " . $orderCode,
+                    'success_redirect_url' => env('FRONTEND_URL') . "/booking/success/{$orderCode}",
+                    'failure_redirect_url' => env('FRONTEND_URL') . "/booking/success/{$orderCode}",
+                ]);
+
+                try {
+                    $result = $apiInstance->createInvoice($createInvoiceRequest);
+                    
+                    $order->payment_id = $result['id'];
+                    $order->payment_url = $result['invoice_url'];
+                    $order->save();
+                } catch (\Exception $e) {
+                    // Log Xendit error, but keep order created
+                    \Illuminate\Support\Facades\Log::error('Xendit Invoice Creation Failed: ' . $e->getMessage());
                 }
 
                 return $order->load('items.ticketType');

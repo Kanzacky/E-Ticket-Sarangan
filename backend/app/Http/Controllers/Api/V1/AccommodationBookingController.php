@@ -72,6 +72,9 @@ class AccommodationBookingController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
+        $accommodation->available_rooms -= $validated['rooms'];
+        $accommodation->save();
+
         $booking->load('accommodation');
 
         return response()->json([

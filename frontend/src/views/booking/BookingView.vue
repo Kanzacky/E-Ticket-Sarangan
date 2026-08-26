@@ -27,7 +27,6 @@ const isLoadingTickets = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 const ticketTypes = ref<TicketType[]>([])
-const showReviewModal = ref(false)
 
 // Min date: today in YYYY-MM-DD
 const today: string = new Date().toISOString().slice(0, 10)
@@ -118,7 +117,9 @@ function decrementQty(ticket: TicketType) {
   }
 }
 
-function openReview() {
+// Removed openReview function
+
+async function handleConfirmBooking() {
   errorMessage.value = ''
   if (!isFormValid.value) {
     if (totalQuantity.value === 0) {
@@ -128,10 +129,6 @@ function openReview() {
     }
     return
   }
-  showReviewModal.value = true
-}
-
-async function handleConfirmBooking() {
   isSubmitting.value = true
   errorMessage.value = ''
 
@@ -148,13 +145,17 @@ async function handleConfirmBooking() {
 
   try {
     const createdOrder = await createOrderApi(payload)
-    showReviewModal.value = false
-    void router.push({
-      name: 'booking.success',
-      params: { orderCode: createdOrder.order_code },
-    })
+    
+    // Redirect langsung ke payment gateway jika URL pembayaran Xendit tersedia
+    if (createdOrder.payment_url && createdOrder.status === 'PENDING') {
+      window.location.href = createdOrder.payment_url
+    } else {
+      void router.push({
+        name: 'booking.success',
+        params: { orderCode: createdOrder.order_code },
+      })
+    }
   } catch (error: unknown) {
-    showReviewModal.value = false
     if (axios.isAxiosError(error)) {
       const status = error.response?.status
       if (status === 401) {
@@ -190,9 +191,9 @@ async function handleConfirmBooking() {
 
         <router-link
           to="/my-bookings"
-          class="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+          class="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-[#F7F5EF]"
         >
-          <Ticket class="h-4 w-4 text-sky-600" />
+          <Ticket class="h-4 w-4 text-[#173B35]" />
           Tiket Saya
         </router-link>
       </div>
@@ -213,7 +214,7 @@ async function handleConfirmBooking() {
           <!-- Step 1: Tanggal Kunjungan -->
           <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center gap-2 mb-4">
-              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">1</span>
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">1</span>
               <h2 class="text-lg font-semibold text-slate-900">Pilih Tanggal Kunjungan</h2>
             </div>
 
@@ -228,11 +229,11 @@ async function handleConfirmBooking() {
                   type="date"
                   :min="today"
                   required
-                  class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-100"
+                  class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:bg-white focus:ring-2 focus:ring-[#173B35]/20"
                 />
               </div>
               <p class="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                <Info class="h-3.5 w-3.5 text-sky-600" /> Tiket berlaku pada tanggal yang dipilih.
+                <Info class="h-3.5 w-3.5 text-[#173B35]" /> Tiket berlaku pada tanggal yang dipilih.
               </p>
             </div>
           </div>
@@ -241,7 +242,7 @@ async function handleConfirmBooking() {
           <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">2</span>
                 <h2 class="text-lg font-semibold text-slate-900">Pilih Jenis Tiket</h2>
               </div>
               <span class="text-xs font-medium text-slate-500">Harga resmi Perda</span>
@@ -249,7 +250,7 @@ async function handleConfirmBooking() {
 
             <!-- Loading State -->
             <div v-if="isLoadingTickets" class="py-12 text-center text-slate-400">
-              <LoaderCircle class="mx-auto h-8 w-8 animate-spin text-sky-600" />
+              <LoaderCircle class="mx-auto h-8 w-8 animate-spin text-[#173B35]" />
               <p class="mt-2 text-sm">Memuat tarif tiket...</p>
             </div>
 
@@ -259,7 +260,7 @@ async function handleConfirmBooking() {
                 v-for="ticket in ticketTypes"
                 :key="ticket.id"
                 class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border p-4 transition"
-                :class="(selectedQuantities[ticket.id] ?? 0) > 0 ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 hover:border-slate-300'"
+                :class="(selectedQuantities[ticket.id] ?? 0) > 0 ? 'border-[#173B35] bg-[#F7F5EF] shadow-sm' : 'border-slate-200 hover:border-slate-300'"
               >
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
@@ -271,7 +272,7 @@ async function handleConfirmBooking() {
                   <p v-if="ticket.description" class="mt-1 text-xs text-slate-500">
                     {{ ticket.description }}
                   </p>
-                  <p class="mt-2 text-base font-bold text-sky-700">
+                  <p class="mt-2 text-base font-bold text-[#173B35]">
                     {{ formatCurrency(ticket.price) }}
                     <span class="text-xs font-normal text-slate-500">/ orang</span>
                   </p>
@@ -292,7 +293,7 @@ async function handleConfirmBooking() {
                   </span>
                   <button
                     type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-600 text-white transition hover:bg-sky-700 disabled:opacity-40"
+                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173B35] text-white transition hover:bg-[#1D2724] disabled:opacity-40"
                     :disabled="(selectedQuantities[ticket.id] ?? 0) >= ticket.quota"
                     @click="incrementQty(ticket)"
                   >
@@ -306,7 +307,7 @@ async function handleConfirmBooking() {
           <!-- Step 3: Data Pengunjung -->
           <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center gap-2 mb-4">
-              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">3</span>
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">3</span>
               <h2 class="text-lg font-semibold text-slate-900">Data Pemesan / Penanggung Jawab</h2>
             </div>
 
@@ -321,7 +322,7 @@ async function handleConfirmBooking() {
                   type="text"
                   required
                   placeholder="Contoh: Budi Santoso"
-                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
                 />
               </div>
 
@@ -336,7 +337,7 @@ async function handleConfirmBooking() {
                     type="email"
                     required
                     placeholder="nama@email.com"
-                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
                   />
                 </div>
 
@@ -350,7 +351,7 @@ async function handleConfirmBooking() {
                     type="tel"
                     required
                     placeholder="08123456789"
-                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
                   />
                 </div>
               </div>
@@ -406,97 +407,26 @@ async function handleConfirmBooking() {
 
               <div class="flex items-baseline justify-between pt-1">
                 <span class="text-base font-bold text-slate-900">Total Biaya</span>
-                <span class="text-2xl font-extrabold text-sky-600">{{ formatCurrency(totalAmount) }}</span>
+                <span class="text-2xl font-extrabold text-[#173B35]">{{ formatCurrency(totalAmount) }}</span>
               </div>
             </div>
 
             <!-- Action Button -->
             <button
               type="button"
-              class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
-              :disabled="!isFormValid"
-              @click="openReview"
+              class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#173B35] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1D2724] disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="!isFormValid || isSubmitting"
+              @click="handleConfirmBooking"
             >
-              Lanjutkan ke Review
-              <ChevronRight class="h-4 w-4" />
+              <LoaderCircle v-if="isSubmitting" class="h-4 w-4 animate-spin" />
+              <span v-else>Langsung ke Pembayaran</span>
+              <ChevronRight v-if="!isSubmitting" class="h-4 w-4" />
             </button>
 
             <p class="mt-3 text-center text-xs text-slate-400">
-              Periksa kembali data Anda sebelum melakukan konfirmasi booking.
+              Anda akan diarahkan ke halaman pembayaran aman (Xendit).
             </p>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Review & Konfirmasi -->
-    <div
-      v-if="showReviewModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity"
-    >
-      <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl sm:p-8">
-        <h3 class="text-xl font-bold text-slate-900">Review & Konfirmasi Booking</h3>
-        <p class="mt-1 text-sm text-slate-500">Pastikan rincian pesanan tiket Anda sudah benar.</p>
-
-        <!-- Pemesan Details -->
-        <div class="mt-6 rounded-xl bg-slate-50 p-4 border border-slate-200/80 space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-slate-500">Nama Pemesan:</span>
-            <span class="font-medium text-slate-900">{{ form.customer_name }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Email:</span>
-            <span class="font-medium text-slate-900">{{ form.customer_email }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">No. HP:</span>
-            <span class="font-medium text-slate-900">{{ form.customer_phone }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Tanggal Kunjungan:</span>
-            <span class="font-semibold text-sky-700">{{ formatDate(form.visit_date) }}</span>
-          </div>
-        </div>
-
-        <!-- Tiket Details -->
-        <div class="mt-4 rounded-xl border border-slate-200 p-4">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Rincian Tiket</h4>
-          <div class="space-y-2">
-            <div
-              v-for="item in selectedItems"
-              :key="item.ticketType.id"
-              class="flex justify-between text-sm"
-            >
-              <span class="text-slate-700">{{ item.ticketType.name }} ({{ item.quantity }}x)</span>
-              <span class="font-medium text-slate-900">{{ formatCurrency(item.subtotal) }}</span>
-            </div>
-          </div>
-          <div class="mt-3 border-t border-slate-100 pt-3 flex justify-between items-baseline font-bold text-slate-900">
-            <span>Total Tagihan ({{ totalQuantity }} Tiket)</span>
-            <span class="text-lg text-sky-600">{{ formatCurrency(totalAmount) }}</span>
-          </div>
-        </div>
-
-        <!-- Buttons -->
-        <div class="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-            :disabled="isSubmitting"
-            @click="showReviewModal = false"
-          >
-            Kembali
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-70"
-            :disabled="isSubmitting"
-            @click="handleConfirmBooking"
-          >
-            <LoaderCircle v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-            <Check v-else class="h-4 w-4" />
-            Konfirmasi Booking
-          </button>
         </div>
       </div>
     </div>

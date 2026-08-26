@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\TicketTypeController;
 use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\XenditWebhookController;
 
 // Prefix grup: `api` (dari withRouting apiPrefix)
 
@@ -34,6 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
 
+    // Scanner API
+    Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify']);
+    Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
+
     // Accommodation Bookings
     Route::get('/accommodation-bookings', [AccommodationBookingController::class, 'index']);
     Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store']);
@@ -41,4 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Midtrans Webhook
 Route::post('/payments/midtrans/notification', [PaymentCallbackController::class, 'handleNotification']);
+
+// Xendit Webhook
+Route::post('/payments/xendit/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']);
+Route::post('/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']); // Fallback alias
 

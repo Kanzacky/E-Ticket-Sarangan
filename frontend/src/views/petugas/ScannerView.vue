@@ -1,39 +1,112 @@
 <script setup lang="ts">
-import { ScanLine, CheckCircle, XCircle, ArrowLeft, Ticket as TicketIcon } from 'lucide-vue-next'
+import { CheckCircle, XCircle, ArrowLeft, Ticket as TicketIcon } from 'lucide-vue-next'
+import { QrcodeStream } from 'vue-qrcode-reader'
 import { ref } from 'vue'
+import { scanTicketApi } from '@/services/scanner.service'
+import type { ScanResponseData } from '@/services/scanner.service'
+import axios from 'axios'
 
 const isScanning = ref(false)
 const scanResult = ref<'idle' | 'valid' | 'invalid'>('idle')
+const invalidReason = ref('')
 
-// Mock ticket data for UI demonstration
-const mockTicket = ref({
-  code: 'ETK-20260826-ABC123',
-  name: 'Budi Santoso',
-  date: '26 Agustus 2026',
-  type: 'Dewasa',
-  qty: 2
-})
+// Ticket data from API
+const scannedData = ref<ScanResponseData | null>(null)
+
+const cameraError = ref('')
 
 function startScan() {
   isScanning.value = true
   scanResult.value = 'idle'
+  invalidReason.value = ''
+  cameraError.value = ''
+}
+
+function playSound(type: 'success' | 'error') {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    
+    if (type === 'success') {
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(800, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.05)
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.3)
+    } else {
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(150, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3)
+      gain.gain.setValueAtTime(0, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.05)
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.3)
+    }
+  } catch (e) {
+    console.warn('Audio feedback not supported', e)
+  }
+}
+
+async function onDecode(result: any) {
+  const code = Array.isArray(result) && result.length > 0 ? result[0].rawValue : (typeof result === 'string' ? result : null)
+  if (!code) return
   
-  // Simulate scanning process
-  setTimeout(() => {
+  isScanning.value = false
+  
+  try {
+    const res = await scanTicketApi(code)
+    scanResult.value = 'valid'
+    playSound('success')
+    if (res.data) {
+      scannedData.value = res.data
+    }
+  } catch (error: unknown) {
+    scanResult.value = 'invalid'
+    playSound('error')
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      invalidReason.value = error.response.data.message
+    } else {
+      invalidReason.value = 'Terjadi kesalahan sistem saat memverifikasi tiket.'
+    }
+  }
+}
+
+function onInit(promise: Promise<any>) {
+  promise.catch(error => {
     isScanning.value = false
-    // Randomly succeed or fail for UI demo
-    scanResult.value = Math.random() > 0.5 ? 'valid' : 'invalid'
-  }, 2000)
+    if (error.name === 'NotAllowedError') {
+      cameraError.value = 'Akses kamera ditolak.'
+    } else if (error.name === 'NotFoundError') {
+      cameraError.value = 'Kamera tidak ditemukan di perangkat ini.'
+    } else if (error.name === 'NotSupportedError') {
+      cameraError.value = 'Konteks tidak aman (butuh HTTPS atau localhost).'
+    } else {
+      cameraError.value = 'Gagal mengakses kamera: ' + error.message
+    }
+  })
+}
+
+function onCameraOn() {
+  isScanning.value = true
+  cameraError.value = ''
 }
 
 function resetScanner() {
   scanResult.value = 'idle'
   isScanning.value = false
+  scannedData.value = null
+  invalidReason.value = ''
 }
 
 function confirmCheckIn() {
-  // Simulate confirmation
-  alert('Check-in berhasil!')
   resetScanner()
 }
 </script>
@@ -50,30 +123,42 @@ function confirmCheckIn() {
       </div>
     </div>
 
-    <!-- Scanner Area Placeholder -->
-    <div v-if="scanResult === 'idle'" class="bg-[#1D2724] rounded-3xl overflow-hidden aspect-[3/4] relative shadow-xl shadow-[#173B35]/20 border-4 border-white flex flex-col items-center justify-center">
+    <!-- Scanner Area -->
+    <div v-if="scanResult === 'idle'" class="bg-[#1D2724] rounded-3xl overflow-hidden aspect-[3/4] sm:aspect-video relative shadow-xl shadow-[#173B35]/20 border-4 border-white flex flex-col items-center justify-center">
       
-      <div class="absolute inset-0 bg-[url('/images/sarangan-story-2.jpg')] bg-cover bg-center opacity-20 grayscale"></div>
+      <div v-if="!isScanning" class="absolute inset-0 bg-[url('/images/sarangan-story-2.jpg')] bg-cover bg-center opacity-20 grayscale"></div>
       
-      <div v-if="isScanning" class="absolute inset-0 bg-[#1D2724]/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-        <ScanLine class="w-16 h-16 text-white animate-pulse mb-4" />
-        <p class="text-white font-medium animate-pulse">Memindai QR Code...</p>
+      <qrcode-stream 
+        v-if="isScanning"
+        @detect="onDecode"
+        @camera-on="onCameraOn" 
+        @init="onInit"
+        class="absolute inset-0 w-full h-full object-cover"
+      >
+        <div class="absolute inset-0 bg-[#1D2724]/20 z-10 flex flex-col items-center justify-center pointer-events-none">
+          <div class="relative z-10 p-8 flex flex-col items-center">
+            <!-- Target frame -->
+            <div class="w-48 h-48 sm:w-64 sm:h-64 border-2 border-white/50 rounded-2xl relative shadow-[0_0_0_4000px_rgba(29,39,36,0.6)]">
+              <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-2xl"></div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-2xl"></div>
+              <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
+              <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
+            </div>
+          </div>
+          <p class="text-white font-medium animate-pulse mt-4 bg-black/50 px-4 py-2 rounded-full">Memindai QR Code...</p>
+        </div>
+      </qrcode-stream>
+
+      <div v-if="cameraError" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[#1D2724]">
+        <XCircle class="w-12 h-12 text-red-500 mb-3" />
+        <p class="text-white font-bold">{{ cameraError }}</p>
+        <button @click="startScan" class="mt-4 bg-white text-[#173B35] px-4 py-2 rounded-lg font-bold text-sm">Coba Lagi</button>
       </div>
 
-      <div class="relative z-10 p-8 flex flex-col items-center">
-        <!-- Target frame -->
-        <div class="w-48 h-48 border-2 border-white/50 rounded-2xl relative">
-          <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-2xl"></div>
-          <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-2xl"></div>
-          <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
-          <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
-        </div>
-      </div>
-      
       <button 
-        v-if="!isScanning"
+        v-if="!isScanning && !cameraError"
         @click="startScan"
-        class="absolute bottom-8 z-20 bg-white text-[#173B35] font-bold px-8 py-4 rounded-2xl shadow-lg active:scale-95 transition-transform"
+        class="absolute z-20 bg-white text-[#173B35] font-bold px-8 py-4 rounded-2xl shadow-lg active:scale-95 transition-transform"
       >
         Mulai Scan
       </button>
@@ -87,38 +172,35 @@ function confirmCheckIn() {
         <p class="text-[#66706C] text-sm mt-1">Sistem berhasil memverifikasi tiket.</p>
       </div>
       
-      <div class="space-y-4 mb-8">
+      <div v-if="scannedData" class="space-y-4 mb-8">
         <div class="flex justify-between items-center py-2 border-b border-[#F7F5EF]">
           <span class="text-sm text-[#66706C]">Kode</span>
-          <span class="font-bold text-[#1D2724]">{{ mockTicket.code }}</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.code }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#F7F5EF]">
           <span class="text-sm text-[#66706C]">Nama</span>
-          <span class="font-bold text-[#1D2724]">{{ mockTicket.name }}</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.name }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#F7F5EF]">
           <span class="text-sm text-[#66706C]">Tgl. Kunjungan</span>
-          <span class="font-bold text-[#1D2724]">{{ mockTicket.date }}</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.date }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#F7F5EF]">
           <span class="text-sm text-[#66706C]">Jenis Tiket</span>
-          <span class="font-bold text-[#1D2724]">{{ mockTicket.type }}</span>
+          <span class="font-bold text-[#1D2724] max-w-[50%] text-right truncate">{{ scannedData.type }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#F7F5EF]">
           <span class="text-sm text-[#66706C]">Jumlah</span>
           <div class="flex items-center gap-1.5 bg-[#F7F5EF] px-2 py-1 rounded-lg">
             <TicketIcon class="w-4 h-4 text-[#173B35]" />
-            <span class="font-bold text-[#173B35]">{{ mockTicket.qty }}x</span>
+            <span class="font-bold text-[#173B35]">{{ scannedData.qty }}x</span>
           </div>
         </div>
       </div>
       
-      <div class="grid grid-cols-2 gap-3">
-        <button @click="resetScanner" class="py-4 px-4 rounded-xl font-bold text-[#66706C] bg-[#F7F5EF] active:bg-[#e8e6df]">
-          Batal
-        </button>
+      <div class="grid grid-cols-1 gap-3">
         <button @click="confirmCheckIn" class="py-4 px-4 rounded-xl font-bold text-white bg-green-600 active:bg-green-700 shadow-md shadow-green-600/20">
-          Check-in
+          Tutup & Kembali Scan
         </button>
       </div>
     </div>
@@ -133,7 +215,7 @@ function confirmCheckIn() {
       
       <div class="bg-red-50 text-red-700 p-4 rounded-2xl mb-8 flex gap-3 text-sm font-medium">
         <span>⚠️</span>
-        <p>Alasan: <strong>Tiket sudah digunakan</strong> pada 26 Agustus 2026 09:14 WIB.</p>
+        <p>Alasan: <strong>{{ invalidReason }}</strong></p>
       </div>
       
       <button @click="resetScanner" class="w-full py-4 px-4 rounded-xl font-bold text-white bg-[#1D2724] active:bg-black shadow-md">
