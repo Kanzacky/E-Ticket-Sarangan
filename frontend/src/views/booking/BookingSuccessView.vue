@@ -12,6 +12,8 @@ import {
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
+import axios from 'axios'
+
 import { getOrderByCodeApi } from '@/services/order.service'
 import type { Order } from '@/types/booking.types'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -35,8 +37,12 @@ onMounted(async () => {
     isLoading.value = true
     const data = await getOrderByCodeApi(orderCode)
     order.value = data
-  } catch (error: any) {
-    errorMessage.value = error.response?.data?.message || 'Gagal memuat informasi booking.'
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      errorMessage.value = error.response.data.message as string
+    } else {
+      errorMessage.value = 'Gagal memuat informasi booking.'
+    }
   } finally {
     isLoading.value = false
   }

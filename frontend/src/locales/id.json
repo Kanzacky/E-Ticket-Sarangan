@@ -2,7 +2,7 @@
   "app": {
     "name": "e-Ticket Sarangan",
     "tagline": "Sistem tiket digital untuk wisata Sarangan",
-    "inotek": "INOTEK Award 2026"
+    "tagline": "Sistem tiket digital untuk wisata Sarangan"
   },
   "common": {
     "save": "Simpan",

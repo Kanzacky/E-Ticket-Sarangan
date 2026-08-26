@@ -19,12 +19,15 @@ class Order extends Model
         'total_quantity',
         'total_amount',
         'status',
+        'scanned_at',
+        'scanned_by',
     ];
 
     protected $casts = [
         'visit_date' => 'date:Y-m-d',
         'total_quantity' => 'integer',
         'total_amount' => 'float',
+        'scanned_at' => 'datetime',
     ];
 
     public function user()

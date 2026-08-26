@@ -4,6 +4,8 @@ import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import axios from 'axios'
+
 import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
@@ -30,9 +32,9 @@ async function handleSubmit() {
     } else {
       void router.push({ name: 'wisatawan.dashboard' })
     }
-  } catch (error: any) {
-    if (error.response?.data?.message) {
-      errorMsg.value = error.response.data.message
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      errorMsg.value = error.response.data.message as string
     } else {
       errorMsg.value = t('auth.loginError')
     }

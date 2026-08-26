@@ -115,3 +115,93 @@ it('allows authenticated user to logout and revokes token', function () {
             'message' => 'Logout berhasil',
         ]);
 });
+
+it('allows petugas to login and has correct role', function () {
+    $user = User::create([
+        'name' => 'Petugas',
+        'email' => 'petugas@sarangan.test',
+        'password' => bcrypt('password123'),
+        'role' => 'petugas',
+    ]);
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'petugas@sarangan.test',
+        'password' => 'password123',
+    ]);
+
+    $response->assertOk();
+
+    \Laravel\Sanctum\Sanctum::actingAs($user, ['*']);
+
+    $meResponse = $this->getJson('/api/auth/me');
+
+    $meResponse
+        ->assertOk()
+        ->assertJson([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'role' => 'petugas',
+                ],
+            ],
+        ]);
+});
+
+it('allows admin to login and has correct role', function () {
+    $user = User::create([
+        'name' => 'Admin',
+        'email' => 'admin@sarangan.test',
+        'password' => bcrypt('password123'),
+        'role' => 'admin',
+    ]);
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'admin@sarangan.test',
+        'password' => 'password123',
+    ]);
+
+    $response->assertOk();
+
+    \Laravel\Sanctum\Sanctum::actingAs($user, ['*']);
+
+    $meResponse = $this->getJson('/api/auth/me');
+
+    $meResponse
+        ->assertOk()
+        ->assertJson([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'role' => 'admin',
+                ],
+            ],
+        ]);
+});
+
+it('rejects login with wrong role credentials', function () {
+    $user = User::factory()->create([
+        'email' => 'wisatawan@sarangan.test',
+        'password' => bcrypt('password123'),
+        'role' => 'wisatawan',
+    ]);
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'wisatawan@sarangan.test',
+        'password' => 'password123',
+    ]);
+
+    $response->assertOk();
+
+    \Laravel\Sanctum\Sanctum::actingAs($user, ['*']);
+
+    $meResponse = $this->getJson('/api/auth/me');
+
+    $meResponse
+        ->assertJson([
+            'data' => [
+                'user' => [
+                    'role' => 'wisatawan',
+                ],
+            ],
+        ]);
+});

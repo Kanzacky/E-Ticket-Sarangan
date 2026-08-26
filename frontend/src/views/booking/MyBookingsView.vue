@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
+import axios from 'axios'
 
 import { getMyOrdersApi } from '@/services/order.service'
 import type { Order, OrderStatus } from '@/types/booking.types'
@@ -30,8 +31,12 @@ onMounted(async () => {
     isLoading.value = true
     const data = await getMyOrdersApi()
     orders.value = data
-  } catch (error: any) {
-    errorMessage.value = error.response?.data?.message || 'Gagal memuat riwayat booking.'
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      errorMessage.value = error.response.data.message as string
+    } else {
+      errorMessage.value = 'Gagal memuat riwayat booking.'
+    }
   } finally {
     isLoading.value = false
   }
@@ -292,24 +297,24 @@ function closeDetail() {
           </div>
 
           <!-- Customer Info -->
-          <div class="rounded-xl bg-slate-50 p-4 text-xs space-y-2 border border-slate-200/80">
-            <div class="flex justify-between">
+          <div class="rounded-xl bg-slate-50 p-4 text-xs space-y-2 border border-slate-200/80 overflow-hidden">
+            <div class="flex flex-wrap justify-between gap-1">
               <span class="text-slate-500">Nama Pemesan:</span>
               <span class="font-semibold text-slate-900">{{ selectedOrder.customer_name }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-1">
               <span class="text-slate-500">Email:</span>
-              <span class="font-medium text-slate-900">{{ selectedOrder.customer_email }}</span>
+              <span class="font-medium text-slate-900 break-all">{{ selectedOrder.customer_email }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-1">
               <span class="text-slate-500">No. WhatsApp:</span>
               <span class="font-medium text-slate-900">{{ selectedOrder.customer_phone }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-1">
               <span class="text-slate-500">Tanggal Kunjungan:</span>
               <span class="font-semibold text-sky-700">{{ formatDate(selectedOrder.visit_date) }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-1">
               <span class="text-slate-500">Waktu Order:</span>
               <span class="font-medium text-slate-900">{{ formatDateTime(selectedOrder.created_at) }}</span>
             </div>

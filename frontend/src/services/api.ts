@@ -92,15 +92,27 @@ export interface AuthResponse {
   user: AuthUser
   access_token: string
 }
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface RegisterRequest {
+  name: string
+  email: string
+  phone?: string | null
+  password: string
+  password_confirmation: string
+}
 
 export interface MeResponse {
   user: AuthUser
 }
 
-export const loginApi = (data: any) =>
+export const loginApi = (data: LoginRequest) =>
   api.post<ApiResponse<AuthResponse>>('/auth/login', data).then((res) => res.data)
 
-export const registerApi = (data: any) =>
+export const registerApi = (data: RegisterRequest) =>
   api.post<ApiResponse<AuthResponse>>('/auth/register', data).then((res) => res.data)
 
 export const logoutApi = () => api.post<ApiResponse<null>>('/auth/logout').then((res) => res.data)

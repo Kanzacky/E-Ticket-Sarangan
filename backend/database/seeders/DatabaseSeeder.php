@@ -110,5 +110,8 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        // Accommodations
+        $this->call(AccommodationSeeder::class);
     }
 }

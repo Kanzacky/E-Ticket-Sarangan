@@ -4,6 +4,8 @@ import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import axios from 'axios'
+
 import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
@@ -31,15 +33,16 @@ async function handleSubmit() {
     await authStore.register(form)
     // Wisatawan is default
     void router.push({ name: 'wisatawan.dashboard' })
-  } catch (error: any) {
-    if (error.response?.data?.message) {
-      errorMsg.value = error.response.data.message
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      errorMsg.value = error.response.data.message as string
       
-      if (error.response.data.errors) {
+      const errors = error.response.data.errors as Record<string, string[]> | undefined
+      if (errors) {
         // Just take the first validation error
-        const firstKey = Object.keys(error.response.data.errors)[0]
-        if (firstKey) {
-          errorMsg.value = error.response.data.errors[firstKey][0]
+        const firstKey = Object.keys(errors)[0]
+        if (firstKey && errors[firstKey]) {
+          errorMsg.value = errors[firstKey][0]
         }
       }
     } else {

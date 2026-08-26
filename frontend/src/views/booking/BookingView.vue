@@ -3,7 +3,6 @@ import {
   AlertCircle,
   Calendar,
   Check,
-  ChevronLeft,
   ChevronRight,
   Info,
   LoaderCircle,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 import { createOrderApi, getTicketTypesApi } from '@/services/order.service'
 import { useAuthStore } from '@/stores/auth'
@@ -52,8 +52,12 @@ onMounted(async () => {
     types.forEach((type) => {
       selectedQuantities[type.id] = 0
     })
-  } catch (error: any) {
-    errorMessage.value = error.response?.data?.message || 'Gagal memuat jenis tiket. Silakan coba lagi.'
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      errorMessage.value = error.response.data.message as string
+    } else {
+      errorMessage.value = 'Gagal memuat jenis tiket. Silakan coba lagi.'
+    }
   } finally {
     isLoadingTickets.value = false
   }
@@ -149,16 +153,20 @@ async function handleConfirmBooking() {
       name: 'booking.success',
       params: { orderCode: createdOrder.order_code },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     showReviewModal.value = false
-    const status = error.response?.status
-    if (status === 401) {
-      errorMessage.value = 'Sesi Anda telah berakhir. Silakan login terlebih dahulu.'
-      void router.push({ name: 'login', query: { redirect: '/booking' } })
-    } else if (status === 409) {
-      errorMessage.value = error.response?.data?.message || 'Kuota tiket tidak mencukupi untuk tanggal yang dipilih.'
-    } else if (status === 422) {
-      errorMessage.value = error.response?.data?.message || 'Terdapat data booking yang tidak valid.'
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status
+      if (status === 401) {
+        errorMessage.value = 'Sesi Anda telah berakhir. Silakan login terlebih dahulu.'
+        void router.push({ name: 'login', query: { redirect: '/booking' } })
+      } else if (status === 409) {
+        errorMessage.value = error.response?.data?.message || 'Kuota tiket tidak mencukupi untuk tanggal yang dipilih.'
+      } else if (status === 422) {
+        errorMessage.value = error.response?.data?.message || 'Terdapat data booking yang tidak valid.'
+      } else {
+        errorMessage.value = 'Terjadi kesalahan server. Silakan coba lagi nanti.'
+      }
     } else {
       errorMessage.value = 'Terjadi kesalahan server. Silakan coba lagi nanti.'
     }
@@ -174,12 +182,6 @@ async function handleConfirmBooking() {
       <!-- Header Bar -->
       <div class="mb-8 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <router-link
-            to="/"
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 shadow-sm transition hover:bg-slate-100"
-          >
-            <ChevronLeft class="h-5 w-5" />
-          </router-link>
           <div>
             <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Pemesanan Tiket Wisata</h1>
             <p class="text-sm text-slate-500">Telaga Sarangan, Magetan - Jawa Timur</p>

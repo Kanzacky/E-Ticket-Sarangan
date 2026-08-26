@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { getMeApi, loginApi, logoutApi, registerApi, type AuthUser } from '@/services/api'
+import { getMeApi, loginApi, logoutApi, registerApi, type AuthUser, type LoginRequest, type RegisterRequest } from '@/services/api'
 
 export type UserRole = 'wisatawan' | 'petugas' | 'admin'
 
@@ -27,7 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = value
   }
 
-  async function login(credentials: any) {
+  async function login(credentials: LoginRequest) {
     isLoading.value = true
     try {
       const response = await loginApi(credentials)
@@ -39,7 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function register(data: any) {
+  async function register(data: RegisterRequest) {
     isLoading.value = true
     try {
       const response = await registerApi(data)
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (token.value) {
       try {
         await logoutApi()
-      } catch (e) {
+      } catch {
         // ignore errors on logout
       }
     }
@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         const response = await getMeApi()
         setUser(response.data.user)
-      } catch (e) {
+      } catch {
         // token might be invalid
         setToken(null)
         setUser(null)

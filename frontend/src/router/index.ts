@@ -78,6 +78,11 @@ const routes: RouteRecordRaw[] = [
         name: 'wisatawan.profile',
         component: () => import('@/views/wisatawan/ProfileView.vue'),
       },
+      {
+        path: 'accommodations',
+        name: 'wisatawan.accommodations',
+        component: () => import('@/views/wisatawan/AccommodationsView.vue'),
+      },
     ],
   },
   {

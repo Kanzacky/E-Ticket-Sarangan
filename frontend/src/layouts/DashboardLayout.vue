@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  Building2,
   CalendarCheck,
   History,
   LayoutDashboard,
@@ -51,7 +52,7 @@ async function handleLogout() {
         <!-- Wisatawan Menus -->
         <template v-if="authStore.role === 'wisatawan'">
           <router-link
-            to="/booking"
+            to="/wisatawan/booking"
             class="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
             active-class="bg-sky-600 text-white font-semibold"
           >
@@ -60,7 +61,16 @@ async function handleLogout() {
           </router-link>
 
           <router-link
-            to="/my-bookings"
+            to="/wisatawan/accommodations"
+            class="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            active-class="bg-sky-600 text-white font-semibold"
+          >
+            <Building2 class="h-4 w-4" />
+            Penginapan & Villa
+          </router-link>
+
+          <router-link
+            to="/wisatawan/history"
             class="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
             active-class="bg-sky-600 text-white font-semibold"
           >
@@ -110,6 +120,17 @@ async function handleLogout() {
             Manajemen User
           </router-link>
         </template>
+
+        <div class="border-t border-slate-800 my-4" />
+
+        <button
+          type="button"
+          class="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium text-red-400 transition hover:bg-red-950/30 hover:text-red-300"
+          @click="handleLogout"
+        >
+          <LogOut class="h-4 w-4" />
+          {{ t('nav.logout') }}
+        </button>
 
         <slot name="menu" />
       </nav>

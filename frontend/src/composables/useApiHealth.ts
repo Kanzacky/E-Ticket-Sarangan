@@ -12,12 +12,6 @@ export function useApiHealth() {
   async function check(): Promise<void> {
     status.value = 'checking'
 
-    if (!import.meta.env.VITE_API_URL) {
-      status.value = 'disconnected'
-      message.value = 'API URL belum dikonfigurasi (VITE_API_URL). Periksa .env.production / Vercel env.'
-      return
-    }
-
     try {
       const result = await getHealth()
 

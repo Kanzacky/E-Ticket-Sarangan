@@ -3,156 +3,204 @@ import {
   CreditCard, 
   History, 
   Leaf, 
+  LoaderCircle, 
+  MapPin,
   MountainSnow, 
   PlusCircle, 
   Ticket, 
   Timer,
-  ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  ArrowRight
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
+import { useApiHealth } from '@/composables/useApiHealth'
 import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const { status, data } = useApiHealth()
 
 const features = [
   {
-    title: 'Tanpa Antre Panjang',
-    description: 'Beli tiket dari rumah dan langsung scan barcode di gerbang masuk. Hemat waktu liburan Anda.',
+    title: 'Tanpa Antrean Panjang',
+    description: 'Beli tiket dari mana saja. Cukup scan QR code di gerbang masuk dan nikmati liburan Anda seketika.',
     icon: Timer,
-    color: 'text-amber-500',
-    bg: 'bg-amber-100'
+    color: 'text-orange-500',
+    bg: 'bg-orange-50',
+    border: 'border-orange-100'
   },
   {
-    title: 'Pembayaran Fleksibel',
-    description: 'Dukung berbagai metode pembayaran mulai dari QRIS, GoPay, hingga transfer bank.',
+    title: 'Pembayaran Digital',
+    description: 'Bebas ribet dengan dukungan metode pembayaran instan seperti QRIS, GoPay, dan Virtual Account.',
     icon: CreditCard,
-    color: 'text-sky-500',
-    bg: 'bg-sky-100'
+    color: 'text-blue-500',
+    bg: 'bg-blue-50',
+    border: 'border-blue-100'
   },
   {
-    title: 'Ramah Lingkungan',
-    description: 'Kurangi penggunaan kertas dengan e-Ticket. Satu langkah kecil untuk kelestarian alam.',
+    title: 'Peduli Lingkungan',
+    description: 'Dukung inisiatif pariwisata hijau dengan e-ticket yang sepenuhnya paperless.',
     icon: Leaf,
     color: 'text-emerald-500',
-    bg: 'bg-emerald-100'
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-100'
   }
 ]
 
 const tickets = [
   {
-    name: 'Dewasa',
-    price: 'Rp 20.000',
-    features: ['Akses seluruh area telaga', 'Asuransi keselamatan', 'Berlaku 1 hari penuh']
+    name: 'Pengunjung Dewasa',
+    price: '20.000',
+    popular: true,
+    features: ['Akses seluruh area publik telaga', 'Termasuk asuransi keselamatan', 'Berlaku untuk 1 hari kunjungan', 'Usia di atas 12 tahun']
   },
   {
-    name: 'Anak-anak',
-    price: 'Rp 10.000',
-    features: ['Usia 3-12 tahun', 'Akses seluruh area telaga', 'Asuransi keselamatan']
+    name: 'Pengunjung Anak',
+    price: '10.000',
+    popular: false,
+    features: ['Akses seluruh area publik telaga', 'Termasuk asuransi keselamatan', 'Berlaku untuk 1 hari kunjungan', 'Usia 3 - 12 tahun']
   }
 ]
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50 font-sans selection:bg-sky-200">
-    <!-- Navigation Overlay -->
-    <header class="absolute inset-x-0 top-0 z-50 flex flex-wrap items-center justify-between gap-4 px-6 py-5 lg:px-12">
-      <div class="flex items-center gap-2">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-md text-white border border-white/30">
-          <MountainSnow class="h-5 w-5" />
+  <main class="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-sky-200">
+    <!-- Navbar -->
+    <header class="sticky top-6 z-50 mx-auto max-w-6xl px-4 sm:px-6 bg-white/90 backdrop-blur-xl border-b border-slate-200">
+      <div class="flex items-center justify-between rounded-full bg-white/80 px-4 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl border border-white">
+        <div class="flex items-center gap-3 pl-2">
+          <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/20">
+            <MountainSnow class="h-5 w-5" />
+          </div>
+          <span class="text-lg font-extrabold tracking-tight text-slate-800">{{ t('app.name') }}</span>
         </div>
-        <span class="text-lg font-bold text-white tracking-wide">{{ t('app.name') }}</span>
-      </div>
 
-      <nav class="flex flex-wrap items-center gap-3">
-        <template v-if="authStore.isAuthenticated">
-          <router-link
-            to="/my-bookings"
-            class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 backdrop-blur-md"
-          >
-            <History class="h-4 w-4" />
-            <span class="hidden sm:inline">Tiket Saya</span>
-          </router-link>
-          <router-link
-            to="/booking"
-            class="flex items-center gap-2 rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-sky-400 hover:scale-105"
-          >
-            <PlusCircle class="h-4 w-4" />
-            <span>Pesan</span>
-          </router-link>
-        </template>
-        <template v-else>
-          <router-link
-            to="/login"
-            class="rounded-full px-5 py-2 text-sm font-medium text-white transition hover:bg-white/20 backdrop-blur-md"
-          >
-            {{ t('nav.login') }}
-          </router-link>
-          <router-link
-            to="/register"
-            class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-sky-900 shadow-lg transition hover:bg-sky-50 hover:scale-105"
-          >
-            {{ t('nav.register') }}
-          </router-link>
-        </template>
-      </nav>
+        <nav class="flex items-center gap-2 sm:gap-3 pr-1">
+          <template v-if="authStore.isAuthenticated">
+            <router-link
+              to="/wisatawan/history"
+              class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            >
+              <History class="h-4 w-4" />
+              <span class="hidden sm:inline">Pesanan Saya</span>
+            </router-link>
+            <router-link
+              to="/wisatawan/booking"
+              class="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <PlusCircle class="h-4 w-4" />
+              <span>Pesan Tiket</span>
+            </router-link>
+          </template>
+          <template v-else>
+            <router-link
+              to="/login"
+              class="rounded-full px-5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            >
+              Masuk
+            </router-link>
+            <router-link
+              to="/register"
+              class="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              Daftar Akun
+            </router-link>
+          </template>
+        </nav>
+      </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="relative flex min-h-[90vh] items-center justify-center overflow-hidden bg-slate-900 px-6 py-32 lg:px-12">
-      <!-- Background Image -->
-      <div class="absolute inset-0 z-0">
-        <img 
-          src="/images/sarangan-hero.png" 
-          alt="Telaga Sarangan" 
-          class="h-full w-full object-cover opacity-60"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent"></div>
-      </div>
+    <section class="relative pt-6 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <!-- Decorative blobs -->
+      <div class="absolute -top-[20%] -right-[10%] -z-10 h-[600px] w-[600px] rounded-full bg-sky-200/50 blur-[100px]"></div>
+      <div class="absolute top-[20%] -left-[10%] -z-10 h-[500px] w-[500px] rounded-full bg-blue-200/40 blur-[100px]"></div>
 
-      <!-- Hero Content -->
-      <div class="relative z-10 w-full max-w-5xl">
-        <div class="max-w-2xl">
-          <span class="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-4 py-1.5 text-sm font-medium text-sky-300 backdrop-blur-md mb-6">
-            <Ticket class="h-4 w-4" /> Pemenang INOTEK Award 2026
-          </span>
-          <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Nikmati Keindahan<br/>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">Telaga Sarangan</span>
-          </h1>
-          <p class="mt-6 text-lg text-slate-300 sm:text-xl leading-relaxed max-w-lg">
-            Sistem tiket digital pintar yang memudahkan perjalanan liburan Anda. Bebas antre, cepat, dan ramah lingkungan.
-          </p>
-          <div class="mt-10 flex flex-wrap items-center gap-4">
-            <router-link
-              to="/booking"
-              class="flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-sky-600 px-8 py-4 text-base font-bold text-white shadow-lg shadow-sky-500/30 transition hover:scale-105 hover:shadow-sky-500/50"
-            >
-              Pesan Tiket Sekarang <ChevronRight class="h-5 w-5" />
-            </router-link>
+      <div class="mx-auto max-w-7xl px-6 lg:px-12">
+        <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <!-- Text Content -->
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 mb-8 shadow-sm">
+              <Ticket class="h-4 w-4" /> 
+              <span>Wisata Digital Telaga Sarangan</span>
+            </div>
+            
+            <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-7xl leading-[1.1]">
+              Cara modern <br>
+              menikmati <br>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-600">Telaga Sarangan.</span>
+            </h1>
+            
+            <p class="mt-6 text-lg text-slate-600 leading-relaxed sm:text-xl">
+              Tinggalkan cara lama. Pesan tiket masuk dan penginapan secara online, hindari antrean, dan nikmati liburan yang sepenuhnya tanpa beban.
+            </p>
+            
+            <div class="mt-10 flex flex-col sm:flex-row items-center gap-4">
+              <router-link
+                to="/login"
+                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-sky-600 px-8 py-4 text-base font-bold text-white shadow-lg shadow-sky-600/30 transition-all hover:bg-sky-700 hover:shadow-sky-600/40 hover:-translate-y-1"
+              >
+                Mulai Petualangan <ArrowRight class="h-5 w-5" />
+              </router-link>
+              <router-link
+                to="/wisatawan/accommodations"
+                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-1"
+              >
+                Lihat Penginapan
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Image/Visual -->
+          <div class="relative lg:h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-900/10 border-8 border-white">
+            <img 
+              src="/images/sarangan-hero.png" 
+              alt="Pemandangan Telaga Sarangan" 
+              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+            
+            <!-- Floating Info Card -->
+            <div class="absolute bottom-6 left-6 right-6 rounded-2xl bg-white/90 p-5 backdrop-blur-md shadow-lg border border-white/50 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-bold text-slate-900">Pesona Alam Magetan</p>
+                <p class="text-xs text-slate-600 font-medium">Buka Setiap Hari, 24 Jam</p>
+              </div>
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                <MapPin class="h-5 w-5" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="py-24 px-6 lg:px-12 bg-white">
+    <!-- Features Bento Grid -->
+    <section class="py-24 bg-white px-6 lg:px-12 relative">
       <div class="mx-auto max-w-7xl">
-        <div class="text-center max-w-2xl mx-auto mb-16">
-          <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">Mengapa Menggunakan e-Ticket?</h2>
-          <p class="mt-4 text-slate-600 text-lg">Kami merancang pengalaman terbaik untuk memastikan liburan Anda nyaman sejak dari rumah.</p>
+        <div class="mb-16 max-w-3xl">
+          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+            Sistem pintar untuk pengalaman liburan terbaik.
+          </h2>
+          <p class="mt-6 text-lg text-slate-600">
+            Kami mendesain ulang setiap aspek dari perjalanan Anda. Dari pembelian tiket hingga memasuki area wisata, semuanya kini ada di genggaman Anda.
+          </p>
         </div>
 
-        <div class="grid gap-8 md:grid-cols-3">
-          <div v-for="feat in features" :key="feat.title" class="rounded-3xl border border-slate-100 bg-slate-50 p-8 transition hover:shadow-xl hover:shadow-slate-200/50">
-            <div :class="['mb-6 flex h-14 w-14 items-center justify-center rounded-2xl', feat.bg, feat.color]">
-              <component :is="feat.icon" class="h-7 w-7" />
+        <div class="grid gap-6 md:grid-cols-3">
+          <div v-for="(feat, index) in features" :key="index" class="group relative overflow-hidden rounded-3xl p-8 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50" :class="[feat.bg, feat.border, 'border']">
+            <div class="absolute top-0 right-0 p-6 opacity-10 transition-transform duration-500 group-hover:scale-110 group-hover:opacity-20">
+              <component :is="feat.icon" class="h-32 w-32" :class="feat.color" />
             </div>
-            <h3 class="text-xl font-bold text-slate-900 mb-3">{{ feat.title }}</h3>
-            <p class="text-slate-600 leading-relaxed">{{ feat.description }}</p>
+            
+            <div class="relative z-10">
+              <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <component :is="feat.icon" class="h-7 w-7" :class="feat.color" />
+              </div>
+              <h3 class="mb-3 text-2xl font-bold text-slate-900">{{ feat.title }}</h3>
+              <p class="text-slate-700 font-medium leading-relaxed">{{ feat.description }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -161,61 +209,90 @@ const tickets = [
     <!-- Pricing Section -->
     <section class="py-24 px-6 lg:px-12 bg-slate-50">
       <div class="mx-auto max-w-7xl">
-        <div class="text-center max-w-2xl mx-auto mb-16">
-          <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">Harga Tiket Masuk</h2>
-          <p class="mt-4 text-slate-600 text-lg">Harga resmi yang berlaku untuk kawasan wisata Telaga Sarangan.</p>
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Harga Tiket Resmi</h2>
+          <p class="mt-4 text-lg text-slate-600">Satu harga terjangkau untuk akses penuh ke keindahan alam Telaga Sarangan.</p>
         </div>
 
         <div class="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-          <div v-for="ticket in tickets" :key="ticket.name" class="relative rounded-3xl bg-white p-8 shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -z-10 opacity-50"></div>
-            <h3 class="text-2xl font-bold text-slate-900">{{ ticket.name }}</h3>
-            <div class="mt-4 flex items-baseline text-4xl font-extrabold text-sky-600">
-              {{ ticket.price }}
-              <span class="ml-1 text-base font-medium text-slate-500">/orang</span>
+          <div
+v-for="ticket in tickets" :key="ticket.name" 
+               class="relative flex flex-col rounded-[2rem] bg-white p-8 sm:p-10 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50"
+               :class="ticket.popular ? 'border-sky-200 ring-4 ring-sky-50' : 'border-slate-200'">
+            
+            <div v-if="ticket.popular" class="absolute -top-4 right-8 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+              Paling Sering Dibeli
             </div>
-            <ul class="mt-8 space-y-4 flex-1">
-              <li v-for="feat in ticket.features" :key="feat" class="flex items-center gap-3 text-slate-700">
-                <CheckCircle2 class="h-5 w-5 text-emerald-500 shrink-0" />
-                <span>{{ feat }}</span>
+
+            <h3 class="text-xl font-bold text-slate-500">{{ ticket.name }}</h3>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span class="text-5xl font-extrabold tracking-tight text-slate-900">Rp{{ ticket.price }}</span>
+              <span class="text-base font-semibold text-slate-500">/ orang</span>
+            </div>
+
+            <div class="my-8 h-px w-full bg-slate-100"></div>
+
+            <ul class="mb-8 flex-1 space-y-4">
+              <li v-for="feat in ticket.features" :key="feat" class="flex items-start gap-3">
+                <CheckCircle2 class="h-6 w-6 text-sky-500 shrink-0" />
+                <span class="font-medium text-slate-700">{{ feat }}</span>
               </li>
             </ul>
-            <router-link to="/booking" class="mt-8 block w-full rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600">
-              Pilih Kategori Ini
+
+            <router-link
+to="/login" 
+                 class="block w-full rounded-2xl px-6 py-4 text-center text-sm font-bold transition-all"
+                 :class="ticket.popular ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-md shadow-sky-600/20' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'">
+              Pilih Tiket Ini
             </router-link>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer & System Status -->
-    <footer class="bg-slate-900 pt-20 pb-10 px-6 lg:px-12 text-slate-400">
-      <div class="mx-auto max-w-7xl">
-        <div class="grid gap-12 md:grid-cols-3 mb-16">
-          <div class="md:col-span-2">
-            <div class="flex items-center gap-2 mb-6 text-white">
-              <MountainSnow class="h-6 w-6" />
-              <span class="text-xl font-bold tracking-wide">{{ t('app.name') }}</span>
-            </div>
-            <p class="max-w-md text-slate-400 leading-relaxed">
-              Inovasi digitalisasi pariwisata untuk mendukung kemajuan ekonomi daerah dan kenyamanan wisatawan di Telaga Sarangan, Magetan.
-            </p>
+    <!-- Minimal Footer -->
+    <footer class="bg-white border-t border-slate-200 pt-16 pb-8 px-6 lg:px-12">
+      <div class="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <MountainSnow class="h-5 w-5" />
           </div>
-
           <div>
-            <h4 class="text-white font-semibold mb-6">Navigasi</h4>
-            <ul class="space-y-4">
-              <li><router-link to="/booking" class="hover:text-white transition">Pesan Tiket</router-link></li>
-              <li><router-link to="/login" class="hover:text-white transition">Login Wisatawan</router-link></li>
-              <li><router-link to="/register" class="hover:text-white transition">Daftar Akun</router-link></li>
-            </ul>
+            <span class="block text-lg font-bold text-slate-900">{{ t('app.name') }}</span>
+            <span class="block text-xs font-medium text-slate-500">Pariwisata Magetan</span>
           </div>
         </div>
+        
+        <div class="flex flex-wrap items-center justify-center gap-6 text-sm font-semibold text-slate-600">
+          <router-link to="/login" class="hover:text-sky-600 transition-colors">Pesan Tiket</router-link>
+          <router-link to="/wisatawan/accommodations" class="hover:text-sky-600 transition-colors">Penginapan</router-link>
+          <a href="#" class="hover:text-sky-600 transition-colors">Bantuan</a>
+        </div>
+      </div>
 
-        <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p class="text-sm">&copy; {{ new Date().getFullYear() }} {{ t('app.name') }}. Hak Cipta Dilindungi.</p>
-          <span class="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
-            {{ t('app.inotek') }}
+      <!-- System Status Bar -->
+      <div class="mx-auto max-w-7xl mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-sm font-medium text-slate-500">&copy; {{ new Date().getFullYear() }} {{ t('app.name') }}. All rights reserved.</p>
+        
+        <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-200">
+          <span class="flex items-center gap-1.5">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            Sistem Aktif
+          </span>
+          <span class="w-px h-3 bg-slate-300"></span>
+          <span class="flex items-center gap-1.5">
+            <LoaderCircle v-if="status === 'checking'" class="h-3 w-3 animate-spin text-sky-500" />
+            <span v-else-if="status === 'connected'" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+            <span v-else class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            API: {{ status === 'connected' ? 'OK' : status === 'checking' ? 'Mengecek...' : 'Down' }}
+          </span>
+          <span v-if="status === 'connected'" class="flex items-center gap-1.5">
+            <span class="w-px h-3 bg-slate-300 mr-1"></span>
+            <span :class="['h-2.5 w-2.5 rounded-full', data?.database === 'connected' ? 'bg-emerald-500' : 'bg-red-500']"></span>
+            Database: {{ data?.database === 'connected' ? 'OK' : 'Down' }}
           </span>
         </div>
       </div>

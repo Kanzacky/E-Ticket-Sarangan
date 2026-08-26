@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/ticket.svg" width="80" alt="Ticket Icon" />
   <h1>e-Ticket Sarangan</h1>
-  <p>Sistem Digital Ticketing dan Manajemen Pengunjung untuk Wisata Telaga Sarangan<br/><b>Pemenang INOTEK Award 2026</b></p>
+  <p>Sistem Digital Ticketing dan Manajemen Pengunjung untuk Wisata Telaga Sarangan</p>
   
   <p>
     <img src="https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D" alt="Vue.js" />
