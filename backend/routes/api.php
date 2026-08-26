@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\TicketTypeController;
+use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 
 // Prefix grup: `api` (dari withRouting apiPrefix)
@@ -27,3 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
 });
+
+// Midtrans Webhook
+Route::post('/payments/midtrans/notification', [PaymentCallbackController::class, 'handleNotification']);
