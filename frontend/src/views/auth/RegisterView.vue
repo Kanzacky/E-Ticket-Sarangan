@@ -42,7 +42,7 @@ async function handleSubmit() {
         // Just take the first validation error
         const firstKey = Object.keys(errors)[0]
         if (firstKey && errors[firstKey]) {
-          errorMsg.value = errors[firstKey][0]
+          errorMsg.value = errors[firstKey]?.[0] || 'Terjadi kesalahan validasi'
         }
       }
     } else {
