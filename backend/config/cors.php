@@ -38,6 +38,7 @@ return [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'https://e-ticket-sarangan-anx4.vercel.app',
+        'https://e-ticket-sarangan.vercel.app',
     ], preg_split('/\s*,\s*/', (string) env('CORS_ALLOWED_ORIGINS', (string) env('FRONTEND_URL', ''))) ?: [])))),
 
     'allowed_origins_patterns' => [],
