@@ -65,8 +65,8 @@ const formatPrice = (price: number) => {
       <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#173B35] text-[#F7F5EF]">
-              <MountainSnow class="h-6 w-6" />
+            <div class="flex items-center justify-center">
+              <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
             </div>
             <span class="text-xl font-bold tracking-tight text-[#173B35]">{{ t('app.name') }}</span>
           </div>
@@ -150,11 +150,11 @@ const formatPrice = (price: number) => {
 
       <div class="relative z-10 mx-auto w-full max-w-[1240px] px-5 sm:px-6 lg:px-8 py-20 mt-10 md:mt-0 lg:py-0">
         <div class="max-w-2xl text-white">
-          <div class="inline-block border border-white/40 bg-black/30 backdrop-blur-md rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm">
+          <div class="inline-block border border-white/20 bg-black/20 backdrop-blur-md rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6">
             Wisata Alam Magetan
           </div>
           
-          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white drop-shadow-md">
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white drop-shadow-sm">
             Nikmati Sarangan,<br />mulai perjalananmu dari sini.
           </h1>
           
@@ -165,13 +165,13 @@ const formatPrice = (price: number) => {
           <div class="flex flex-col sm:flex-row gap-4">
             <router-link
               to="/login"
-              class="flex items-center justify-center rounded-lg bg-[#C9965B] px-8 py-4 text-base font-bold text-white transition-colors hover:bg-[#b0804b]"
+              class="flex items-center justify-center rounded-[10px] bg-[var(--color-primary)] px-8 py-4 text-base font-bold text-white transition-colors hover:bg-[#122c27]"
             >
               Pesan Tiket
             </router-link>
             <a
               href="#tentang"
-              class="flex items-center justify-center rounded-lg bg-white/10 backdrop-blur-md border border-white/30 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-white/20"
+              class="flex items-center justify-center rounded-[10px] bg-white/10 backdrop-blur-md border border-white/30 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-white/20"
             >
               Lihat Informasi
             </a>
@@ -229,16 +229,16 @@ const formatPrice = (price: number) => {
         </div>
         
         <div v-else-if="ticketTypes.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-          <div v-for="ticket in ticketTypes" :key="ticket.id" class="border border-[#173B35]/10 rounded-2xl p-8 hover:border-[#4F7465]/30 transition-colors flex flex-col bg-[#F7F5EF]">
-            <h3 class="text-xl font-bold text-[#1D2724] mb-2">{{ ticket.name }}</h3>
-            <p class="text-sm text-[#66706C] mb-6 h-10">{{ ticket.description || 'Akses masuk Telaga Sarangan' }}</p>
+          <div v-for="ticket in ticketTypes" :key="ticket.id" class="border border-[var(--color-border)] rounded-[12px] p-8 hover:border-[var(--color-secondary)] transition-colors flex flex-col bg-[var(--color-surface)]">
+            <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">{{ ticket.name }}</h3>
+            <p class="text-sm text-[var(--color-text-secondary)] mb-6 h-10">{{ ticket.description || 'Akses masuk Telaga Sarangan' }}</p>
             
             <div class="mb-8">
-              <span class="text-3xl font-bold text-[#173B35]">Rp{{ formatPrice(ticket.price) }}</span>
+              <span class="text-3xl font-bold text-[var(--color-text-primary)]">Rp{{ formatPrice(ticket.price) }}</span>
             </div>
             
             <div class="mt-auto">
-              <router-link to="/login" class="block w-full text-center rounded-lg bg-[#173B35] px-4 py-3 text-sm font-semibold text-white hover:bg-[#1D2724] transition-colors">
+              <router-link to="/login" class="block w-full text-center rounded-[10px] bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-white hover:bg-[#122c27] transition-colors">
                 Pilih Tiket
               </router-link>
             </div>
@@ -356,11 +356,11 @@ const formatPrice = (price: number) => {
       <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
           <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#173B35] text-white">
-              <MountainSnow class="h-6 w-6" />
+            <div class="flex items-center justify-center grayscale contrast-200 opacity-80">
+              <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
             </div>
             <div>
-              <span class="block text-xl font-bold text-[#173B35]">{{ t('app.name') }}</span>
+              <span class="block text-xl font-bold text-[var(--color-primary)]">{{ t('app.name') }}</span>
               <span class="block text-sm text-[#66706C]">Sistem Tiket Wisata Digital</span>
             </div>
           </div>

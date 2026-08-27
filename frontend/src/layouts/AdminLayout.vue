@@ -41,8 +41,8 @@ async function handleLogout() {
         <!-- Logo Area -->
         <div class="flex items-center justify-between px-6 py-6 border-b border-white/10">
           <router-link to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C9965B] shadow-sm">
-              <Ticket class="h-5 w-5 text-[#173B35]" />
+            <div class="flex items-center justify-center grayscale contrast-200 opacity-90 brightness-200">
+              <img src="/images/logo.png" alt="Logo" class="h-8 w-auto" />
             </div>
             <div>
               <span class="block text-sm font-bold tracking-wide">{{ t('app.name') }}</span>

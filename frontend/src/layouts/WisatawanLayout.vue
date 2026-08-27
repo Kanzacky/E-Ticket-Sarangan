@@ -29,8 +29,8 @@ async function handleLogout() {
           <!-- Logo -->
           <div class="flex-shrink-0 flex items-center gap-3">
             <router-link to="/" class="flex items-center gap-3 group">
-              <div class="bg-[#173B35] p-2.5 rounded-xl group-hover:bg-[#1D2724] transition-colors">
-                <MountainSnow class="h-6 w-6 text-[#F7F5EF]" />
+              <div class="flex items-center justify-center">
+                <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
               </div>
               <span class="text-xl font-bold tracking-tight text-[#173B35]">
                 e-Ticket Sarangan

@@ -23,8 +23,8 @@ async function handleLogout() {
     <!-- Top Header Mobile -->
     <header class="sticky top-0 z-30 flex items-center justify-between border-b border-[#173B35]/10 bg-white/90 backdrop-blur-md px-4 py-3 shadow-sm md:hidden">
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C9965B] shadow-sm">
-          <Ticket class="h-4 w-4 text-[#173B35]" />
+        <div class="flex items-center justify-center">
+          <img src="/images/logo.png" alt="Logo" class="h-6 w-auto" />
         </div>
         <span class="text-sm font-bold tracking-wide">Petugas Gate</span>
       </div>
@@ -43,8 +43,8 @@ async function handleLogout() {
       
       <!-- Desktop Logo -->
       <div class="hidden md:flex flex-col items-center mb-8 gap-2">
-        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#C9965B] shadow-sm">
-          <Ticket class="h-6 w-6 text-[#173B35]" />
+        <div class="flex items-center justify-center mt-4">
+          <img src="/images/logo.png" alt="Logo" class="h-8 w-auto" />
         </div>
       </div>
 
