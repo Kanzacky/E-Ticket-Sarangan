@@ -22,7 +22,7 @@ class AdminPaymentController extends Controller
                 'payment_method' => 'Bank Transfer / E-Wallet', // Mock or derive if stored
                 'amount' => $order->total_amount,
                 'status' => $order->status,
-                'paid_at' => $order->status === 'PAID' ? $order->updated_at : null,
+                'paid_at' => in_array($order->status, ['PAID', 'COMPLETED']) ? $order->updated_at : null,
                 'created_at' => $order->created_at,
             ];
         });
@@ -37,7 +37,7 @@ class AdminPaymentController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:PAID,PENDING,FAILED,CANCELLED'
+            'status' => 'required|in:PAID,PENDING,COMPLETED,FAILED,CANCELLED'
         ]);
 
         $order = Order::find($id);
@@ -58,7 +58,7 @@ class AdminPaymentController extends Controller
             'data' => [
                 'id' => $order->id,
                 'status' => $order->status,
-                'paid_at' => $order->status === 'PAID' ? $order->updated_at : null,
+                'paid_at' => in_array($order->status, ['PAID', 'COMPLETED']) ? $order->updated_at : null,
             ]
         ]);
     }

@@ -130,6 +130,7 @@ const updateStatus = async (id: number, newStatus: string) => {
           >
             <option value="all">Semua Status</option>
             <option value="PAID">Lunas (PAID)</option>
+            <option value="COMPLETED">Sudah Masuk (COMPLETED)</option>
             <option value="PENDING">Menunggu (PENDING)</option>
             <option value="FAILED">Gagal (FAILED)</option>
             <option value="CANCELLED">Batal (CANCELLED)</option>
@@ -156,7 +157,7 @@ const updateStatus = async (id: number, newStatus: string) => {
           <span class="text-sm font-bold text-[#1D2724]">{{ formatCurrency(payment.amount) }}</span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger')">
+          <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'COMPLETED' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger'))">
             <span class="font-semibold">{{ payment.status }}</span>
           </StatusBadge>
         </td>
@@ -172,6 +173,7 @@ const updateStatus = async (id: number, newStatus: string) => {
           >
             <option value="PENDING">Set PENDING</option>
             <option value="PAID">Set PAID</option>
+            <option value="COMPLETED">Set COMPLETED</option>
             <option value="FAILED">Set FAILED</option>
             <option value="CANCELLED">Set CANCELLED</option>
           </select>
