@@ -7,7 +7,7 @@ import type { ScanResponseData } from '@/services/scanner.service'
 import axios from 'axios'
 
 const isScanning = ref(false)
-const scanResult = ref<'idle' | 'valid' | 'invalid'>('idle')
+const scanResult = ref<'idle' | 'loading' | 'valid' | 'invalid'>('idle')
 const invalidReason = ref('')
 
 // Ticket data from API
@@ -60,6 +60,7 @@ async function onDecode(result: any) {
   if (!code) return
   
   isScanning.value = false
+  scanResult.value = 'loading'
   
   try {
     const res = await scanTicketApi(code)
@@ -162,6 +163,13 @@ function confirmCheckIn() {
       >
         Mulai Scan
       </button>
+    </div>
+
+    <!-- Loading State -->
+    <div v-else-if="scanResult === 'loading'" class="bg-white rounded-3xl p-6 border-2 border-slate-200 shadow-lg flex flex-col items-center justify-center aspect-[3/4] sm:aspect-video text-center">
+      <div class="animate-spin rounded-full h-16 w-16 border-4 border-[#173B35]/20 border-t-[#173B35] mb-6"></div>
+      <h2 class="text-2xl font-black text-slate-800">Memverifikasi Tiket...</h2>
+      <p class="text-[#66706C] text-sm mt-2">Mohon tunggu sebentar, sedang mengecek ke server.</p>
     </div>
 
     <!-- Validation Result: VALID -->
