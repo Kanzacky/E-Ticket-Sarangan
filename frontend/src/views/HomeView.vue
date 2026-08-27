@@ -2,35 +2,21 @@
 import { 
   LoaderCircle, 
   MapPin,
-  Menu,
-  X
 } from 'lucide-vue-next'
-import { useI18n } from 'vue-i18n'
-import { onMounted, onUnmounted, ref } from 'vue'
+import PublicNavbar from '@/components/layout/PublicNavbar.vue'
+import PublicFooter from '@/components/layout/PublicFooter.vue'
+import { onMounted, ref } from 'vue'
 
 import { useApiHealth } from '@/composables/useApiHealth'
-import { useAuthStore } from '@/stores/auth'
 import { getTicketTypesApi } from '@/services/order.service'
 import type { TicketType } from '@/types/booking.types'
 
-const { t } = useI18n()
-const authStore = useAuthStore()
 const { check } = useApiHealth()
 
-const isMobileMenuOpen = ref(false)
 const ticketTypes = ref<TicketType[]>([])
 const isLoadingTickets = ref(true)
 
-const isScrolled = ref(false)
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50
-}
-
 onMounted(async () => {
-  window.addEventListener('scroll', handleScroll)
-  handleScroll() // Initialize state
-  
   void check()
   try {
     const res = await getTicketTypesApi()
@@ -40,10 +26,6 @@ onMounted(async () => {
   } finally {
     isLoadingTickets.value = false
   }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 
 const features = [
@@ -71,82 +53,9 @@ const formatPrice = (price: number) => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#F7F5EF] font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white">
+  <main class="min-h-screen bg-[#F7F5EF] font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white flex flex-col">
     <!-- Navbar -->
-    <header 
-      class="fixed top-0 w-full z-50 border-b transition-all duration-300"
-      :class="isScrolled ? 'bg-[#F7F5EF]/95 backdrop-blur-md border-[#173B35]/10 shadow-sm py-0' : 'bg-transparent border-transparent py-2'"
-    >
-      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center">
-              <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
-            </div>
-            <span class="text-xl font-bold tracking-tight transition-colors" :class="isScrolled ? 'text-[#173B35]' : 'text-white'">{{ t('app.name') }}</span>
-          </div>
-
-          <!-- Desktop Nav -->
-          <nav class="hidden lg:flex items-center gap-8">
-            <a href="#beranda" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Beranda</a>
-            <a href="#tiket" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Tiket</a>
-            <a href="#cara-pesan" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Cara Pesan</a>
-            <a href="#tentang" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Tentang Sarangan</a>
-          </nav>
-
-          <div class="hidden lg:flex items-center gap-4">
-            <template v-if="authStore.isAuthenticated">
-              <router-link
-                to="/my-tickets"
-                class="text-sm font-semibold transition-colors"
-                :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'"
-              >
-                Pesanan Saya
-              </router-link>
-            </template>
-            <template v-else>
-              <router-link
-                to="/login?redirect=/booking"
-                class="text-sm font-semibold transition-colors"
-                :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'"
-              >
-                Masuk
-              </router-link>
-            </template>
-            
-            <router-link
-              to="/booking"
-              class="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all"
-              :class="isScrolled ? 'bg-[#173B35] text-white hover:bg-[#1D2724]' : 'bg-white text-[#173B35] hover:bg-white/90'"
-            >
-              Pesan Tiket
-            </router-link>
-          </div>
-
-          <!-- Mobile menu button -->
-          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 transition-colors" :class="isScrolled ? 'text-[#173B35]' : 'text-white'">
-            <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
-            <X v-else class="h-6 w-6" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile Nav -->
-      <div v-if="isMobileMenuOpen" class="lg:hidden bg-[#F7F5EF] border-t border-[#173B35]/10 px-5 pt-4 pb-6 space-y-4 shadow-lg absolute w-full">
-        <a href="#beranda" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Beranda</a>
-        <a href="#tiket" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Tiket</a>
-        <a href="#cara-pesan" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Cara Pesan</a>
-        <a href="#tentang" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Tentang Sarangan</a>
-        <hr class="border-[#173B35]/10" />
-        <template v-if="authStore.isAuthenticated">
-          <router-link to="/my-tickets" class="block text-base font-semibold text-[#1D2724]">Pesanan Saya</router-link>
-        </template>
-        <template v-else>
-          <router-link to="/login?redirect=/booking" class="block text-base font-semibold text-[#1D2724]">Masuk</router-link>
-        </template>
-        <router-link to="/booking" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
-      </div>
-    </header>
+    <PublicNavbar :transparent-top="true" />
 
     <!-- Hero Section -->
     <section id="beranda" class="relative pt-20 lg:pt-0 lg:h-screen lg:min-h-[700px] flex items-center">
@@ -364,31 +273,6 @@ const formatPrice = (price: number) => {
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white py-16">
-      <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center grayscale contrast-200 opacity-80">
-              <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
-            </div>
-            <div>
-              <span class="block text-xl font-bold text-[var(--color-primary)]">{{ t('app.name') }}</span>
-              <span class="block text-sm text-[#66706C]">Sistem Tiket Wisata Digital</span>
-            </div>
-          </div>
-          
-          <div class="flex flex-wrap justify-center gap-8 text-sm font-semibold text-[#1D2724]">
-            <a href="#beranda" class="hover:text-[#C9965B]">Beranda</a>
-            <a href="#tiket" class="hover:text-[#C9965B]">Tiket</a>
-            <a href="#tentang" class="hover:text-[#C9965B]">Tentang</a>
-            <router-link to="/booking" class="hover:text-[#C9965B]">Pesan Tiket</router-link>
-          </div>
-        </div>
-        
-        <div class="pt-8 border-t border-[#173B35]/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#8B928F]">
-          <p>&copy; {{ new Date().getFullYear() }} {{ t('app.name') }}. Pariwisata Magetan.</p>
-        </div>
-      </div>
-    </footer>
+    <PublicFooter />
   </main>
 </template>
