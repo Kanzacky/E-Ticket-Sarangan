@@ -29,8 +29,14 @@ async function handleSubmit() {
   errorMsg.value = ''
   try {
     await authStore.register(form)
-    // Wisatawan is default
-    void router.push({ name: 'wisatawan.dashboard' })
+    
+    // Check for redirect query parameter
+    const redirect = router.currentRoute.value.query.redirect as string
+    if (redirect) {
+      void router.push(redirect)
+    } else {
+      void router.push({ name: 'home' })
+    }
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMsg.value = error.response.data.message as string

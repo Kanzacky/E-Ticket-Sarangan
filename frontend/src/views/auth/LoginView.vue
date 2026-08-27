@@ -134,7 +134,7 @@ async function handleSubmit() {
 
         <div class="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
           Belum punya akun?
-          <router-link to="/register" class="font-bold text-[var(--color-primary)] hover:text-[var(--color-secondary)] transition-colors ml-1">
+          <router-link :to="{ name: 'register', query: { redirect: $route.query.redirect } }" class="font-bold text-[var(--color-primary)] hover:text-[var(--color-secondary)] transition-colors ml-1">
             Daftar sekarang
           </router-link>
         </div>
