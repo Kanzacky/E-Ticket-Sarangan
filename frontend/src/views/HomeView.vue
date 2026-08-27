@@ -6,7 +6,7 @@ import {
   X
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 import { useApiHealth } from '@/composables/useApiHealth'
 import { useAuthStore } from '@/stores/auth'
@@ -21,7 +21,16 @@ const isMobileMenuOpen = ref(false)
 const ticketTypes = ref<TicketType[]>([])
 const isLoadingTickets = ref(true)
 
+const isScrolled = ref(false)
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+}
+
 onMounted(async () => {
+  window.addEventListener('scroll', handleScroll)
+  handleScroll() // Initialize state
+  
   void check()
   try {
     const res = await getTicketTypesApi()
@@ -31,6 +40,10 @@ onMounted(async () => {
   } finally {
     isLoadingTickets.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 
 const features = [
@@ -60,57 +73,58 @@ const formatPrice = (price: number) => {
 <template>
   <main class="min-h-screen bg-[#F7F5EF] font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white">
     <!-- Navbar -->
-    <header class="fixed top-0 w-full z-50 bg-[#F7F5EF]/90 backdrop-blur-md border-b border-[#173B35]/10">
+    <header 
+      class="fixed top-0 w-full z-50 border-b transition-all duration-300"
+      :class="isScrolled ? 'bg-[#F7F5EF]/95 backdrop-blur-md border-[#173B35]/10 shadow-sm py-0' : 'bg-transparent border-transparent py-2'"
+    >
       <div class="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
           <div class="flex items-center gap-3">
             <div class="flex items-center justify-center">
               <img src="/images/logo.png" alt="Logo" class="h-10 w-auto" />
             </div>
-            <span class="text-xl font-bold tracking-tight text-[#173B35]">{{ t('app.name') }}</span>
+            <span class="text-xl font-bold tracking-tight transition-colors" :class="isScrolled ? 'text-[#173B35]' : 'text-white'">{{ t('app.name') }}</span>
           </div>
 
           <!-- Desktop Nav -->
           <nav class="hidden lg:flex items-center gap-8">
-            <a href="#beranda" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Beranda</a>
-            <a href="#tiket" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Tiket</a>
-            <a href="#cara-pesan" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Cara Pesan</a>
-            <a href="#tentang" class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors">Tentang Sarangan</a>
+            <a href="#beranda" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Beranda</a>
+            <a href="#tiket" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Tiket</a>
+            <a href="#cara-pesan" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Cara Pesan</a>
+            <a href="#tentang" class="text-sm font-semibold transition-colors" :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'">Tentang Sarangan</a>
           </nav>
 
           <div class="hidden lg:flex items-center gap-4">
             <template v-if="authStore.isAuthenticated">
               <router-link
-                to="/wisatawan/history"
-                class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors"
+                to="/my-tickets"
+                class="text-sm font-semibold transition-colors"
+                :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'"
               >
                 Pesanan Saya
-              </router-link>
-              <router-link
-                to="/wisatawan/booking"
-                class="flex items-center gap-2 rounded-lg bg-[#173B35] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#1D2724]"
-              >
-                Pesan Tiket
               </router-link>
             </template>
             <template v-else>
               <router-link
-                to="/login"
-                class="text-sm font-semibold text-[#1D2724] hover:text-[#4F7465] transition-colors"
+                to="/login?redirect=/booking"
+                class="text-sm font-semibold transition-colors"
+                :class="isScrolled ? 'text-[#1D2724] hover:text-[#4F7465]' : 'text-white/90 hover:text-white'"
               >
                 Masuk
               </router-link>
-              <router-link
-                to="/login"
-                class="flex items-center gap-2 rounded-lg bg-[#173B35] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#1D2724]"
-              >
-                Pesan Tiket
-              </router-link>
             </template>
+            
+            <router-link
+              to="/booking"
+              class="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all"
+              :class="isScrolled ? 'bg-[#173B35] text-white hover:bg-[#1D2724]' : 'bg-white text-[#173B35] hover:bg-white/90'"
+            >
+              Pesan Tiket
+            </router-link>
           </div>
 
           <!-- Mobile menu button -->
-          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 text-[#173B35]">
+          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 transition-colors" :class="isScrolled ? 'text-[#173B35]' : 'text-white'">
             <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
             <X v-else class="h-6 w-6" />
           </button>
@@ -125,13 +139,12 @@ const formatPrice = (price: number) => {
         <a href="#tentang" @click="isMobileMenuOpen = false" class="block text-base font-semibold text-[#1D2724]">Tentang Sarangan</a>
         <hr class="border-[#173B35]/10" />
         <template v-if="authStore.isAuthenticated">
-          <router-link to="/wisatawan/history" class="block text-base font-semibold text-[#1D2724]">Pesanan Saya</router-link>
-          <router-link to="/wisatawan/booking" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
+          <router-link to="/my-tickets" class="block text-base font-semibold text-[#1D2724]">Pesanan Saya</router-link>
         </template>
         <template v-else>
-          <router-link to="/login" class="block text-base font-semibold text-[#1D2724]">Masuk</router-link>
-          <router-link to="/login" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
+          <router-link to="/login?redirect=/booking" class="block text-base font-semibold text-[#1D2724]">Masuk</router-link>
         </template>
+        <router-link to="/booking" class="block w-full text-center rounded-lg bg-[#173B35] px-5 py-3 text-base font-semibold text-white mt-4">Pesan Tiket</router-link>
       </div>
     </header>
 
@@ -163,7 +176,7 @@ const formatPrice = (price: number) => {
           
           <div class="flex flex-col sm:flex-row gap-4">
             <router-link
-              to="/login"
+              to="/booking"
               class="flex items-center justify-center rounded-[10px] bg-[var(--color-primary)] px-8 py-4 text-base font-bold text-white transition-colors hover:bg-[#122c27]"
             >
               Pesan Tiket
@@ -237,7 +250,7 @@ const formatPrice = (price: number) => {
             </div>
             
             <div class="mt-auto">
-              <router-link to="/login" class="block w-full text-center rounded-[10px] bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-white hover:bg-[#122c27] transition-colors">
+              <router-link to="/booking" class="block w-full text-center rounded-[10px] bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-white hover:bg-[#122c27] transition-colors">
                 Pilih Tiket
               </router-link>
             </div>
@@ -342,7 +355,7 @@ const formatPrice = (price: number) => {
         <h2 class="text-4xl md:text-5xl font-bold text-[#173B35] mb-6">Siap menikmati Sarangan?</h2>
         <p class="text-xl text-[#66706C] mb-10">Pesan tiketmu sekarang sebelum berangkat, dan rasakan kemudahannya.</p>
         <router-link
-          to="/login"
+          to="/booking"
           class="inline-flex items-center justify-center rounded-lg bg-[#173B35] px-10 py-5 text-lg font-bold text-white transition-colors hover:bg-[#1D2724]"
         >
           Pesan Tiket
@@ -368,7 +381,7 @@ const formatPrice = (price: number) => {
             <a href="#beranda" class="hover:text-[#C9965B]">Beranda</a>
             <a href="#tiket" class="hover:text-[#C9965B]">Tiket</a>
             <a href="#tentang" class="hover:text-[#C9965B]">Tentang</a>
-            <router-link to="/login" class="hover:text-[#C9965B]">Pesan Tiket</router-link>
+            <router-link to="/booking" class="hover:text-[#C9965B]">Pesan Tiket</router-link>
           </div>
         </div>
         

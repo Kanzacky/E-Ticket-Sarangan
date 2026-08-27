@@ -40,16 +40,16 @@ async function handleLogout() {
           <!-- Desktop Navigation -->
           <nav class="hidden md:flex items-center gap-8">
             <router-link 
-              to="/wisatawan/dashboard" 
+              to="/" 
               class="text-sm font-bold transition-colors hover:text-[#4F7465]"
               active-class="text-[#173B35]"
-              :class="$route.name === 'wisatawan.dashboard' ? 'text-[#173B35]' : 'text-[#66706C]'"
+              :class="$route.name === 'home' ? 'text-[#173B35]' : 'text-[#66706C]'"
             >
               Beranda
             </router-link>
             
             <router-link 
-              to="/wisatawan/booking" 
+              to="/booking" 
               class="text-sm font-bold transition-colors hover:text-[#4F7465]"
               active-class="text-[#173B35]"
               :class="$route.name === 'wisatawan.booking' ? 'text-[#173B35]' : 'text-[#66706C]'"
@@ -58,7 +58,7 @@ async function handleLogout() {
             </router-link>
             
             <router-link 
-              to="/wisatawan/history" 
+              to="/my-tickets" 
               class="text-sm font-bold transition-colors hover:text-[#4F7465]"
               active-class="text-[#173B35]"
               :class="['wisatawan.history', 'wisatawan.tickets', 'wisatawan.ticket-detail'].includes($route.name as string) ? 'text-[#173B35]' : 'text-[#66706C]'"
@@ -74,7 +74,7 @@ async function handleLogout() {
                 <p class="text-xs font-bold text-[#1D2724]">{{ authStore.user?.name }}</p>
                 <p class="text-[10px] text-[#66706C]">Wisatawan</p>
               </div>
-              <router-link to="/wisatawan/profile" class="w-10 h-10 rounded-full bg-[#173B35]/10 flex items-center justify-center text-[#173B35] hover:bg-[#173B35]/20 transition-colors">
+              <router-link to="/profile" class="w-10 h-10 rounded-full bg-[#173B35]/10 flex items-center justify-center text-[#173B35] hover:bg-[#173B35]/20 transition-colors">
                 <User class="w-5 h-5" />
               </router-link>
             </div>
@@ -90,7 +90,7 @@ async function handleLogout() {
 
           <!-- Mobile menu button -->
           <div class="flex items-center md:hidden gap-3">
-            <router-link to="/wisatawan/profile" class="w-9 h-9 rounded-full bg-[#173B35]/10 flex items-center justify-center text-[#173B35]">
+            <router-link to="/profile" class="w-9 h-9 rounded-full bg-[#173B35]/10 flex items-center justify-center text-[#173B35]">
               <User class="w-4 h-4" />
             </router-link>
             <button 
@@ -111,21 +111,21 @@ async function handleLogout() {
       >
         <div class="px-5 pt-4 pb-6 space-y-2">
           <router-link 
-            to="/wisatawan/dashboard" 
+            to="/" 
             class="block px-4 py-3 rounded-xl text-base font-bold text-[#173B35] hover:bg-[#F7F5EF] transition-colors"
             @click="isMobileMenuOpen = false"
           >
             Beranda
           </router-link>
           <router-link 
-            to="/wisatawan/booking" 
+            to="/booking" 
             class="block px-4 py-3 rounded-xl text-base font-bold text-[#173B35] hover:bg-[#F7F5EF] transition-colors"
             @click="isMobileMenuOpen = false"
           >
             Pesan Tiket
           </router-link>
           <router-link 
-            to="/wisatawan/history" 
+            to="/my-tickets" 
             class="block px-4 py-3 rounded-xl text-base font-bold text-[#173B35] hover:bg-[#F7F5EF] transition-colors"
             @click="isMobileMenuOpen = false"
           >

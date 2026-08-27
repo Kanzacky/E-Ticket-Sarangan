@@ -22,12 +22,6 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true, guest: true },
   },
   {
-    path: '/booking',
-    name: 'booking',
-    component: () => import('@/views/booking/BookingView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/booking/success/:orderCode',
     name: 'booking.success',
     component: () => import('@/views/booking/BookingSuccessView.vue'),
@@ -40,52 +34,32 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/my-bookings',
-    name: 'my-bookings',
-    component: () => import('@/views/booking/MyBookingsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/wisatawan',
+    path: '',
     component: () => import('@/layouts/WisatawanLayout.vue'),
     meta: { requiresAuth: true, role: 'wisatawan' as UserRole },
     children: [
       {
-        path: '',
-        redirect: '/wisatawan/dashboard',
-      },
-      {
-        path: 'dashboard',
-        name: 'wisatawan.dashboard',
-        component: () => import('@/views/wisatawan/DashboardView.vue'),
-      },
-      {
-        path: 'booking',
+        path: '/booking',
         name: 'wisatawan.booking',
         component: () => import('@/views/booking/BookingView.vue'),
       },
       {
-        path: 'tickets',
+        path: '/my-tickets',
         name: 'wisatawan.tickets',
         component: () => import('@/views/booking/MyBookingsView.vue'),
       },
       {
-        path: 'tickets/:id',
+        path: '/my-tickets/:id',
         name: 'wisatawan.ticket-detail',
         component: () => import('@/views/wisatawan/TicketDetailView.vue'),
       },
       {
-        path: 'history',
-        name: 'wisatawan.history',
-        component: () => import('@/views/booking/MyBookingsView.vue'),
-      },
-      {
-        path: 'profile',
+        path: '/profile',
         name: 'wisatawan.profile',
         component: () => import('@/views/wisatawan/ProfileView.vue'),
       },
       {
-        path: 'accommodations',
+        path: '/accommodations',
         name: 'wisatawan.accommodations',
         component: () => import('@/views/wisatawan/AccommodationsView.vue'),
       },

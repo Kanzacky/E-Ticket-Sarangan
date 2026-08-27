@@ -21,13 +21,20 @@ async function handleSubmit() {
   try {
     await authStore.login(form)
     
+    // Check for redirect query parameter
+    const redirect = router.currentRoute.value.query.redirect as string
+    
     // Redirect based on role
     if (authStore.role === 'admin') {
       void router.push({ name: 'admin.dashboard' })
     } else if (authStore.role === 'petugas') {
       void router.push({ name: 'petugas.dashboard' })
     } else {
-      void router.push({ name: 'wisatawan.dashboard' })
+      if (redirect) {
+        void router.push(redirect)
+      } else {
+        void router.push({ name: 'home' })
+      }
     }
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
