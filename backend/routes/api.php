@@ -5,18 +5,43 @@ use App\Http\Controllers\Api\V1\AccommodationController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\TicketTypeController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\AdminTicketTypeController;
+use App\Http\Controllers\Api\V1\Admin\AdminOrderController;
 use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\XenditWebhookController;
 
-// Prefix grup: `api` (dari withRouting apiPrefix)
-
-// Public Ticket Types
+// Public Routes
 Route::get('/ticket-types', [TicketTypeController::class, 'index']);
 
 // Public Accommodations
 Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
+
+// Admin Routes (prefix: admin, middleware: auth sanctum)
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    // Users CRUD
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::patch('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    
+    // Ticket Types CRUD
+    Route::get('/ticket-types', [AdminTicketTypeController::class, 'index']);
+    Route::post('/ticket-types', [AdminTicketTypeController::class, 'store']);
+    Route::get('/ticket-types/{id}', [AdminTicketTypeController::class, 'show']);
+    Route::patch('/ticket-types/{id}', [AdminTicketTypeController::class, 'update']);
+    Route::delete('/ticket-types/{id}', [AdminTicketTypeController::class, 'destroy']);
+    
+    // Orders CRUD
+    Route::get('/orders', [AdminOrderController::class, 'index']);
+    Route::get('/orders/{order_code}', [AdminOrderController::class, 'show']);
+    Route::patch('/orders/{order_code}/status', [AdminOrderController::class, 'updateStatus']);
+    
+    // Dashboard Ringkas
+    Route::get('/dashboard', [UserController::class, 'dashboard']);
+});
 
 // Auth Endpoints
 Route::prefix('auth')->group(function () {
@@ -50,4 +75,3 @@ Route::post('/payments/midtrans/notification', [PaymentCallbackController::class
 // Xendit Webhook
 Route::post('/payments/xendit/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']);
 Route::post('/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']); // Fallback alias
-
