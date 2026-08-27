@@ -1,70 +1,123 @@
 <script setup lang="ts">
-import { QrCode, CheckCircle, XCircle } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
-import { ref, onMounted } from 'vue'
+import { usePetugasDashboard } from '@/composables/usePetugasDashboard'
+import { QrCode, Users, CheckCircle, Clock, AlertTriangle, ArrowRight } from 'lucide-vue-next'
+import StatCard from '@/components/ui/StatCard.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
-const authStore = useAuthStore()
-const isLoading = ref(true)
+const { isLoading, summary, recentVisits, error } = usePetugasDashboard()
 
-// Mock Data structure based on requirements (should come from API later)
-const summary = ref({
-  checkins: 0,
-  valid: 0,
-  invalid: 0
-})
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  })
+}
 
-onMounted(() => {
-  // Simulate API fetch delay
-  setTimeout(() => {
-    isLoading.value = false
-    // Leave data empty to show Empty State as required by Anti-AI slop rule
-    // "Jika API belum tersedia: jangan membuat angka palsu."
-  }, 800)
-})
+const getStatusTone = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'completed': return 'success'
+    case 'paid': return 'info'
+    case 'failed': return 'danger'
+    case 'cancelled': return 'danger'
+    case 'pending': return 'warning'
+    default: return 'neutral'
+  }
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="bg-white rounded-[12px] p-6 border border-[var(--color-border)] text-center">
-      <h2 class="text-xl font-bold text-[var(--color-text-primary)]">Selamat datang, {{ authStore.user?.name?.split(' ')[0] || 'Petugas' }}</h2>
-      <p class="text-[var(--color-text-secondary)] mt-1">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
-      
-      <div class="mt-8 mb-4">
-        <router-link
-          to="/petugas/scanner"
-          class="inline-flex flex-col items-center justify-center gap-3 bg-[var(--color-primary)] text-white px-8 py-6 rounded-[12px] hover:bg-[#122c27] transition-all w-full max-w-xs mx-auto outline-none"
-        >
-          <QrCode class="h-12 w-12" />
-          <span class="text-lg font-bold">Mulai Scan Tiket</span>
-        </router-link>
+    <!-- Header Area -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-[#173B35]">Operasional Hari Ini</h1>
+        <p class="text-sm font-medium text-[#66706C] mt-1">Pantau kunjungan dan validasi tiket hari ini.</p>
       </div>
+      <router-link
+        to="/petugas/scanner"
+        class="inline-flex items-center justify-center gap-2 bg-[#173B35] text-white px-6 py-3 rounded-xl hover:bg-[#112a26] transition-all font-bold shadow-md shadow-[#173B35]/20"
+      >
+        <QrCode class="w-5 h-5" />
+        Scan Tiket
+      </router-link>
     </div>
 
-    <!-- Quick Status -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      <div class="bg-white rounded-[12px] p-4 border border-[var(--color-border)] flex flex-col items-center justify-center text-center">
-        <p class="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Check-in Hari Ini</p>
-        <div v-if="isLoading" class="h-8 w-12 rounded bg-[var(--color-border)] animate-pulse"></div>
-        <p v-else class="text-2xl font-black text-[var(--color-text-primary)]">{{ summary.checkins }}</p>
+    <!-- Error Message -->
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+      {{ error }}
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard
+        title="Kunjungan Hari Ini"
+        :value="summary.kunjungan_hari_ini"
+      >
+        <template #icon>
+          <Users class="w-6 h-6" />
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="Diverifikasi"
+        :value="summary.diverifikasi"
+      >
+        <template #icon>
+          <CheckCircle class="w-6 h-6 text-emerald-600" />
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="Menunggu"
+        :value="summary.menunggu"
+      >
+        <template #icon>
+          <Clock class="w-6 h-6 text-amber-500" />
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="Tiket Bermasalah"
+        :value="summary.bermasalah"
+      >
+        <template #icon>
+          <AlertTriangle class="w-6 h-6 text-red-500" />
+        </template>
+      </StatCard>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-bold text-[#1D2724]">Kunjungan Terbaru</h2>
+        <router-link to="/petugas/visits" class="text-sm font-bold text-[#173B35] hover:underline flex items-center gap-1">
+          Lihat Semua <ArrowRight class="w-4 h-4" />
+        </router-link>
       </div>
-      
-      <div class="bg-white rounded-[12px] p-4 border border-[var(--color-border)] flex flex-col items-center justify-center text-center">
-        <div class="flex items-center gap-1 mb-2">
-          <CheckCircle class="w-3 h-3 text-emerald-600" />
-          <p class="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Valid</p>
-        </div>
-        <div v-if="isLoading" class="h-8 w-12 rounded bg-[var(--color-border)] animate-pulse"></div>
-        <p v-else class="text-2xl font-black text-emerald-700">{{ summary.valid }}</p>
-      </div>
-      
-      <div class="bg-white rounded-[12px] p-4 border border-[var(--color-border)] flex flex-col items-center justify-center text-center col-span-2 sm:col-span-1">
-        <div class="flex items-center gap-1 mb-2">
-          <XCircle class="w-3 h-3 text-red-600" />
-          <p class="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Ditolak</p>
-        </div>
-        <div v-if="isLoading" class="h-8 w-12 rounded bg-[var(--color-border)] animate-pulse"></div>
-        <p v-else class="text-2xl font-black text-red-700">{{ summary.invalid }}</p>
-      </div>
+
+      <DataTable 
+        :headers="['Kode', 'Wisatawan', 'Tanggal', 'Status']"
+        :is-loading="isLoading"
+        :is-empty="!recentVisits || recentVisits.length === 0"
+        empty-message="Belum ada kunjungan terbaru."
+      >
+        <tr v-for="visit in recentVisits" :key="visit.id" class="hover:bg-[#F7F5EF]/50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm font-bold text-[#1D2724]">#{{ visit.order_code }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-sm text-[#1D2724] font-medium">{{ visit.user?.name || '-' }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm text-[#66706C]">{{ formatDate(visit.visit_date) }}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <StatusBadge :tone="getStatusTone(visit.status)">
+              <span class="capitalize">{{ visit.status === 'COMPLETED' ? 'Sudah Masuk' : visit.status }}</span>
+            </StatusBadge>
+          </td>
+        </tr>
+      </DataTable>
     </div>
   </div>
 </template>

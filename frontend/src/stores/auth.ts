@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 import { getMeApi, loginApi, logoutApi, registerApi, getCsrfCookie, type AuthUser, type LoginRequest, type RegisterRequest } from '@/services/api'
+import api from '@/services/api'
 
 export type UserRole = 'wisatawan' | 'petugas' | 'admin'
 
@@ -53,6 +54,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateProfile(data: { name?: string, phone?: string, email?: string, password?: string }) {
+    try {
+      const response = await api.patch('/auth/me', data)
+      if (response.data.success) {
+        setUser(response.data.data.user)
+        return { success: true }
+      }
+      return { success: false, message: response.data.message || 'Update failed' }
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || 'Update failed' }
+    }
+  }
+
   async function logout(): Promise<void> {
     if (token.value) {
       try {
@@ -98,5 +112,6 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     initialize,
+    updateProfile,
   }
 })

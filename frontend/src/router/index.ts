@@ -34,7 +34,7 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '',
+    path: '/_wisatawan',
     component: () => import('@/layouts/WisatawanLayout.vue'),
     meta: { requiresAuth: true, role: 'wisatawan' as UserRole },
     children: [
@@ -63,6 +63,11 @@ const routes: RouteRecordRaw[] = [
         name: 'wisatawan.accommodations',
         component: () => import('@/views/wisatawan/AccommodationsView.vue'),
       },
+      {
+        path: '/accommodations/:id',
+        name: 'wisatawan.accommodation-detail',
+        component: () => import('@/views/wisatawan/AccommodationDetailView.vue'),
+      },
     ],
   },
   {
@@ -81,14 +86,34 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/petugas/ScannerView.vue'),
       },
       {
-        path: 'checkins',
-        name: 'petugas.checkins',
-        component: () => import('@/views/petugas/CheckinsView.vue'),
+        path: 'visits',
+        name: 'petugas.visits',
+        component: () => import('@/views/petugas/VisitsView.vue'),
       },
       {
-        path: 'tickets/:id',
-        name: 'petugas.ticket-detail',
-        component: () => import('@/views/petugas/TicketDetailView.vue'),
+        path: 'bookings',
+        name: 'petugas.bookings',
+        component: () => import('@/views/petugas/BookingsView.vue'),
+      },
+      {
+        path: 'bookings/:id',
+        name: 'petugas.booking-detail',
+        component: () => import('@/views/petugas/BookingDetailView.vue'),
+      },
+      {
+        path: 'users',
+        name: 'petugas.users',
+        component: () => import('@/views/petugas/UsersView.vue'),
+      },
+      {
+        path: 'history',
+        name: 'petugas.history',
+        component: () => import('@/views/petugas/HistoryView.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'petugas.profile',
+        component: () => import('@/views/petugas/ProfileView.vue'),
       },
     ],
   },
@@ -110,12 +135,17 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'petugas',
         name: 'admin.petugas',
-        component: () => import('@/views/admin/PetugasView.vue'),
+        component: () => import('@/views/admin/UsersView.vue'),
       },
       {
         path: 'ticket-categories',
         name: 'admin.ticket-categories',
         component: () => import('@/views/admin/TicketCategoriesView.vue'),
+      },
+      {
+        path: 'accommodations',
+        name: 'admin.accommodations',
+        component: () => import('@/views/admin/AccommodationsView.vue'),
       },
       {
         path: 'bookings',
@@ -157,6 +187,11 @@ const routes: RouteRecordRaw[] = [
         name: 'admin.audit-logs',
         component: () => import('@/views/admin/AuditLogsView.vue'),
       },
+      {
+        path: 'settings',
+        name: 'admin.settings',
+        component: () => import('@/views/admin/SettingsView.vue'),
+      },
     ],
   },
   {
@@ -170,7 +205,18 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior(to, _from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+      }
+    }
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  },
 })
 
 router.beforeEach(async (to) => {

@@ -177,25 +177,37 @@ async function handleConfirmBooking() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[var(--color-background)] py-8 px-4 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-4xl">
-      <!-- Header Bar -->
-      <div class="mb-8 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div>
-            <h1 class="text-2xl font-bold text-[var(--color-primary)] sm:text-3xl">Pemesanan Tiket Wisata</h1>
-            <p class="text-sm text-[var(--color-text-secondary)]">Telaga Sarangan, Magetan - Jawa Timur</p>
+  <div class="min-h-screen bg-[var(--color-background)] font-sans">
+    <!-- Page Header -->  
+    <div class="bg-white border-b border-[#173B35]/10 sticky top-[72px] z-10">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-4">
+          <div class="flex items-center gap-3">
+            <router-link
+              to="/"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#173B35]/15 text-[#173B35] transition hover:bg-[#F7F5EF]"
+              title="Kembali ke Beranda"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </router-link>
+            <div>
+              <h1 class="text-base font-bold text-[var(--color-primary)]">Pemesanan Tiket</h1>
+              <p class="text-xs text-[var(--color-text-secondary)]">Telaga Sarangan, Magetan</p>
+            </div>
           </div>
-        </div>
 
-        <router-link
-          to="/wisatawan/history"
-          class="hidden sm:inline-flex items-center gap-2 rounded-[10px] border border-[var(--color-border)] bg-white px-3.5 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-secondary)]"
-        >
-          <Ticket class="h-4 w-4 text-[var(--color-primary)]" />
-          Tiket Saya
-        </router-link>
+          <router-link
+            to="/my-tickets"
+            class="hidden sm:inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-secondary)]"
+          >
+            <Ticket class="h-4 w-4 text-[var(--color-primary)]" />
+            Pesanan Saya
+          </router-link>
+        </div>
       </div>
+    </div>
+
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
 
       <!-- Alert Error -->
       <div

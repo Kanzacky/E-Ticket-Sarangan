@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\TicketTypeController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\AdminTicketTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminOrderController;
+use App\Http\Controllers\Api\V1\Admin\AdminAccommodationController;
 use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\XenditWebhookController;
@@ -23,6 +24,7 @@ Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Users CRUD
     Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::patch('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
@@ -33,14 +35,43 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/ticket-types/{id}', [AdminTicketTypeController::class, 'show']);
     Route::patch('/ticket-types/{id}', [AdminTicketTypeController::class, 'update']);
     Route::delete('/ticket-types/{id}', [AdminTicketTypeController::class, 'destroy']);
+    // Ticket Categories CRUD
+    Route::get('/ticket-categories', [\App\Http\Controllers\Api\V1\Admin\AdminTicketCategoryController::class, 'index']);
+    Route::post('/ticket-categories', [\App\Http\Controllers\Api\V1\Admin\AdminTicketCategoryController::class, 'store']);
+    Route::get('/ticket-categories/{id}', [\App\Http\Controllers\Api\V1\Admin\AdminTicketCategoryController::class, 'show']);
+    Route::patch('/ticket-categories/{id}', [\App\Http\Controllers\Api\V1\Admin\AdminTicketCategoryController::class, 'update']);
+    Route::delete('/ticket-categories/{id}', [\App\Http\Controllers\Api\V1\Admin\AdminTicketCategoryController::class, 'destroy']);
     
     // Orders CRUD
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{order_code}', [AdminOrderController::class, 'show']);
     Route::patch('/orders/{order_code}/status', [AdminOrderController::class, 'updateStatus']);
     
+    // Payments (derived from Orders/Transactions)
+    Route::get('/payments', [\App\Http\Controllers\Api\V1\Admin\AdminPaymentController::class, 'index']);
+    Route::patch('/payments/{id}/status', [\App\Http\Controllers\Api\V1\Admin\AdminPaymentController::class, 'updateStatus']);
+
+    // Reports
+    Route::get('/reports/summary', [\App\Http\Controllers\Api\V1\Admin\AdminReportController::class, 'summary']);
+
     // Dashboard Ringkas
     Route::get('/dashboard', [UserController::class, 'dashboard']);
+
+    // Accommodations CRUD
+    // Accommodations CRUD
+    Route::get('/accommodations', [AdminAccommodationController::class, 'index']);
+    Route::post('/accommodations', [AdminAccommodationController::class, 'store']);
+    Route::get('/accommodations/{id}', [AdminAccommodationController::class, 'show']);
+    Route::patch('/accommodations/{id}', [AdminAccommodationController::class, 'update']);
+    Route::delete('/accommodations/{id}', [AdminAccommodationController::class, 'destroy']);
+});
+
+// Petugas Routes (prefix: petugas, middleware: auth sanctum)
+Route::middleware('auth:sanctum')->prefix('petugas')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'dashboard']);
+    Route::get('/visits', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'visits']);
+    Route::get('/bookings', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'bookings']);
+    Route::get('/users', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'users']);
 });
 
 // Auth Endpoints
@@ -51,6 +82,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::patch('/me', [AuthController::class, 'updateProfile']);
     });
 });
 

@@ -10,7 +10,9 @@ import PublicFooter from '@/components/layout/PublicFooter.vue'
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col pt-24 pb-16">
-      <RouterView />
+      <div class="mx-auto w-full max-w-[1240px] px-5 sm:px-6 lg:px-8 flex-1">
+        <RouterView />
+      </div>
     </main>
     
     <PublicFooter />

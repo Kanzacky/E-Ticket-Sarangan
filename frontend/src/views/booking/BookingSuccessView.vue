@@ -177,7 +177,7 @@ function copyOrderCode() {
           <!-- Actions -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <router-link
-              to="/wisatawan/history"
+              to="/my-tickets"
               class="flex items-center justify-center gap-2 rounded-[10px] bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-white hover:bg-[#122c27] transition"
             >
               <FileText class="h-4 w-4" />

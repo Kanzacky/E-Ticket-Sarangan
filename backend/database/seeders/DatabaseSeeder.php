@@ -48,9 +48,9 @@ class DatabaseSeeder extends Seeder
 
         // Default Ticket Types (Fase Pemesanan)
         TicketType::firstOrCreate(
-            ['name' => 'Tiket Dewasa'],
+            ['name' => 'Tiket Masuk Dewasa'],
             [
-                'description' => 'Tiket masuk untuk pengunjung dewasa (> 12 tahun)',
+                'description' => 'Tiket masuk area wisata Telaga Sarangan untuk pengunjung dewasa (> 12 tahun)',
                 'price' => 20000,
                 'quota' => 500,
                 'status' => 'ACTIVE',
@@ -58,9 +58,9 @@ class DatabaseSeeder extends Seeder
         );
 
         TicketType::firstOrCreate(
-            ['name' => 'Tiket Anak'],
+            ['name' => 'Tiket Masuk Anak'],
             [
-                'description' => 'Tiket masuk untuk anak-anak (usia 3 - 12 tahun)',
+                'description' => 'Tiket masuk area wisata Telaga Sarangan untuk anak-anak (usia 3–12 tahun)',
                 'price' => 10000,
                 'quota' => 300,
                 'status' => 'ACTIVE',
@@ -68,11 +68,31 @@ class DatabaseSeeder extends Seeder
         );
 
         TicketType::firstOrCreate(
-            ['name' => 'Tiket Mancanegara'],
+            ['name' => 'Paket Keluarga'],
             [
-                'description' => 'Tiket masuk untuk wisatawan mancanegara / WNA',
+                'description' => 'Paket hemat 2 dewasa + 2 anak, termasuk akses area wisata dan spot foto',
                 'price' => 50000,
                 'quota' => 100,
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        TicketType::firstOrCreate(
+            ['name' => 'Paket Wisata + Penginapan'],
+            [
+                'description' => 'Tiket masuk 2 orang + 1 malam penginapan di sekitar Telaga Sarangan',
+                'price' => 350000,
+                'quota' => 30,
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        TicketType::firstOrCreate(
+            ['name' => 'Paket Rombongan'],
+            [
+                'description' => 'Paket tiket masuk untuk rombongan minimal 10 orang, harga per orang',
+                'price' => 15000,
+                'quota' => 200,
                 'status' => 'ACTIVE',
             ]
         );
@@ -92,7 +112,7 @@ class DatabaseSeeder extends Seeder
         TicketCategory::firstOrCreate(
             ['name' => 'Anak-anak'],
             [
-                'description' => 'Tiket untuk anak-anak (usia 3 - 12 tahun)',
+                'description' => 'Tiket untuk anak-anak (usia 3–12 tahun)',
                 'price' => 10000,
                 'min_age' => 3,
                 'max_age' => 12,
@@ -101,10 +121,32 @@ class DatabaseSeeder extends Seeder
         );
 
         TicketCategory::firstOrCreate(
-            ['name' => 'Mancanegara'],
+            ['name' => 'Paket Keluarga'],
             [
-                'description' => 'Tiket untuk wisatawan asing',
+                'description' => 'Paket 2 dewasa + 2 anak termasuk spot foto',
                 'price' => 50000,
+                'min_age' => null,
+                'max_age' => null,
+                'is_active' => true,
+            ]
+        );
+
+        TicketCategory::firstOrCreate(
+            ['name' => 'Paket Wisata + Penginapan'],
+            [
+                'description' => 'Tiket masuk 2 orang + 1 malam penginapan',
+                'price' => 350000,
+                'min_age' => null,
+                'max_age' => null,
+                'is_active' => true,
+            ]
+        );
+
+        TicketCategory::firstOrCreate(
+            ['name' => 'Paket Rombongan'],
+            [
+                'description' => 'Tiket masuk untuk grup 10+ orang, harga per orang',
+                'price' => 15000,
                 'min_age' => null,
                 'max_age' => null,
                 'is_active' => true,

@@ -3,7 +3,7 @@ import { CheckCircle2, CircleAlert, LoaderCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  tone: 'success' | 'danger' | 'info' | 'neutral'
+  tone: 'success' | 'danger' | 'info' | 'neutral' | 'warning'
 }>()
 
 const config = computed(() => {
@@ -16,6 +16,11 @@ const config = computed(() => {
     case 'danger':
       return {
         classes: 'bg-red-50 text-red-700 border-red-200',
+        icon: CircleAlert,
+      }
+    case 'warning':
+      return {
+        classes: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: CircleAlert,
       }
     case 'info':

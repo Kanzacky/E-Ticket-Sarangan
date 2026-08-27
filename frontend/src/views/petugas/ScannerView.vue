@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckCircle, XCircle, ArrowLeft, Ticket as TicketIcon } from 'lucide-vue-next'
+import { CheckCircle, XCircle, Ticket as TicketIcon, AlertTriangle } from 'lucide-vue-next'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { scanTicketApi } from '@/services/scanner.service'
@@ -113,19 +113,14 @@ function confirmCheckIn() {
 </script>
 
 <template>
-  <div class="space-y-6 pb-20">
-    <div class="flex items-center gap-3 mb-6">
-      <router-link to="/petugas/dashboard" class="p-2 -ml-2 rounded-[10px] text-[var(--color-text-secondary)] hover:bg-white hover:text-[var(--color-primary)]">
-        <ArrowLeft class="w-5 h-5" />
-      </router-link>
-      <div>
-        <h1 class="text-xl font-bold text-[var(--color-text-primary)] leading-tight">Scan Tiket</h1>
-        <p class="text-xs text-[var(--color-text-secondary)]">Arahkan kamera ke QR Code wisatawan</p>
-      </div>
+  <div class="space-y-6 pb-6">
+    <div class="mb-6">
+      <h1 class="text-2xl font-black text-[#173B35]">Scan Tiket</h1>
+      <p class="text-sm font-medium text-[#66706C] mt-1">Arahkan kamera ke QR Code wisatawan</p>
     </div>
 
     <!-- Scanner Area -->
-    <div v-if="scanResult === 'idle'" class="bg-[var(--color-text-primary)] rounded-[12px] overflow-hidden aspect-[3/4] sm:aspect-video relative shadow-xl shadow-[var(--color-primary)]/20 border-4 border-white flex flex-col items-center justify-center">
+    <div v-if="scanResult === 'idle'" class="bg-[#1D2724] rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-video relative shadow-xl shadow-[#173B35]/10 border border-[#E8E6DE] flex flex-col items-center justify-center">
       
       <div v-if="!isScanning" class="absolute inset-0 bg-[url('/images/sarangan-story-2.jpg')] bg-cover bg-center opacity-20 grayscale"></div>
       
@@ -136,97 +131,100 @@ function confirmCheckIn() {
         @init="onInit"
         class="absolute inset-0 w-full h-full object-cover"
       >
-        <div class="absolute inset-0 bg-[var(--color-text-primary)]/20 z-10 flex flex-col items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-[#1D2724]/20 z-10 flex flex-col items-center justify-center pointer-events-none">
           <div class="relative z-10 p-8 flex flex-col items-center">
             <!-- Target frame -->
-            <div class="w-48 h-48 sm:w-64 sm:h-64 border-2 border-white/50 rounded-[12px] relative shadow-[0_0_0_4000px_rgba(29,39,36,0.6)]">
-              <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-[12px]"></div>
-              <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-[12px]"></div>
-              <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-[12px]"></div>
-              <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-[12px]"></div>
+            <div class="w-48 h-48 sm:w-64 sm:h-64 border-2 border-white/50 rounded-xl relative shadow-[0_0_0_4000px_rgba(29,39,36,0.6)]">
+              <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
+              <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
+              <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-xl"></div>
             </div>
           </div>
-          <p class="text-white font-medium animate-pulse mt-4 bg-black/50 px-4 py-2 rounded-[10px]">Memindai QR Code...</p>
+          <p class="text-white font-medium animate-pulse mt-4 bg-black/50 px-4 py-2 rounded-lg">Memindai QR Code...</p>
         </div>
       </qrcode-stream>
 
-      <div v-if="cameraError" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[var(--color-text-primary)]">
+      <div v-if="cameraError" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[#1D2724]">
         <XCircle class="w-12 h-12 text-red-500 mb-3" />
         <p class="text-white font-bold">{{ cameraError }}</p>
-        <button @click="startScan" class="mt-4 bg-white text-[var(--color-primary)] px-4 py-2 rounded-[10px] font-bold text-sm">Coba Lagi</button>
+        <button @click="startScan" class="mt-4 bg-white text-[#173B35] px-4 py-2 rounded-lg font-bold text-sm">Coba Lagi</button>
       </div>
 
       <button 
         v-if="!isScanning && !cameraError"
         @click="startScan"
-        class="absolute z-20 bg-white text-[var(--color-primary)] font-bold px-8 py-4 rounded-[12px] shadow-lg active:scale-95 transition-transform"
+        class="absolute z-20 bg-white text-[#173B35] font-bold px-8 py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
       >
         Mulai Scan
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-else-if="scanResult === 'loading'" class="bg-white rounded-[12px] p-6 border border-[var(--color-border)] shadow-lg flex flex-col items-center justify-center aspect-[3/4] sm:aspect-video text-center">
-      <div class="animate-spin rounded-full h-16 w-16 border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)] mb-6"></div>
-      <h2 class="text-2xl font-black text-slate-800">Memverifikasi Tiket...</h2>
-      <p class="text-[var(--color-text-secondary)] text-sm mt-2">Mohon tunggu sebentar, sedang mengecek ke server.</p>
+    <div v-else-if="scanResult === 'loading'" class="bg-white rounded-2xl p-6 border border-[#E8E6DE] shadow-sm flex flex-col items-center justify-center aspect-[4/3] sm:aspect-video text-center">
+      <div class="animate-spin rounded-full h-16 w-16 border-4 border-[#173B35]/20 border-t-[#173B35] mb-6"></div>
+      <h2 class="text-2xl font-black text-[#1D2724]">Memverifikasi Tiket...</h2>
+      <p class="text-[#66706C] text-sm mt-2">Mohon tunggu sebentar, sedang mengecek ke server.</p>
     </div>
 
     <!-- Validation Result: VALID -->
-    <div v-else-if="scanResult === 'valid'" class="bg-white rounded-[12px] p-6 border-2 border-green-500 shadow-lg shadow-green-500/10">
-      <div class="flex flex-col items-center text-center border-b border-[var(--color-border)] pb-6 mb-6">
-        <CheckCircle class="w-16 h-16 text-green-500 mb-3" />
-        <h2 class="text-2xl font-black text-green-600">Tiket Valid</h2>
-        <p class="text-[var(--color-text-secondary)] text-sm mt-1">Sistem berhasil memverifikasi tiket.</p>
+    <div v-else-if="scanResult === 'valid'" class="bg-white rounded-2xl p-6 border border-emerald-200 shadow-sm max-w-lg mx-auto">
+      <div class="flex flex-col items-center text-center border-b border-[#E8E6DE] pb-6 mb-6">
+        <CheckCircle class="w-16 h-16 text-emerald-500 mb-3" />
+        <h2 class="text-2xl font-black text-emerald-600">Tiket Valid</h2>
+        <p class="text-[#66706C] text-sm mt-1">Sistem berhasil memverifikasi tiket.</p>
       </div>
       
       <div v-if="scannedData" class="space-y-4 mb-8">
-        <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-secondary)]">Kode</span>
-          <span class="font-bold text-[var(--color-text-primary)]">{{ scannedData.code }}</span>
+        <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
+          <span class="text-sm font-medium text-[#66706C]">Kode Booking</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.code }}</span>
         </div>
-        <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-secondary)]">Nama</span>
-          <span class="font-bold text-[var(--color-text-primary)]">{{ scannedData.name }}</span>
+        <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
+          <span class="text-sm font-medium text-[#66706C]">Nama Pengunjung</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.name }}</span>
         </div>
-        <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-secondary)]">Tgl. Kunjungan</span>
-          <span class="font-bold text-[var(--color-text-primary)]">{{ scannedData.date }}</span>
+        <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
+          <span class="text-sm font-medium text-[#66706C]">Tanggal Kunjungan</span>
+          <span class="font-bold text-[#1D2724]">{{ scannedData.date }}</span>
         </div>
-        <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-secondary)]">Jenis Tiket</span>
-          <span class="font-bold text-[var(--color-text-primary)] max-w-[50%] text-right truncate">{{ scannedData.type }}</span>
+        <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
+          <span class="text-sm font-medium text-[#66706C]">Jenis Tiket</span>
+          <span class="font-bold text-[#1D2724] text-right truncate max-w-[150px] sm:max-w-[200px]">{{ scannedData.type }}</span>
         </div>
-        <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-secondary)]">Jumlah</span>
-          <div class="flex items-center gap-1.5 bg-[var(--color-background)] px-2 py-1 rounded-lg">
-            <TicketIcon class="w-4 h-4 text-[var(--color-primary)]" />
-            <span class="font-bold text-[var(--color-primary)]">{{ scannedData.qty }}x</span>
+        <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
+          <span class="text-sm font-medium text-[#66706C]">Jumlah Pengunjung</span>
+          <div class="flex items-center gap-1.5 bg-[#F7F5EF] px-2.5 py-1 rounded-lg">
+            <TicketIcon class="w-4 h-4 text-[#C9965B]" />
+            <span class="font-bold text-[#1D2724]">{{ scannedData.qty }} Orang</span>
           </div>
         </div>
       </div>
       
       <div class="grid grid-cols-1 gap-3">
-        <button @click="confirmCheckIn" class="py-4 px-4 rounded-[10px] font-bold text-white bg-green-600 hover:bg-green-700 shadow-md">
+        <button @click="confirmCheckIn" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors">
           Tutup & Kembali Scan
         </button>
       </div>
     </div>
 
     <!-- Validation Result: INVALID -->
-    <div v-else-if="scanResult === 'invalid'" class="bg-white rounded-[12px] p-6 border-2 border-red-500 shadow-lg shadow-red-500/10">
-      <div class="flex flex-col items-center text-center border-b border-[var(--color-border)] pb-6 mb-6">
+    <div v-else-if="scanResult === 'invalid'" class="bg-white rounded-2xl p-6 border border-red-200 shadow-sm max-w-lg mx-auto">
+      <div class="flex flex-col items-center text-center border-b border-[#E8E6DE] pb-6 mb-6">
         <XCircle class="w-16 h-16 text-red-500 mb-3" />
-        <h2 class="text-2xl font-black text-red-600">Tiket Ditolak</h2>
-        <p class="text-[var(--color-text-secondary)] text-sm mt-1">Gagal memverifikasi tiket.</p>
+        <h2 class="text-2xl font-black text-red-600">Tiket Tidak Valid</h2>
+        <p class="text-[#66706C] text-sm mt-1">Sistem menolak tiket ini.</p>
       </div>
       
-      <div class="bg-red-50 text-red-700 p-4 rounded-[12px] mb-8 flex gap-3 text-sm font-medium">
-        <span>⚠️</span>
-        <p>Alasan: <strong>{{ invalidReason }}</strong></p>
+      <div class="bg-red-50 text-red-700 p-4 rounded-xl mb-8 flex items-start gap-3 text-sm font-medium border border-red-100">
+        <AlertTriangle class="w-5 h-5 shrink-0 mt-0.5" />
+        <div>
+          <span class="block font-bold mb-0.5">Alasan Penolakan:</span>
+          <span>{{ invalidReason }}</span>
+        </div>
       </div>
       
-      <button @click="resetScanner" class="w-full py-4 px-4 rounded-[10px] font-bold text-white bg-[var(--color-text-primary)] hover:bg-black shadow-md">
+      <button @click="resetScanner" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-[#1D2724] hover:bg-black shadow-sm transition-colors">
         Scan Ulang
       </button>
     </div>
