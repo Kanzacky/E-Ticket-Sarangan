@@ -17,7 +17,7 @@ class AdminReportController extends Controller
         // Simple period filter: default to this month
         $period = $request->query('period', 'month'); // 'today', 'week', 'month', 'year', 'all'
         
-        $query = Order::where('status', 'PAID');
+        $query = Order::whereIn('status', ['PAID', 'COMPLETED']);
         
         if ($period === 'today') {
             $query->whereDate('created_at', Carbon::today());
@@ -49,7 +49,7 @@ class AdminReportController extends Controller
         $topTickets = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-            ->where('orders.status', 'PAID')
+            ->whereIn('orders.status', ['PAID', 'COMPLETED'])
             ->select('ticket_types.name', DB::raw('SUM(order_items.quantity) as total_sold'))
             ->groupBy('ticket_types.id', 'ticket_types.name')
             ->orderByDesc('total_sold')

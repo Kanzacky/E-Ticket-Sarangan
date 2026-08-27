@@ -43,7 +43,7 @@ class UserController extends Controller
 
     public function dashboard(): JsonResponse
     {
-        $revenue = Order::where('status', 'PAID')
+        $revenue = Order::whereIn('status', ['PAID', 'COMPLETED'])
             ->sum('total_amount');
 
         $orders = Order::with('user:id,name,email')
@@ -52,10 +52,10 @@ class UserController extends Controller
             ->get(['id', 'user_id', 'order_code', 'visit_date', 'customer_name', 'total_amount', 'status', 'created_at']);
 
         $totalTickets = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.status', 'PAID')
+            ->whereIn('orders.status', ['PAID', 'COMPLETED'])
             ->sum('quantity');
 
-        $totalVisitors = Order::where('status', 'PAID')->count();
+        $totalVisitors = Order::whereIn('status', ['PAID', 'COMPLETED'])->count();
 
         return response()->json([
             'success' => true,
