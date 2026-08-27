@@ -32,8 +32,7 @@ export interface OrderItem {
   ticket_type?: TicketType
   created_at?: string
 }
-
-export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED'
+export type OrderStatus = 'PENDING' | 'PAID' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED'
 
 export interface Order {
   id: number

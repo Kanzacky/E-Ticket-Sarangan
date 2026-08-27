@@ -61,6 +61,7 @@ const stats = computed(() => ({
   all: orders.value.length,
   pending: orders.value.filter(o => o.status === 'PENDING').length,
   paid: orders.value.filter(o => o.status === 'PAID').length,
+  completed: orders.value.filter(o => o.status === 'COMPLETED').length,
   cancelled: orders.value.filter(o => o.status === 'CANCELLED').length,
   expired: orders.value.filter(o => o.status === 'EXPIRED').length,
 }))
@@ -97,6 +98,7 @@ const statusTabs = [
   { key: 'ALL', label: 'Semua', count: computed(() => stats.value.all) },
   { key: 'PENDING', label: 'Menunggu Bayar', count: computed(() => stats.value.pending) },
   { key: 'PAID', label: 'Lunas', count: computed(() => stats.value.paid) },
+  { key: 'COMPLETED', label: 'Sudah Digunakan', count: computed(() => stats.value.completed) },
   { key: 'CANCELLED', label: 'Dibatalkan', count: computed(() => stats.value.cancelled) },
 ]
 
@@ -104,6 +106,7 @@ function getStatusBadgeClass(status: OrderStatus) {
   switch (status) {
     case 'PENDING':  return 'bg-orange-50 text-orange-700 border-orange-200'
     case 'PAID':     return 'bg-green-50 text-green-700 border-green-200'
+    case 'COMPLETED':return 'bg-emerald-50 text-emerald-700 border-emerald-200'
     case 'CANCELLED':return 'bg-red-50 text-red-700 border-red-200'
     case 'EXPIRED':  return 'bg-gray-100 text-gray-500 border-gray-200'
     default:         return 'bg-gray-50 text-gray-600 border-gray-200'
@@ -120,6 +123,7 @@ function getStatusTabClass(key: string) {
   switch (key) {
     case 'PENDING':   return 'text-orange-600 border-orange-500 font-bold'
     case 'PAID':      return 'text-green-700 border-green-600 font-bold'
+    case 'COMPLETED': return 'text-emerald-700 border-emerald-600 font-bold'
     case 'CANCELLED': return 'text-red-600 border-red-500 font-bold'
     default:          return 'text-[#173B35] border-[#173B35] font-bold'
   }
@@ -129,6 +133,7 @@ function getStatusLabel(status: OrderStatus) {
   switch (status) {
     case 'PENDING':   return 'Menunggu Bayar'
     case 'PAID':      return 'Lunas'
+    case 'COMPLETED': return 'Sudah Digunakan'
     case 'CANCELLED': return 'Dibatalkan'
     case 'EXPIRED':   return 'Kadaluarsa'
     default:          return status

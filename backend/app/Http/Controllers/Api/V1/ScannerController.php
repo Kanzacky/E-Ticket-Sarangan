@@ -61,6 +61,7 @@ class ScannerController extends Controller
         // Tiket valid. Update status scan.
         $order->scanned_at = Carbon::now();
         $order->scanned_by = $request->user()->id ?? null;
+        $order->status = 'COMPLETED';
         $order->save();
 
         $logScan(true, 'Tiket Valid. Check-in berhasil.');

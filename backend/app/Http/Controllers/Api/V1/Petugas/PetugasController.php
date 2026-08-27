@@ -31,8 +31,10 @@ class PetugasController extends Controller
             ->where('status', 'PAID')
             ->count();
 
-        // Recent Orders
+        // Recent Orders (Only for today's valid visits to match statistics)
         $recentOrders = Order::with('user:id,name,email')
+            ->whereDate('visit_date', $today)
+            ->whereIn('status', ['PAID', 'COMPLETED'])
             ->latest()
             ->take(5)
             ->get(['id', 'user_id', 'order_code', 'visit_date', 'customer_name', 'total_amount', 'status', 'created_at']);
