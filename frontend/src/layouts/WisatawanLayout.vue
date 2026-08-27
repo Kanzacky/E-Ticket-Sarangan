@@ -2,7 +2,6 @@
 import {
   LogOut,
   Menu,
-  MountainSnow,
   X,
   User
 } from 'lucide-vue-next'

@@ -3,8 +3,7 @@ import {
   CalendarCheck,
   Home,
   LogOut,
-  QrCode,
-  Ticket
+  QrCode
 } from 'lucide-vue-next'
 import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'

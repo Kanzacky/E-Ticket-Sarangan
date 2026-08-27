@@ -54,21 +54,18 @@ async function handleSubmit() {
   <main class="min-h-screen bg-white font-sans text-[#1D2724] selection:bg-[#4F7465] selection:text-white flex flex-col lg:flex-row">
     
     <!-- Visual Section (Desktop) - Placed on the left this time for variety -->
-    <div class="hidden lg:block lg:w-1/2 relative bg-[#1D2724] order-first">
+    <div class="hidden lg:block lg:w-1/2 relative bg-[var(--color-primary)] order-first">
       <img 
         src="/images/sarangan-hero-2.jpg" 
         alt="Pemandangan Sarangan" 
-        class="h-full w-full object-cover opacity-90"
+        class="h-full w-full object-cover opacity-80 mix-blend-overlay"
       />
-      <div class="absolute inset-0 bg-gradient-to-br from-[#173B35]/70 to-[#1D2724]/30 mix-blend-multiply"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#1D2724]/80 via-transparent to-transparent"></div>
     </div>
 
     <!-- Mobile/Tablet Banner (Hidden on lg) -->
-    <div class="lg:hidden w-full h-48 sm:h-64 relative">
-      <img src="/images/sarangan-hero-2.jpg" alt="Sarangan" class="w-full h-full object-cover" />
-      <div class="absolute inset-0 bg-[#1D2724]/40"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+    <div class="lg:hidden w-full h-48 sm:h-64 relative bg-[var(--color-primary)]">
+      <img src="/images/sarangan-hero-2.jpg" alt="Sarangan" class="w-full h-full object-cover opacity-80" />
+      <div class="absolute inset-0 bg-[var(--color-primary)]/20"></div>
     </div>
 
     <!-- Form Section -->
@@ -76,14 +73,14 @@ async function handleSubmit() {
       <div class="w-full max-w-[440px]">
         
         <!-- Back Navigation -->
-        <router-link to="/" class="inline-flex items-center gap-2 text-sm font-medium text-[#66706C] hover:text-[#173B35] transition-colors mb-10">
+        <router-link to="/" class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors mb-10">
           <ArrowLeft class="w-4 h-4" />
           Kembali ke Beranda
         </router-link>
 
         <div>
-          <h1 class="text-3xl font-bold text-[#173B35] tracking-tight mb-2">Buat akun</h1>
-          <p class="text-[#66706C]">Daftar untuk memesan tiket dan mengelola perjalananmu.</p>
+          <h1 class="text-3xl font-bold text-[var(--color-primary)] tracking-tight mb-2">Buat akun</h1>
+          <p class="text-[var(--color-text-secondary)]">Daftar untuk memesan tiket dan mengelola perjalananmu.</p>
         </div>
         
         <div v-if="errorMsg" class="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100/50 flex items-start gap-3">
@@ -93,7 +90,7 @@ async function handleSubmit() {
 
         <form class="mt-8 space-y-4" @submit.prevent="handleSubmit">
           <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-[#1D2724]" for="name">Nama Lengkap</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)]" for="name">Nama Lengkap</label>
             <input
               id="name"
               v-model="form.name"
@@ -101,13 +98,13 @@ async function handleSubmit() {
               required
               autocomplete="name"
               placeholder="Masukkan nama lengkap"
-              class="w-full rounded-xl border border-[#173B35]/20 bg-white px-4 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+              class="w-full rounded-[10px] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 outline-none transition-all focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 disabled:opacity-60 disabled:bg-[var(--color-background)]"
               :disabled="authStore.isLoading"
             />
           </div>
 
           <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-[#1D2724]" for="email">Email</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)]" for="email">Email</label>
             <input
               id="email"
               v-model="form.email"
@@ -115,26 +112,26 @@ async function handleSubmit() {
               required
               autocomplete="email"
               placeholder="Masukkan email"
-              class="w-full rounded-xl border border-[#173B35]/20 bg-white px-4 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+              class="w-full rounded-[10px] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 outline-none transition-all focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 disabled:opacity-60 disabled:bg-[var(--color-background)]"
               :disabled="authStore.isLoading"
             />
           </div>
 
           <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-[#1D2724]" for="phone">Nomor HP</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)]" for="phone">Nomor HP</label>
             <input
               id="phone"
               v-model="form.phone"
               type="tel"
               autocomplete="tel"
               placeholder="Masukkan nomor handphone"
-              class="w-full rounded-xl border border-[#173B35]/20 bg-white px-4 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+              class="w-full rounded-[10px] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 outline-none transition-all focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 disabled:opacity-60 disabled:bg-[var(--color-background)]"
               :disabled="authStore.isLoading"
             />
           </div>
           
           <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-[#1D2724]" for="password">Password</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)]" for="password">Password</label>
             <div class="relative">
               <input
                 id="password"
@@ -144,12 +141,12 @@ async function handleSubmit() {
                 minlength="8"
                 autocomplete="new-password"
                 placeholder="Buat password (min. 8 karakter)"
-                class="w-full rounded-xl border border-[#173B35]/20 bg-white pl-4 pr-12 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+                class="w-full rounded-[10px] border border-[var(--color-border)] bg-white pl-4 pr-12 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 outline-none transition-all focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 disabled:opacity-60 disabled:bg-[var(--color-background)]"
                 :disabled="authStore.isLoading"
               />
               <button 
                 type="button" 
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#66706C] hover:text-[#1D2724] focus:outline-none rounded-md"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus:outline-none rounded-md"
                 @click="showPassword = !showPassword"
                 title="Toggle password visibility"
               >
@@ -160,7 +157,7 @@ async function handleSubmit() {
           </div>
 
           <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-[#1D2724]" for="password_confirmation">Konfirmasi Password</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)]" for="password_confirmation">Konfirmasi Password</label>
             <div class="relative">
               <input
                 id="password_confirmation"
@@ -170,12 +167,12 @@ async function handleSubmit() {
                 minlength="8"
                 autocomplete="new-password"
                 placeholder="Ketik ulang password"
-                class="w-full rounded-xl border border-[#173B35]/20 bg-white pl-4 pr-12 py-3 text-sm text-[#1D2724] placeholder:text-[#66706C]/60 outline-none transition-all focus:border-[#4F7465] focus:ring-4 focus:ring-[#4F7465]/10 disabled:opacity-60 disabled:bg-[#F7F5EF]"
+                class="w-full rounded-[10px] border border-[var(--color-border)] bg-white pl-4 pr-12 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]/60 outline-none transition-all focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 disabled:opacity-60 disabled:bg-[var(--color-background)]"
                 :disabled="authStore.isLoading"
               />
               <button 
                 type="button" 
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#66706C] hover:text-[#1D2724] focus:outline-none rounded-md"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus:outline-none rounded-md"
                 @click="showConfirmPassword = !showConfirmPassword"
                 title="Toggle password visibility"
               >
@@ -188,7 +185,7 @@ async function handleSubmit() {
           <div class="pt-4">
             <button
               type="submit"
-              class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#173B35] px-4 py-3.5 text-sm font-bold text-white transition-all hover:bg-[#1D2724] hover:shadow-lg hover:shadow-[#173B35]/20 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none"
+              class="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white transition-all hover:bg-[#122c27] active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none"
               :disabled="authStore.isLoading"
             >
               <template v-if="authStore.isLoading">
@@ -202,9 +199,9 @@ async function handleSubmit() {
           </div>
         </form>
 
-        <div class="mt-8 text-center text-sm text-[#66706C]">
+        <div class="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
           Sudah punya akun?
-          <router-link to="/login" class="font-bold text-[#173B35] hover:text-[#4F7465] transition-colors ml-1">
+          <router-link to="/login" class="font-bold text-[var(--color-primary)] hover:text-[var(--color-secondary)] transition-colors ml-1">
             Masuk
           </router-link>
         </div>

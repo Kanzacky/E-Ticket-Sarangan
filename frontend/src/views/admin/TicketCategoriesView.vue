@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useFetch } from '@/composables/useFetch'
 
 const authStore = useAuthStore()
-const { data, error, isLoading, refresh } = useFetch('/api/admin/ticket-types', {
+const { data, isLoading, refresh } = useFetch<any>('/api/admin/ticket-types', {
   headers: {
     Authorization: `Bearer ${authStore.token}`
   }

@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Ticket,
   Users,
   X
 } from 'lucide-vue-next'

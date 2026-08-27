@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const isLoading = ref(false)
+const users = ref<any[]>([])
+
+const userRoleClass = 'bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs'
+</script>
+
 <template>
   <PlaceholderCard
     title="Manajemen Pengguna"

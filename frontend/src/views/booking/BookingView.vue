@@ -177,22 +177,22 @@ async function handleConfirmBooking() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-[var(--color-background)] py-8 px-4 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-4xl">
       <!-- Header Bar -->
       <div class="mb-8 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div>
-            <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Pemesanan Tiket Wisata</h1>
-            <p class="text-sm text-slate-500">Telaga Sarangan, Magetan - Jawa Timur</p>
+            <h1 class="text-2xl font-bold text-[var(--color-primary)] sm:text-3xl">Pemesanan Tiket Wisata</h1>
+            <p class="text-sm text-[var(--color-text-secondary)]">Telaga Sarangan, Magetan - Jawa Timur</p>
           </div>
         </div>
 
         <router-link
-          to="/my-bookings"
-          class="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-[#F7F5EF]"
+          to="/wisatawan/history"
+          class="hidden sm:inline-flex items-center gap-2 rounded-[10px] border border-[var(--color-border)] bg-white px-3.5 py-2 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-secondary)]"
         >
-          <Ticket class="h-4 w-4 text-[#173B35]" />
+          <Ticket class="h-4 w-4 text-[var(--color-primary)]" />
           Tiket Saya
         </router-link>
       </div>
@@ -200,7 +200,7 @@ async function handleConfirmBooking() {
       <!-- Alert Error -->
       <div
         v-if="errorMessage"
-        class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm"
+        class="mb-6 flex items-start gap-3 rounded-[12px] border border-red-200 bg-red-50 p-4 text-red-700"
       >
         <AlertCircle class="h-5 w-5 flex-shrink-0 mt-0.5 text-red-600" />
         <div class="flex-1 text-sm font-medium">{{ errorMessage }}</div>
@@ -211,14 +211,14 @@ async function handleConfirmBooking() {
         <!-- Main Form (Left 7 Cols) -->
         <div class="space-y-6 lg:col-span-7">
           <!-- Step 1: Tanggal Kunjungan -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center gap-2 mb-4">
-              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">1</span>
-              <h2 class="text-lg font-semibold text-slate-900">Pilih Tanggal Kunjungan</h2>
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">1</span>
+              <h2 class="text-lg font-semibold text-[var(--color-primary)]">Pilih Tanggal Kunjungan</h2>
             </div>
 
             <div>
-              <label for="visit_date" class="block text-sm font-medium text-slate-700 mb-1.5">
+              <label for="visit_date" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
                 Tanggal Rencana Kedatangan
               </label>
               <div class="relative">
@@ -228,28 +228,28 @@ async function handleConfirmBooking() {
                   type="date"
                   :min="today"
                   required
-                  class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:bg-white focus:ring-2 focus:ring-[#173B35]/20"
+                  class="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-secondary)] focus:bg-white focus:ring-4 focus:ring-[var(--color-secondary)]/10"
                 />
               </div>
-              <p class="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                <Info class="h-3.5 w-3.5 text-[#173B35]" /> Tiket berlaku pada tanggal yang dipilih.
+              <p class="mt-2 flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
+                <Info class="h-3.5 w-3.5 text-[var(--color-primary)]" /> Tiket berlaku pada tanggal yang dipilih.
               </p>
             </div>
           </div>
 
           <!-- Step 2: Pilih Jenis Tiket -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">2</span>
-                <h2 class="text-lg font-semibold text-slate-900">Pilih Jenis Tiket</h2>
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">2</span>
+                <h2 class="text-lg font-semibold text-[var(--color-primary)]">Pilih Jenis Tiket</h2>
               </div>
-              <span class="text-xs font-medium text-slate-500">Harga resmi Perda</span>
+              <span class="text-xs font-medium text-[var(--color-text-secondary)]">Harga resmi Perda</span>
             </div>
 
             <!-- Loading State -->
-            <div v-if="isLoadingTickets" class="py-12 text-center text-slate-400">
-              <LoaderCircle class="mx-auto h-8 w-8 animate-spin text-[#173B35]" />
+            <div v-if="isLoadingTickets" class="py-12 text-center text-[var(--color-text-secondary)]">
+              <LoaderCircle class="mx-auto h-8 w-8 animate-spin text-[var(--color-primary)]" />
               <p class="mt-2 text-sm">Memuat tarif tiket...</p>
             </div>
 
@@ -258,22 +258,22 @@ async function handleConfirmBooking() {
               <div
                 v-for="ticket in ticketTypes"
                 :key="ticket.id"
-                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border p-4 transition"
-                :class="(selectedQuantities[ticket.id] ?? 0) > 0 ? 'border-[#173B35] bg-[#F7F5EF] shadow-sm' : 'border-slate-200 hover:border-slate-300'"
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[12px] border p-4 transition"
+                :class="(selectedQuantities[ticket.id] ?? 0) > 0 ? 'border-[var(--color-secondary)] bg-[var(--color-background)]' : 'border-[var(--color-border)] hover:border-[var(--color-secondary)]'"
               >
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
-                    <h3 class="font-semibold text-slate-900">{{ ticket.name }}</h3>
-                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
+                    <h3 class="font-semibold text-[var(--color-text-primary)]">{{ ticket.name }}</h3>
+                    <span class="inline-flex items-center rounded-full bg-[var(--color-primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--color-primary)] border border-[var(--color-primary)]/20">
                       Tersedia
                     </span>
                   </div>
-                  <p v-if="ticket.description" class="mt-1 text-xs text-slate-500">
+                  <p v-if="ticket.description" class="mt-1 text-xs text-[var(--color-text-secondary)]">
                     {{ ticket.description }}
                   </p>
-                  <p class="mt-2 text-base font-bold text-[#173B35]">
+                  <p class="mt-2 text-base font-bold text-[var(--color-primary)]">
                     {{ formatCurrency(ticket.price) }}
-                    <span class="text-xs font-normal text-slate-500">/ orang</span>
+                    <span class="text-xs font-normal text-[var(--color-text-secondary)]">/ orang</span>
                   </p>
                 </div>
 
@@ -281,18 +281,18 @@ async function handleConfirmBooking() {
                 <div class="flex items-center justify-end gap-3 self-end sm:self-center">
                   <button
                     type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 disabled:opacity-40"
+                    class="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition hover:bg-[var(--color-background)] disabled:opacity-40"
                     :disabled="(selectedQuantities[ticket.id] ?? 0) <= 0"
                     @click="decrementQty(ticket)"
                   >
                     <Minus class="h-4 w-4" />
                   </button>
-                  <span class="w-8 text-center font-bold text-slate-900 text-base">
+                  <span class="w-8 text-center font-bold text-[var(--color-text-primary)] text-base">
                     {{ selectedQuantities[ticket.id] ?? 0 }}
                   </span>
                   <button
                     type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173B35] text-white transition hover:bg-[#1D2724] disabled:opacity-40"
+                    class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--color-primary)] text-white transition hover:bg-[#122c27] disabled:opacity-40"
                     :disabled="(selectedQuantities[ticket.id] ?? 0) >= ticket.quota"
                     @click="incrementQty(ticket)"
                   >
@@ -304,15 +304,15 @@ async function handleConfirmBooking() {
           </div>
 
           <!-- Step 3: Data Pengunjung -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center gap-2 mb-4">
-              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#173B35] text-xs font-bold text-white">3</span>
-              <h2 class="text-lg font-semibold text-slate-900">Data Pemesan / Penanggung Jawab</h2>
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">3</span>
+              <h2 class="text-lg font-semibold text-[var(--color-primary)]">Data Pemesan / Penanggung Jawab</h2>
             </div>
 
             <div class="space-y-4">
               <div>
-                <label for="name" class="block text-sm font-medium text-slate-700 mb-1">
+                <label for="name" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                   Nama Lengkap Pemesan <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -321,13 +321,13 @@ async function handleConfirmBooking() {
                   type="text"
                   required
                   placeholder="Contoh: Budi Santoso"
-                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
+                  class="w-full rounded-[10px] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 bg-[var(--color-background)] focus:bg-white"
                 />
               </div>
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label for="email" class="block text-sm font-medium text-slate-700 mb-1">
+                  <label for="email" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                     Alamat Email <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -336,12 +336,12 @@ async function handleConfirmBooking() {
                     type="email"
                     required
                     placeholder="nama@email.com"
-                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
+                    class="w-full rounded-[10px] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 bg-[var(--color-background)] focus:bg-white"
                   />
                 </div>
 
                 <div>
-                  <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">
+                  <label for="phone" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                     No. Handphone / WhatsApp <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -350,7 +350,7 @@ async function handleConfirmBooking() {
                     type="tel"
                     required
                     placeholder="08123456789"
-                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#173B35] focus:ring-2 focus:ring-[#173B35]/20"
+                    class="w-full rounded-[10px] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-secondary)] focus:ring-4 focus:ring-[var(--color-secondary)]/10 bg-[var(--color-background)] focus:bg-white"
                   />
                 </div>
               </div>
@@ -360,23 +360,23 @@ async function handleConfirmBooking() {
 
         <!-- Sidebar Summary (Right 5 Cols) -->
         <div class="lg:col-span-5">
-          <div class="sticky top-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-bold text-slate-900 pb-3 border-b border-slate-100">
+          <div class="sticky top-28 rounded-[12px] border border-[var(--color-border)] bg-white p-6">
+            <h2 class="text-lg font-bold text-[var(--color-primary)] pb-3 border-b border-[var(--color-border)]">
               Ringkasan Pesanan
             </h2>
 
             <div class="mt-4 space-y-3">
-              <div class="flex items-center justify-between text-sm text-slate-600">
+              <div class="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
                 <span class="flex items-center gap-1.5">
-                  <Calendar class="h-4 w-4 text-slate-400" /> Tanggal
+                  <Calendar class="h-4 w-4" /> Tanggal
                 </span>
-                <span class="font-medium text-slate-900">{{ formatDate(form.visit_date) || '-' }}</span>
+                <span class="font-medium text-[var(--color-text-primary)]">{{ formatDate(form.visit_date) || '-' }}</span>
               </div>
 
-              <div class="border-t border-dashed border-slate-200 my-3" />
+              <div class="border-t border-dashed border-[var(--color-border)] my-3" />
 
               <!-- Items Breakdown -->
-              <div v-if="selectedItems.length === 0" class="py-6 text-center text-xs text-slate-400">
+              <div v-if="selectedItems.length === 0" class="py-6 text-center text-xs text-[var(--color-text-secondary)]">
                 Belum ada tiket yang dipilih
               </div>
 
@@ -387,33 +387,33 @@ async function handleConfirmBooking() {
                   class="flex items-center justify-between text-sm"
                 >
                   <div>
-                    <span class="font-medium text-slate-800">{{ item.ticketType.name }}</span>
-                    <div class="text-xs text-slate-400">
+                    <span class="font-medium text-[var(--color-text-primary)]">{{ item.ticketType.name }}</span>
+                    <div class="text-xs text-[var(--color-text-secondary)]">
                       {{ item.quantity }} x {{ formatCurrency(item.ticketType.price) }}
                     </div>
                   </div>
-                  <span class="font-semibold text-slate-900">{{ formatCurrency(item.subtotal) }}</span>
+                  <span class="font-semibold text-[var(--color-text-primary)]">{{ formatCurrency(item.subtotal) }}</span>
                 </div>
               </div>
 
-              <div class="border-t border-slate-200 my-4" />
+              <div class="border-t border-[var(--color-border)] my-4" />
 
               <!-- Total Row -->
-              <div class="flex items-center justify-between text-sm text-slate-600">
+              <div class="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
                 <span>Total Tiket</span>
-                <span class="font-bold text-slate-900">{{ totalQuantity }} orang</span>
+                <span class="font-bold text-[var(--color-text-primary)]">{{ totalQuantity }} orang</span>
               </div>
 
               <div class="flex items-baseline justify-between pt-1">
-                <span class="text-base font-bold text-slate-900">Total Biaya</span>
-                <span class="text-2xl font-extrabold text-[#173B35]">{{ formatCurrency(totalAmount) }}</span>
+                <span class="text-base font-bold text-[var(--color-text-primary)]">Total Biaya</span>
+                <span class="text-2xl font-extrabold text-[var(--color-primary)]">{{ formatCurrency(totalAmount) }}</span>
               </div>
             </div>
 
             <!-- Action Button -->
             <button
               type="button"
-              class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#173B35] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1D2724] disabled:cursor-not-allowed disabled:opacity-50"
+              class="mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--color-primary)] py-3 text-sm font-semibold text-white transition hover:bg-[#122c27] disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="!isFormValid || isSubmitting"
               @click="handleConfirmBooking"
             >
@@ -422,7 +422,7 @@ async function handleConfirmBooking() {
               <ChevronRight v-if="!isSubmitting" class="h-4 w-4" />
             </button>
 
-            <p class="mt-3 text-center text-xs text-slate-400">
+            <p class="mt-3 text-center text-xs text-[var(--color-text-secondary)]">
               Anda akan diarahkan ke halaman pembayaran aman (Xendit).
             </p>
           </div>

@@ -2,7 +2,6 @@
 import { 
   LoaderCircle, 
   MapPin,
-  MountainSnow, 
   Menu,
   X
 } from 'lucide-vue-next'

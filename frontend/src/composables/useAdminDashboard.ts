@@ -1,5 +1,4 @@
-import { defineComponent, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 export function useAdminDashboard() {
@@ -36,4 +35,11 @@ export function useAdminDashboard() {
       isLoading.value = false
     }
   })
+
+  return {
+    isLoading,
+    error,
+    summary,
+    recentOrders
+  }
 }
