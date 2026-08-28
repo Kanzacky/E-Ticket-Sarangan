@@ -129,8 +129,21 @@ Login `admin@sarangan.test` → Admin → Accommodations → Create. Isi `name`,
 2. Edit `backend/database/seeders/AccommodationSeeder.php:12` — ganti array `$data` dengan data real (minimal field yang sama).
 3. `php artisan migrate:fresh --seed` (lokal) atau `php artisan db:seed --class=AccommodationSeeder` (tambah tanpa hapus). Untuk production Vercel: push ke Git + `AUTO_MIGRATE` atau jalankan seeder via `vercel exec` / artisan command.
 
-**Opsi C — Integrasi API eksternal (otomatis, butuh key & mapping):**
-Jika butuh data selalu up-to-date: pakai API resmi seperti **Google Places API** (`place_id` type `lodging` near `Telaga Sarangan -7.67,111.22`), **Traveloka/Tiket.com affiliate API**, atau **Booking.com API**. Buat command `php artisan accommodations:sync` yang fetch → upsert ke `accommodations` (map `name`, `vicinity`→`address`, `rating`, `photos`→`image_url`). Perlu env `GOOGLE_PLACES_API_KEY` + cron. Kelebihan: real-time; kekurangan: butuh API key berbayar, rate limit, perlu normalisasi harga/kamar (tidak selalu ada).
+**Opsi C — Integrasi API eksternal (otomatis, sudah tersedia):**
+Sudah diimplementasikan: `php artisan accommodations:sync` (`backend/app/Console/Commands/SyncAccommodations.php:11`) + `GooglePlacesService` (`backend/app/Services/GooglePlacesService.php:1`).
+
+```bash
+# 1. Isi GOOGLE_PLACES_API_KEY di backend/.env (atau Vercel env)
+GOOGLE_PLACES_API_KEY=AIzaSy...
+
+# 2. Jalankan sync (telaga -7.67,111.216, radius 5km, 20 hasil)
+php artisan migrate --force   # butuh kolom google_place_id/lat/lng/source (migrasi 2026_08_31_000002)
+php artisan accommodations:sync
+php artisan accommodations:sync --radius=8000 --limit=30 --with-details  # ambil phone juga
+php artisan accommodations:sync --fresh  # hapus data google lama & sync ulang
+```
+
+Mapping: `name`→`name`, `vicinity`→`address`, `rating`→`rating`, `photos[0]`→`image_url` (via `photo` API), `geometry`→`latitude/longitude`, `google_place_id` unik, `price_per_night` estimasi dari `rating`/`price_level` (edit manual di admin untuk harga akurat), `facilities` dari `types`. Kelebihan real-time; butuh API key berbayar (Google Places), rate limit, harga estimasi.
 
 **Tidak disarankan:** scraping HTML Traveloka/Booking.com tanpa izin — melanggar ToS, struktur sering berubah, rawan blokir IP, dan masalah legal. Jika tetap butuh, gunakan hanya untuk riset internal lalu input manual, bukan fetch production.
 
@@ -157,7 +170,7 @@ Jika origin frontend Vercel **baru**, tambahkan ke env backend `FRONTEND_URL` at
 
 Diabaikan Git: `.env`, `.env.*` (kecuali `.env.example` dan `frontend/.env.production`).
 
-**Backend (Vercel):** `APP_KEY`, `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, koneksi Supabase (`DB_*`, `DB_SSLMODE=require`), `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `XENDIT_SECRET_KEY`, `LOG_CHANNEL=stderr`. Opsional: `XENDIT_CALLBACK_TOKEN` (aktifkan verifikasi webhook), `CORS_ALLOWED_ORIGINS`, `AUTO_MIGRATE`.
+**Backend (Vercel):** `APP_KEY`, `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, koneksi Supabase (`DB_*`, `DB_SSLMODE=require`), `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `XENDIT_SECRET_KEY`, `LOG_CHANNEL=stderr`. Opsional: `XENDIT_CALLBACK_TOKEN` (aktifkan verifikasi webhook), `GOOGLE_PLACES_API_KEY` (untuk `accommodations:sync`), `CORS_ALLOWED_ORIGINS`, `AUTO_MIGRATE`.
 
 **Frontend (Vercel atau `.env.production`):** `VITE_API_URL` harus mengarah ke backend production (`…/api`), bukan localhost.
 

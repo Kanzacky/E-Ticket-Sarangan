@@ -19,6 +19,10 @@ class Accommodation extends Model
         'rating',
         'facilities',
         'is_active',
+        'google_place_id',
+        'latitude',
+        'longitude',
+        'source',
     ];
 
     protected function casts(): array
@@ -30,6 +34,8 @@ class Accommodation extends Model
             'rating' => 'decimal:1',
             'facilities' => 'array',
             'is_active' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 
