@@ -1,186 +1,84 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/ticket.svg" width="80" alt="Ticket Icon" />
+  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/ticket.svg" width="72" alt="Ticket" />
   <h1>e-Ticket Sarangan</h1>
-  <p>Sistem digital ticketing dan manajemen pengunjung untuk wisata Telaga Sarangan</p>
-
+  <p>Digital ticketing & visitor management for Telaga Sarangan</p>
   <p>
-    <img src="https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D" alt="Vue.js" />
-    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D" alt="Vue" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TS" />
     <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
-    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres" />
+    <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
   </p>
 </div>
 
----
+## Overview
 
-## Ikhtisar
+Monorepo `Vue 3 SPA` + `Laravel 12 REST API` for Telaga Sarangan tourism.  
+Auth via Sanctum, payments via **Xendit Invoice**, QR check-in, Supabase PostgreSQL, deployed as two Vercel projects.
 
-**e-Ticket Sarangan** adalah monorepo klien–peladen: SPA Vue 3 berbicara ke REST API Laravel 12. Data tersimpan di **Supabase PostgreSQL**. Pembayaran tiket aktif memakai **Xendit Invoice** (SDK `xendit/xendit-php ^7.0`); QR tiket ditampilkan di frontend dan divalidasi petugas lewat pemindai.
+**Flow:** `register/login` → `POST /orders` (quota check `lockForUpdate`) → Xendit invoice → webhook `PAID` → `qr_expires_at = visit_date 23:59` → `POST /scan` (once, `COMPLETED`) → admin/petugas dashboards.
 
-Alur yang sudah berjalan end-to-end: daftar/login → pesan tiket (`orders` + `order_items`) → invoice Xendit → bayar → webhook → QR → scan petugas (sekali pakai, cek `qr_expires_at`) → kelola data di panel admin/petugas.
+Source of truth: `backend/routes/api.php`.
 
-Production di-deploy sebagai **dua proyek Vercel** (frontend SPA + backend container), terhubung ke repo GitHub. Push ke branch yang di-track memicu rebuild. File `.env` lokal **tidak ikut** ke Git; kredensial production ada di Vercel Environment Variables.
+## Features
 
-## Status saat ini
+| Area | Status |
+|------|--------|
+| Auth (register/login/logout/me, `PATCH /auth/me`, forgot/reset via `Password::sendResetLink`) | ✅ |
+| Orders, quota per date, history, QR (1 QR per order) | ✅ |
+| **Xendit** invoice + webhook (`PAID/SETTLED→PAID`, `EXPIRED→EXPIRED`, `FAILED`) | ✅ (`XENDIT_CALLBACK_TOKEN` verified if set) |
+| Scan QR (valid if `PAID`, not expired, not used) + `ScanLog` | ✅ |
+| Admin: users, ticket types/categories, orders, payments (virtual), reports, accommodation CRUD | ✅ paginated `?search&per_page` + audit log |
+| Accommodations: public catalog, user bookings, admin CRUD, **Xendit for bookings** (`ACC-` + `payment_url`), sync `accommodations:sync` (Google Places) | ✅ |
+| Analytics (`GET /admin/analytics`), Audit Logs, Check-ins, Settings (`GET/PATCH /admin/settings`) | ✅ |
+| Notifications (`GET /notifications`, bell polling 30s) | ✅ |
+| Accommodations image upload (`image` multipart → `Storage` s3/public) | ✅ |
+| Rate-limit `auth/login 5/min`, cron `orders:expire` & `accommodations:expire` hourly | ✅ |
+| Ticket upgrades | ⚠️ legacy table (`ticket_upgrades`) — empty until used |
 
-Sudah operasional untuk demo/produksi terbatas (pesan–bayar–scan–CRUD + penginapan). Belum produk lengkap sesuai visi awal.
+## Tech Stack
 
-| Area | Kondisi |
-|:---|:---|
-| Auth Sanctum (register, login, logout, profil `GET/PATCH /auth/me`) | Ada |
-| Pesan tiket, kuota per tanggal (`lockForUpdate` + cek `PENDING`+`PAID`), riwayat, QR | Ada (`orders` / `order_items`) — `backend/app/Http/Controllers/Api/V1/OrderController.php:59` |
-| Pembayaran **Xendit** (invoice + webhook) | Ada; verifikasi `x-callback-token` masih dikomentari di `backend/app/Http/Controllers/Api/V1/XenditWebhookController.php:19` |
-| Scan QR petugas + riwayat scan | Ada (satu QR per pesanan, bukan per orang). Validasi: `PAID` saja, cek `qr_expires_at`, tolak scan duplikat. `backend/app/Http/Controllers/Api/V1/ScannerController.php:17` + `ScanLog` |
-| Admin: user, jenis tiket, kategori, order, pembayaran, laporan ringkas | Ada — `backend/app/Http/Controllers/Api/V1/Admin/` |
-| Penginapan (katalog publik + booking kamar + CRUD admin) | Ada; belum terhubung pembayaran (kurangi `available_rooms` langsung, status `pending`) — `backend/app/Http/Controllers/Api/V1/AccommodationBookingController.php:32` |
-| Analitik, audit log, upgrade tiket, detail tiket per pengunjung | Belum (UI placeholder / tabel lama `bookings`, `tickets`, `payments`, `checkins` masih ada di migrasi tapi tidak dipakai alur aktif) |
-| Guard role di **API** | **Ada** — middleware `EnsureRole` alias `role` di `backend/bootstrap/app.php:22`, dipakai di `backend/routes/api.php:24` (`admin`), `:70` (`petugas`), `:95` (`scan`) |
-| CI GitHub Actions, tes frontend | Belum |
+| Layer | Stack |
+|-------|-------|
+| Frontend | Vue 3 + Vite, TypeScript, Pinia, Vue Router, Tailwind CSS, vue-i18n, `qrcode.vue`, `vue-qrcode-reader`, `lucide-vue-next` |
+| Backend | Laravel 12, PHP 8.3+, Sanctum 4.3, Pest 3, `xendit/xendit-php` |
+| DB | Supabase PostgreSQL (`DB_SSLMODE=require`) |
+| Infra | Vercel (SPA + Container), Docker FrankenPHP |
 
-Dokumen di `docs/api.md` dan `docs/database.md` masih menggambarkan fase fondasi. **Sumber kebenaran rute:** `backend/routes/api.php`.
-
-## Arsitektur
+## Architecture
 
 ```mermaid
 graph TD;
-    Vue["Vue 3 SPA (Vercel)"] -->|Axios REST /api| Laravel["Laravel 12 (Vercel Container)"];
-    Laravel -->|Eloquent| Postgres["Supabase PostgreSQL"];
-    Laravel <-->|Invoice + webhook /payments/xendit/webhook| Xendit["Xendit"];
+  Vue["Vue 3 SPA (Vercel)"] -->|Axios /api| API["Laravel 12 (Vercel Container)"]
+  API -->|Eloquent| DB["Supabase Postgres"]
+  API <-->|Invoice + webhook| Xendit["Xendit"]
 ```
 
-| Folder | Isi |
-|:---|:---|
-| `frontend/` | Vue 3, Vite, TypeScript, Pinia, Vue Router, Tailwind CSS, vue-i18n, `qrcode.vue`, `vue-qrcode-reader` |
-| `backend/` | Laravel 12, PHP 8.3+, Sanctum 4.3, Pest 3, `xendit/xendit-php` |
-| `docs/` | Catatan arsitektur / DB / Supabase (sebagian belum diselaraskan dengan kode) |
-
-Model domain aktif untuk tiket adalah **Order** (`ETK-YYYYMMDD-XXXXXX`) + `OrderItem`. Tabel lama (`bookings`, `booking_visitors`, `tickets`, `payments`, `checkins`, `ticket_upgrades`, `audit_logs`) masih ada di `backend/database/migrations/` untuk kompatibilitas historis.
-
-## Peran pengguna
-
-Guard dua lapis: Vue Router (`frontend/src/router/index.ts:222`) + middleware API `role` (`backend/app/Http/Middleware/EnsureRole.php:11`).
-
-| Peran | Yang bisa dilakukan |
-|:---|:---|
-| **Wisatawan** (`role:wisatawan`) | Pesan tiket (`POST /orders`), lihat riwayat (`GET /orders`), detail QR (`GET /orders/{code}`), booking penginapan (`GET/POST /accommodation-bookings`), katalog penginapan publik (`GET /accommodations`), profil |
-| **Petugas** (`role:petugas`) | Dashboard petugas `GET /petugas/dashboard`, kunjungan, booking list, scan QR `POST /scan`, riwayat scan `GET /scan/history` — semua di group `auth:sanctum` + `role:petugas` |
-| **Admin** (`role:admin`) | CRUD User, TicketType, TicketCategory, Accommodation, Orders (`GET/PATCH /admin/orders`), Payments virtual (`GET/PATCH /admin/payments`), Reports `GET /admin/reports/summary`, Dashboard |
-
-Akun seeder (`php artisan db:seed` → `backend/database/seeders/DatabaseSeeder.php:19`):
-`admin@sarangan.test`, `petugas@sarangan.test`, `wisatawan@sarangan.test` — password default `password`. Jangan dipakai sebagai akun production nyata.
-
-Seeder penginapan: 5 data dummy (`backend/database/seeders/AccommodationSeeder.php:12`) — lihat bagian Penginapan untuk mengganti dengan data real.
-
-## Alur Pemesanan & Pembayaran (saat ini)
-
-### 1. Buat Order + Invoice Xendit
-`frontend/src/services/order.service.ts:15` → `POST /orders` (`backend/app/Http/Controllers/Api/V1/OrderController.php:38`)
-- Validasi `visit_date` + `items: [{ticket_type_id, quantity}]`, konsolidasi duplikat `ticket_type_id`.
-- `lockForUpdate` pada `TicketType`, hitung `bookedQuantity` (sum `quantity` di `order_items` where `visit_date` sama dan `status IN (PENDING,PAID)`), cek `quota - booked`.
-- Generate `order_code` unik `ETK-YYYYMMDD-RANDOM6`, `total_quantity` + `total_amount`.
-- `DB::transaction`: `Order::create` + `items().create`.
-- Generate Xendit Invoice (`Xendit\Invoice\InvoiceApi`) — `OrderController.php:130`:
-  ```php
-  external_id = order_code
-  amount = total_amount
-  payer_email = customer_email
-  description = "Pembayaran e-Ticket Sarangan - {code}"
-  success_redirect_url = FRONTEND_URL/booking/success/{code}
-  failure_redirect_url = FRONTEND_URL/booking/success/{code}
-  ```
-  Jika sukses simpan `payment_id` + `payment_url` ke `orders`, jika gagal tetap simpan order (log error). Frontend redirect ke `payment_url` (Xendit hosted invoice). Status awal `PENDING`.
-
-### 2. Webhook Xendit
-`POST /payments/xendit/webhook` alias `POST /webhook` → `backend/app/Http/Controllers/Api/V1/XenditWebhookController.php:16`
-- Payload: `external_id` (order_code) + `status`. Verifikasi `x-callback-token` masih **disabled** (komentar baris 19-22) — segera aktifkan di production dengan env `XENDIT_CALLBACK_TOKEN` dan balikan 401 jika mismatch.
-- Jika `PAID`/`SETTLED` dan order masih bukan `PAID`: set `status=PAID`, `qr_expires_at = visit_date 23:59:59` (`Carbon::parse(visit_date)->endOfDay()`).
-- Jika `EXPIRED` dan masih `PENDING`: set `EXPIRED`.
-- Return `200` bahkan jika order tidak ditemukan agar tombol Test di dashboard Xendit tidak retry loop.
-
-### 3. QR & Scan
-Order `PAID` menampilkan QR berisi `order_code` (`frontend/src/views/booking/` + `qrcode.vue`). Scan di `frontend/src/views/petugas/ScannerView.vue` → `POST /scan` (`frontend/src/services/scanner.service.ts:16`):
-- Cek order ada, `status === PAID`, belum lewat `qr_expires_at`, belum pernah `scanned_at`.
-- Jika valid: `scanned_at = now()`, `scanned_by = petugas.id`, `status = COMPLETED`, catat `ScanLog` valid.
-- Jika tidak valid: catat `ScanLog` invalid + reason.
-- Riwayat `GET /scan/history` per petugas.
-
-### 4. Admin Payments (virtual)
-`GET /admin/payments` (`backend/app/Http/Controllers/Api/V1/Admin/AdminPaymentController.php:12`) memetakan `Order` menjadi pembayaran (tidak ada tabel `payments` untuk alur Xendit):
-`{ id: order.id, transaction_id: "TRX-"+order_code, amount: total_amount, status: order.status, paid_at: updated_at jika PAID/COMPLETED }`.
-`PATCH /admin/payments/{id}/status` untuk override manual (`PAID,PENDING,COMPLETED,FAILED,CANCELLED`) — fallback jika webhook belum masuk.
-
-## Penginapan
-
-### Yang sudah ada
-- Publik: `GET /accommodations`, `GET /accommodations/{id}` (`backend/app/Http/Controllers/Api/V1/AccommodationController.php:14` — hanya `is_active=true`, order by `rating`).
-- User: `GET/POST /accommodation-bookings` (`AccommodationBookingController.php:32`) — validasi `check_in >= today`, `check_out > check_in`, cek `rooms <= available_rooms`, hitung `nights = check_in.diffInDays(check_out)`, `total_price = price_per_night * rooms * nights`, `booking_code=ACC-RANDOM8`, decrement `available_rooms`. Belum ada pembayaran / refund `available_rooms` saat cancel.
-- Admin CRUD: `GET/POST/PATCH/DELETE /admin/accommodations` (`AdminAccommodationController.php:12`).
-- Frontend: `frontend/src/views/wisatawan/AccommodationsView.vue`, `AccommodationDetailView.vue` + `frontend/src/services/accommodation.service.ts`; admin `frontend/src/views/admin/AccommodationsView.vue`.
-
-### Menambahkan data real hotel/penginapan sekitar Telaga Sarangan
-
-Data seeder sekarang hanya 5 dummy (Hotel Sarangan Indah, Villa Telaga Permai, dll. — `AccommodationSeeder.php:12`). Untuk data real ada 3 opsi, urut dari paling direkomendasikan:
-
-**Opsi A — Input manual via panel Admin (paling cepat, tanpa coding):**
-Login `admin@sarangan.test` → Admin → Accommodations → Create. Isi `name`, `description`, `address`, `phone`, `image_url`, `price_per_night`, `total_rooms`, `available_rooms`, `rating`, `facilities: ["WiFi",...]`, `is_active`. Cocok untuk <50 data.
-
-**Opsi B — Ganti Seeder dengan data real (ter-version, bisa di-seed ulang):**
-1. Kumpulkan data real (nama, alamat, HP, harga/malam, jumlah kamar, foto URL, rating Google, fasilitas) — bisa riset manual Google Maps / Traveloka / Tiket.com / Booking.com untuk area "Telaga Sarangan, Magetan". **Jangan scrape melanggar ToS** — catat manual + foto dengan izin.
-2. Edit `backend/database/seeders/AccommodationSeeder.php:12` — ganti array `$data` dengan data real (minimal field yang sama).
-3. `php artisan migrate:fresh --seed` (lokal) atau `php artisan db:seed --class=AccommodationSeeder` (tambah tanpa hapus). Untuk production Vercel: push ke Git + `AUTO_MIGRATE` atau jalankan seeder via `vercel exec` / artisan command.
-
-**Opsi C — Integrasi API eksternal (otomatis, sudah tersedia):**
-Sudah diimplementasikan: `php artisan accommodations:sync` (`backend/app/Console/Commands/SyncAccommodations.php:11`) + `GooglePlacesService` (`backend/app/Services/GooglePlacesService.php:1`).
-
-```bash
-# 1. Isi GOOGLE_PLACES_API_KEY di backend/.env (atau Vercel env)
-GOOGLE_PLACES_API_KEY=AIzaSy...
-
-# 2. Jalankan sync (telaga -7.67,111.216, radius 5km, 20 hasil)
-php artisan migrate --force   # butuh kolom google_place_id/lat/lng/source (migrasi 2026_08_31_000002)
-php artisan accommodations:sync
-php artisan accommodations:sync --radius=8000 --limit=30 --with-details  # ambil phone juga
-php artisan accommodations:sync --fresh  # hapus data google lama & sync ulang
+```
+.
+├── frontend/  Vue 3, Vite, TypeScript, Pinia
+├── backend/   Laravel 12, Sanctum, Pest
+└── docs/      architecture / database / Supabase
 ```
 
-Mapping: `name`→`name`, `vicinity`→`address`, `rating`→`rating`, `photos[0]`→`image_url` (via `photo` API), `geometry`→`latitude/longitude`, `google_place_id` unik, `price_per_night` estimasi dari `rating`/`price_level` (edit manual di admin untuk harga akurat), `facilities` dari `types`. Kelebihan real-time; butuh API key berbayar (Google Places), rate limit, harga estimasi.
+Domain model: `Order` (`ETK-YYYYMMDD-XXXXXX`) + `OrderItem`. `AuditLog`, `ScanLog`, `Notification`, `Accommodation` are active.
 
-**Tidak disarankan:** scraping HTML Traveloka/Booking.com tanpa izin — melanggar ToS, struktur sering berubah, rawan blokir IP, dan masalah legal. Jika tetap butuh, gunakan hanya untuk riset internal lalu input manual, bukan fetch production.
+## Roles
 
-> **Catatan stok kamar:** `AccommodationBookingController` langsung `available_rooms -= rooms` tanpa reservasi timeout. Untuk data real, pertimbangkan tambah kolom `check_in`/`check_out` overlap check + cron `EXPIRED` untuk melepas kamar yang `pending` melewati batas bayar (mirip flow `orders`).
+Guard: `Vue Router` (`frontend/src/router/index.ts:222`) + `EnsureRole` middleware (`backend/app/Http/Middleware/EnsureRole.php:11`) `role:admin|petugas`.
 
-## Production (GitHub → Vercel)
+| Role | Access |
+|------|--------|
+| wisatawan | `POST /orders`, `GET /orders`, `GET /orders/{code}`, `POST /accommodation-bookings`, `GET /accommodations`, notifications |
+| petugas | `GET /petugas/*`, `POST /scan`, `GET /scan/history` (`role:petugas`) |
+| admin | `GET|POST|PATCH|DELETE /admin/*` (`role:admin`) — users, ticket types/categories, accommodations, orders, payments, reports, analytics, audit-logs, checkins, upgrades, settings |
 
-Tidak wajib menjalankan app di laptop agar Vercel ter-update. Yang di-push hanya **kode yang di-commit**.
+Seeder `php artisan db:seed` (`DatabaseSeeder.php:19`):
+`admin@sarangan.test` / `petugas@sarangan.test` / `wisatawan@sarangan.test` — `password` (dev only).
 
-1. Repo terhubung ke **dua** project Vercel (frontend root `frontend/`, backend root `backend/`).
-2. Env production diisi di **dashboard Vercel**, bukan lewat commit `.env`.
-3. Frontend build memakai `frontend/.env.production` (`VITE_API_URL=https://e-ticket-sarangan-backend.vercel.app/api`) atau override di Vercel.
-4. Backend container menjalankan `php artisan migrate --force` saat start jika `AUTO_MIGRATE=true` (default di `backend/docker/entrypoint.sh`).
+## Quick Start
 
-URL yang dipakai di kode / CORS (`backend/config/cors.php:36`):
-
-- Frontend: `https://e-ticket-sarangan.vercel.app`, `https://e-ticket-sarangan-anx4.vercel.app`
-- Backend: `https://e-ticket-sarangan-backend.vercel.app`
-- Frontend memanggil API: `https://e-ticket-sarangan-backend.vercel.app/api`
-
-Jika origin frontend Vercel **baru**, tambahkan ke env backend `FRONTEND_URL` atau `CORS_ALLOWED_ORIGINS` agar browser tidak memblokir request.
-
-### Env yang tidak ikut Git
-
-Diabaikan Git: `.env`, `.env.*` (kecuali `.env.example` dan `frontend/.env.production`).
-
-**Backend (Vercel):** `APP_KEY`, `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, koneksi Supabase (`DB_*`, `DB_SSLMODE=require`), `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `XENDIT_SECRET_KEY`, `LOG_CHANNEL=stderr`. Opsional: `XENDIT_CALLBACK_TOKEN` (aktifkan verifikasi webhook), `GOOGLE_PLACES_API_KEY` (untuk `accommodations:sync`), `CORS_ALLOWED_ORIGINS`, `AUTO_MIGRATE`.
-
-**Frontend (Vercel atau `.env.production`):** `VITE_API_URL` harus mengarah ke backend production (`…/api`), bukan localhost.
-
-Fitur baru yang butuh secret tambahan (misalnya SMTP untuk email, Google Places key untuk sync penginapan) harus ditambahkan di dashboard Vercel; push kode **tidak** membuat variabel itu sendiri.
-
-## Menjalankan di lokal (opsional)
-
-Untuk pengembangan lokal, bukan syarat deploy.
-
-**Prasyarat:** PHP 8.3+ (`pdo_pgsql`, `pgsql`), Composer 2, Node.js 20.19+ (22 disarankan), NPM 10+, PostgreSQL (lokal atau Supabase).
+**Prereqs:** PHP 8.3 (`pdo_pgsql`), Composer 2, Node 20+, PostgreSQL/Supabase.
 
 ```bash
 git clone https://github.com/Kanzacky/E-Ticket-Sarangan.git
@@ -188,92 +86,78 @@ cd E-Ticket-Sarangan
 ```
 
 Backend:
-
 ```bash
 cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-# isi DB_* (Supabase pooler atau PostgreSQL lokal), XENDIT_SECRET_KEY, FRONTEND_URL
-# opsional: XENDIT_CALLBACK_TOKEN untuk test webhook lokal (expose via ngrok)
-php artisan migrate
-php artisan db:seed   # buat admin/petugas/wisatawan + ticket types + 5 penginapan dummy
-php artisan serve     # http://localhost:8000
+# edit .env: DB_*, XENDIT_SECRET_KEY, FRONTEND_URL, GOOGLE_PLACES_API_KEY (optional)
+php artisan migrate --force
+php artisan db:seed
+php artisan serve # http://localhost:8000
+php artisan accommodations:sync --limit=10 # optional Google Places
 ```
 
 Frontend:
-
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-# VITE_API_URL=http://localhost:8000/api
-npm run dev           # http://localhost:5173
+cp .env.example .env # VITE_API_URL=http://localhost:8000/api
+npm run dev # http://localhost:5173
 ```
 
-Test webhook Xendit lokal: expose `http://localhost:8000` via `ngrok http 8000` lalu set Callback URL di dashboard Xendit ke `https://<ngrok>.ngrok.io/api/payments/xendit/webhook` + isi `XENDIT_CALLBACK_TOKEN` yang sama.
+## Configuration
+
+`.env` never committed. `frontend/.env.production` is committed for `VITE_API_URL`.
+
+**Backend Vercel env:** `APP_KEY`, `APP_URL`, `DB_*`, `DB_SSLMODE=require`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `XENDIT_SECRET_KEY`, `LOG_CHANNEL=stderr`  
+Optional: `XENDIT_CALLBACK_TOKEN`, `GOOGLE_PLACES_API_KEY`, `AWS_*` (`FILESYSTEM_DISK=s3` for Supabase Storage), `CORS_ALLOWED_ORIGINS`, `AUTO_MIGRATE=true`
+
+**Frontend:** `VITE_API_URL=https://e-ticket-sarangan-backend.vercel.app/api`
 
 ## API
 
-Prefix: `/api`. Bentuk respons umum: `{ success, message, data, meta }` atau `{ success, message, errors }` (lihat `App\Support\ApiResponse`).
+Base `/api`, response `{success, message, data, meta}` (`App\Support\ApiResponse`).
 
-| Method | Path | Auth | Deskripsi |
-|:---|:---|:---|:---|
-| GET | `/health` | publik | Health check |
-| GET | `/ticket-types` | publik | List jenis tiket aktif |
-| GET | `/accommodations` | publik | List penginapan aktif |
-| GET | `/accommodations/{id}` | publik | Detail penginapan |
-| POST | `/auth/register` | publik | Daftar wisatawan |
-| POST | `/auth/login` | publik | Login → `access_token` |
-| POST | `/auth/logout` | Sanctum | Logout |
-| GET | `/auth/me` | Sanctum | Profil |
-| PATCH | `/auth/me` | Sanctum | Update profil |
-| GET | `/orders` | Sanctum | Riwayat order milik user |
-| POST | `/orders` | Sanctum | Buat order + invoice Xendit |
-| GET | `/orders/{order_code}` | Sanctum | Detail order milik user |
-| POST | `/scan` | Sanctum + petugas | Verifikasi QR |
-| GET | `/scan/history` | Sanctum + petugas | Riwayat scan petugas |
-| GET | `/accommodation-bookings` | Sanctum | Riwayat booking penginapan user |
-| POST | `/accommodation-bookings` | Sanctum | Booking penginapan |
-| POST | `/payments/xendit/webhook` | publik | Webhook Xendit (alias `POST /webhook`) |
-| GET | `/admin/users`, POST, GET/{id}, PATCH/{id}, DELETE/{id} | admin | CRUD user |
-| GET | `/admin/ticket-types`, POST, PATCH/{id}, DELETE/{id} | admin | CRUD jenis tiket |
-| GET | `/admin/ticket-categories`, POST, PATCH/{id}, DELETE/{id} | admin | CRUD kategori |
-| GET | `/admin/orders`, GET/{code}, PATCH/{code}/status | admin | Kelola order |
-| GET | `/admin/payments`, PATCH/{id}/status | admin | Kelola pembayaran virtual |
-| GET | `/admin/reports/summary` | admin | Ringkasan laporan |
-| GET | `/admin/dashboard` | admin | Dashboard ringkas |
-| GET | `/admin/accommodations`, POST, GET/{id}, PATCH/{id}, DELETE/{id} | admin | CRUD penginapan |
-| GET | `/petugas/dashboard` | petugas | Dashboard petugas |
-| GET | `/petugas/visits`, `/petugas/bookings`, `/petugas/users` | petugas | Data petugas |
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/health`, `/ticket-types`, `/accommodations` | public |
+| `POST` | `/auth/register`, `/auth/login`, `/auth/forgot-password`, `/auth/reset-password` | public (throttled) |
+| `GET/PATCH` | `/auth/me` | sanctum |
+| `GET/POST` | `/orders`, `/accommodation-bookings`, `/notifications` | sanctum |
+| `POST` | `/scan`, `GET /scan/history` | petugas |
+| `POST` | `/payments/xendit/webhook` | public (token if set) |
+| `*` | `/admin/*` | admin |
+| `*` | `/petugas/*` | petugas |
 
-Daftar lengkap: `backend/routes/api.php`.
+Full list: `backend/routes/api.php`.
 
-## Pengujian
+Pagination: `?search=&per_page=15&page=1&status=` → `{data, meta:{current_page,last_page,total}}` (fallback to array if without `per_page`).
 
-Backend (Pest lewat Artisan):
+## Testing
 
 ```bash
 cd backend
-php artisan test
-```
+php artisan test          # Pest, sqlite :memory:
+# 14 tests: AccommodationBooking, Notification (8), Analytics (6), Auth, etc.
 
-Frontend (belum ada unit/e2e; yang ada pengecekan tipe dan lint):
-
-```bash
 cd frontend
 npm run type-check
 npm run lint
+npm run build
 ```
 
-## Dokumentasi lain
+CI: `.github/workflows/ci.yml` — backend pest + frontend build on push.
 
-- [Arsitektur](docs/architecture.md)
-- [Skema basis data](docs/database.md) — belum mencerminkan tabel `orders` / `scan_logs` secara lengkap
-- [Supabase](docs/supabase.md)
+## Deployment
 
----
+Two Vercel projects (root `frontend/`, `backend/`). Push to tracked branch triggers rebuild.  
+Backend container runs `migrate --force --isolated` if `AUTO_MIGRATE=true` (`docker/entrypoint.sh:28`), then `php artisan optimize`.
 
-<div align="center">
-  <p>Dikembangkan untuk mendukung pariwisata <b>Telaga Sarangan</b>.</p>
-</div>
+CORS (`config/cors.php:36`): `https://e-ticket-sarangan.vercel.app`, `https://e-ticket-sarangan-anx4.vercel.app` + `FRONTEND_URL`/`CORS_ALLOWED_ORIGINS`.
+
+## License
+
+MIT — for Telaga Sarangan tourism.
+
+<div align="center"><sub>Built for Telaga Sarangan</sub></div>
