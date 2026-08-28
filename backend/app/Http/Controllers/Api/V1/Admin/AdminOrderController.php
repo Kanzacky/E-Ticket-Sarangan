@@ -54,6 +54,12 @@ class AdminOrderController extends Controller
 
         $order->status = $validated['status'];
         $order->save();
+        // Notifikasi status manual (PAID/EXPIRED/COMPLETED)
+        try {
+            if ($order->status === 'PAID') \App\Services\NotificationService::sendOrderPaid($order);
+            elseif ($order->status === 'EXPIRED') \App\Services\NotificationService::sendOrderExpired($order);
+            elseif ($order->status === 'COMPLETED') \App\Services\NotificationService::sendOrderScanned($order);
+        } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif admin status failed: '.$e->getMessage()); }
 
         return response()->json([
             'success' => true,

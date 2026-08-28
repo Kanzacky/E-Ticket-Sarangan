@@ -47,11 +47,13 @@ class XenditWebhookController extends Controller
                 $order->qr_expires_at = $expiresAt;
                 
                 $order->save();
+                try { \App\Services\NotificationService::sendOrderPaid($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif paid failed: '.$e->getMessage()); }
             }
         } elseif ($status === 'EXPIRED') {
             if ($order->status === 'PENDING') {
                 $order->status = 'EXPIRED';
                 $order->save();
+                try { \App\Services\NotificationService::sendOrderExpired($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif expired failed: '.$e->getMessage()); }
             }
         }
 

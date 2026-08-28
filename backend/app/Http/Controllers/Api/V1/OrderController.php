@@ -153,6 +153,9 @@ class OrderController extends Controller
                 return $order->load('items.ticketType');
             });
 
+            // Notifikasi: order pending
+            try { \App\Services\NotificationService::sendOrderPending($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif pending failed: '.$e->getMessage()); }
+
             return ApiResponse::success('Booking berhasil dibuat', $order, [], 201);
         } catch (Exception $e) {
             $statusCode = in_array($e->getCode(), [409, 422]) ? $e->getCode() : 500;

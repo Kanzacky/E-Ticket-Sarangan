@@ -21,7 +21,7 @@ Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
 
 // Admin Routes (prefix: admin, middleware: auth sanctum)
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     // Users CRUD
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
@@ -67,7 +67,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 });
 
 // Petugas Routes (prefix: petugas, middleware: auth sanctum)
-Route::middleware('auth:sanctum')->prefix('petugas')->group(function () {
+Route::middleware(['auth:sanctum', 'role:petugas'])->prefix('petugas')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'dashboard']);
     Route::get('/visits', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'visits']);
     Route::get('/bookings', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'bookings']);
@@ -92,13 +92,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
 
-    // Scanner API
-    Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify']);
-    Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
+    Route::middleware('role:petugas')->group(function () {
+        Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify']);
+        Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
+    });
 
     // Accommodation Bookings
     Route::get('/accommodation-bookings', [AccommodationBookingController::class, 'index']);
     Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store']);
+
+    // Notifications (all authenticated roles)
+    Route::get('/notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\V1\NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllAsRead']);
+    Route::patch('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\V1\NotificationController::class, 'destroy']);
 });
 
 // Midtrans Webhook

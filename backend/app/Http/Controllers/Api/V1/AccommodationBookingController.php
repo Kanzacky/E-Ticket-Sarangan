@@ -76,6 +76,7 @@ class AccommodationBookingController extends Controller
         $accommodation->save();
 
         $booking->load('accommodation');
+        try { \App\Services\NotificationService::sendAccommodationBooked($booking); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif accommodation failed: '.$e->getMessage()); }
 
         return response()->json([
             'success' => true,
