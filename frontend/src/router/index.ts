@@ -86,6 +86,11 @@ const routes: RouteRecordRaw[] = [
         name: 'wisatawan.accommodation-detail',
         component: () => import('@/views/wisatawan/AccommodationDetailView.vue'),
       },
+      {
+        path: '/my-accommodations',
+        name: 'wisatawan.accommodation-bookings',
+        component: () => import('@/views/wisatawan/MyAccommodationBookingsView.vue'),
+      },
     ],
   },
   {
@@ -184,11 +189,6 @@ const routes: RouteRecordRaw[] = [
         path: 'checkins',
         name: 'admin.checkins',
         component: () => import('@/views/admin/CheckinsView.vue'),
-      },
-      {
-        path: 'upgrades',
-        name: 'admin.upgrades',
-        component: () => import('@/views/admin/UpgradesView.vue'),
       },
       {
         path: 'analytics',

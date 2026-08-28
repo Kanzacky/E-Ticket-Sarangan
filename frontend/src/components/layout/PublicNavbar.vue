@@ -115,6 +115,9 @@ function handlePesanTiket() {
             <router-link to="/my-tickets" class="text-sm font-semibold transition-colors" :class="navLinkClass">
               Pesanan Saya
             </router-link>
+            <router-link to="/my-accommodations" class="text-sm font-semibold transition-colors" :class="navLinkClass">
+              Penginapan Saya
+            </router-link>
           </template>
         </nav>
 
@@ -262,6 +265,10 @@ function handlePesanTiket() {
             <template v-if="!['admin', 'petugas'].includes(authStore.user?.role || '')">
               <router-link to="/my-tickets" @click="isMobileMenuOpen = false" class="flex items-center justify-between py-3 text-[#1D2724] font-semibold border-b border-[#173B35]/8">
                 Pesanan Saya
+                <ChevronRight class="w-4 h-4 text-[#66706C]" />
+              </router-link>
+              <router-link to="/my-accommodations" @click="isMobileMenuOpen = false" class="flex items-center justify-between py-3 text-[#1D2724] font-semibold border-b border-[#173B35]/8">
+                Penginapan Saya
                 <ChevronRight class="w-4 h-4 text-[#66706C]" />
               </router-link>
             </template>

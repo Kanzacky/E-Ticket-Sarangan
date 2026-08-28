@@ -179,6 +179,11 @@ const statCards = computed(() => [
       </router-link>
     </div>
 
+    <div class="flex gap-2 border-b border-[#E8E6DE]">
+      <router-link to="/my-tickets" class="px-4 py-2 text-sm font-bold border-b-2 border-[#173B35] text-[#173B35]">Tiket Saya</router-link>
+      <router-link to="/my-accommodations" class="px-4 py-2 text-sm font-bold border-b-2 border-transparent text-[#66706C] hover:text-[#1D2724]">Penginapan Saya</router-link>
+    </div>
+
     <!-- ======================================================= -->
     <!-- STATS ROW                                               -->
     <!-- ======================================================= -->
