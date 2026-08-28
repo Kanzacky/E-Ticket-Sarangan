@@ -57,7 +57,7 @@ export interface CreateAccommodationBookingPayload {
 
 export async function getAccommodationsApi(params?: { page?: number; per_page?: number; search?: string }): Promise<{ data: Accommodation[]; meta: PaginatedMeta }> {
   const res = await api.get<ApiResponse<Accommodation[]>>('/accommodations', { params })
-  return { data: res.data.data, meta: res.data.meta as PaginatedMeta }
+  return { data: res.data.data, meta: res.data.meta as unknown as PaginatedMeta }
 }
 
 export async function getAccommodationApi(id: number): Promise<Accommodation> {
@@ -67,7 +67,7 @@ export async function getAccommodationApi(id: number): Promise<Accommodation> {
 
 export async function getMyAccommodationBookingsApi(params?: { page?: number; per_page?: number; search?: string; status?: string }): Promise<{ data: AccommodationBooking[]; meta: PaginatedMeta }> {
   const res = await api.get<ApiResponse<AccommodationBooking[]>>('/accommodation-bookings', { params })
-  return { data: res.data.data, meta: res.data.meta as PaginatedMeta }
+  return { data: res.data.data, meta: res.data.meta as unknown as PaginatedMeta }
 }
 
 export async function createAccommodationBookingApi(

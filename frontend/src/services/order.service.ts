@@ -34,7 +34,7 @@ export const createOrderApi = async (payload: CreateOrderPayload): Promise<Order
  */
 export const getMyOrdersApi = async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse<Order>> => {
   const response = await api.get<ApiResponse<Order[]>>('/orders', { params })
-  return { data: response.data.data, meta: response.data.meta as PaginatedMeta }
+  return { data: response.data.data, meta: response.data.meta as unknown as PaginatedMeta }
 }
 
 /**

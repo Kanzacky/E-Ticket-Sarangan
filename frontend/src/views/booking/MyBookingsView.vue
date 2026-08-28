@@ -12,7 +12,7 @@ import {
   X,
   RefreshCw,
 } from 'lucide-vue-next'
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import axios from 'axios'
 import QrcodeVue from 'qrcode.vue'
 
