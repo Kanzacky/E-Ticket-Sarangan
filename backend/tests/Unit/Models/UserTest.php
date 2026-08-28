@@ -3,7 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\User;
-use App\Models\Booking;
+use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,12 +24,12 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function test_user_has_many_bookings()
+    public function test_user_has_many_orders()
     {
         $user = User::factory()->create();
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $order = Order::factory()->create(['user_id' => $user->id]);
 
-        $this->assertTrue($user->bookings->contains($booking));
-        $this->assertInstanceOf(Booking::class, $user->bookings->first());
+        $this->assertTrue($user->orders->contains($order));
+        $this->assertInstanceOf(Order::class, $user->orders->first());
     }
 }
