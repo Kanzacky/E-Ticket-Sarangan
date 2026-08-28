@@ -38,6 +38,7 @@ jobs:
           echo "DB_DATABASE=postgres" >> .env
           echo "DB_USERNAME=postgres" >> .env
           echo "DB_PASSWORD=postgres" >> .env
+          echo "DB_SSLMODE=prefer" >> .env
           echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
           composer install --no-interaction --prefer-dist
           php artisan key:generate --force
