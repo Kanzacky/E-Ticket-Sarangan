@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "e-Ticket Sarangan",
-    "tagline": "Sistem tiket digital untuk wisata Sarangan",
     "tagline": "Sistem tiket digital untuk wisata Sarangan"
   },
   "common": {
@@ -15,13 +14,19 @@
     "edit": "Edit",
     "delete": "Hapus",
     "confirm": "Konfirmasi",
-    "retry": "Coba lagi"
+    "retry": "Coba lagi",
+    "total": "Total",
+    "empty": "Tidak ada data",
+    "period": "Periode"
   },
   "nav": {
     "home": "Beranda",
     "login": "Masuk",
     "register": "Daftar",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "accommodations": "Penginapan",
+    "booking": "Pesan Tiket",
+    "my_tickets": "Pesanan Saya"
   },
   "home": {
     "title": "e-Ticket Sarangan",
@@ -47,6 +52,55 @@
     "noAccount": "Belum punya akun?",
     "loginSuccess": "Berhasil masuk",
     "registerSuccess": "Pendaftaran berhasil, silakan masuk",
-    "loginError": "Email atau kata sandi salah"
+    "loginError": "Email atau kata sandi salah",
+    "forgotTitle": "Lupa Password",
+    "forgotDesc": "Masukkan email Anda, kami kirim link reset.",
+    "resetTitle": "Reset Password",
+    "resetDesc": "Masukkan token dari email dan password baru."
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "analytics": "Analitik",
+    "reports": "Laporan",
+    "users": "Pengguna",
+    "petugas": "Petugas",
+    "tickets": "Tiket Dasar",
+    "ticket_categories": "Paket Wisata",
+    "accommodations": "Penginapan",
+    "bookings": "Pesanan",
+    "payments": "Pembayaran",
+    "checkins": "Check-in",
+    "upgrades": "Upgrade Tiket",
+    "audit_logs": "Audit Logs",
+    "settings": "Pengaturan"
+  },
+  "notification": {
+    "title": "Notifikasi",
+    "empty": "Tidak ada notifikasi",
+    "mark_all": "Tandai semua dibaca",
+    "delete": "Hapus",
+    "unread": "Belum dibaca"
+  },
+  "analytics": {
+    "title": "Analitik",
+    "desc": "Performa penjualan, scan, dan penginapan",
+    "revenue": "Pendapatan",
+    "orders": "Pesanan Sukses",
+    "tickets": "Tiket Terjual",
+    "scans": "Scan Valid",
+    "trend": "Tren Pendapatan Harian",
+    "top_tickets": "Tiket Terpopuler",
+    "success_rate": "Success rate"
+  },
+  "booking": {
+    "visit_date": "Tanggal Kunjungan",
+    "total": "Total",
+    "status": "Status"
+  },
+  "upgrade": {
+    "title": "Upgrade Tiket",
+    "desc": "Monitoring upgrade kategori tiket (dari ticket_upgrades)",
+    "empty": "Belum ada upgrade",
+    "legacy_note": "Fitur upgrade tiket belum digunakan pada alur orders saat ini (tabel legacy ticket_upgrades). Data akan muncul jika ada upgrade kategori. Untuk upgrade, hubungi admin."
   }
 }

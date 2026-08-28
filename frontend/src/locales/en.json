@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "e-Ticket Sarangan",
-    "tagline": "Digital ticketing system for Sarangan tourism",
     "tagline": "Digital ticketing system for Sarangan tourism"
   },
   "common": {
@@ -15,13 +14,19 @@
     "edit": "Edit",
     "delete": "Delete",
     "confirm": "Confirm",
-    "retry": "Retry"
+    "retry": "Retry",
+    "total": "Total",
+    "empty": "No data",
+    "period": "Period"
   },
   "nav": {
     "home": "Home",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "accommodations": "Accommodations",
+    "booking": "Book Ticket",
+    "my_tickets": "My Orders"
   },
   "home": {
     "title": "e-Ticket Sarangan",
@@ -47,6 +52,55 @@
     "noAccount": "Don't have an account?",
     "loginSuccess": "Login successful",
     "registerSuccess": "Registration successful, please login",
-    "loginError": "Invalid email or password"
+    "loginError": "Invalid email or password",
+    "forgotTitle": "Forgot Password",
+    "forgotDesc": "Enter your email, we will send a reset link.",
+    "resetTitle": "Reset Password",
+    "resetDesc": "Enter the token from email and new password."
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "users": "Users",
+    "petugas": "Staff",
+    "tickets": "Base Tickets",
+    "ticket_categories": "Tour Packages",
+    "accommodations": "Accommodations",
+    "bookings": "Orders",
+    "payments": "Payments",
+    "checkins": "Check-ins",
+    "upgrades": "Ticket Upgrades",
+    "audit_logs": "Audit Logs",
+    "settings": "Settings"
+  },
+  "notification": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "mark_all": "Mark all as read",
+    "delete": "Delete",
+    "unread": "Unread"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "desc": "Sales, scan and accommodation performance",
+    "revenue": "Revenue",
+    "orders": "Successful Orders",
+    "tickets": "Tickets Sold",
+    "scans": "Valid Scans",
+    "trend": "Daily Revenue Trend",
+    "top_tickets": "Top Tickets",
+    "success_rate": "Success rate"
+  },
+  "booking": {
+    "visit_date": "Visit Date",
+    "total": "Total",
+    "status": "Status"
+  },
+  "upgrade": {
+    "title": "Ticket Upgrades",
+    "desc": "Monitoring ticket category upgrades (from ticket_upgrades)",
+    "empty": "No upgrades yet",
+    "legacy_note": "Ticket upgrade feature is not used in the current orders flow (legacy ticket_upgrades table). Data will appear when upgrades occur. Contact admin for upgrades."
   }
 }

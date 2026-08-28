@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
+
+const { t } = useI18n()
 
 interface Upgrade {
   id: number
@@ -35,11 +38,11 @@ const formatCurrency = (v: number) => new Intl.NumberFormat('id-ID', { style: 'c
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-black text-[#173B35]">Upgrade Tiket</h1>
-      <p class="text-sm text-[#66706C] mt-1">Monitoring upgrade kategori tiket (dari ticket_upgrades)</p>
+      <h1 class="text-2xl font-black text-[#173B35]">{{ t('upgrade.title') }}</h1>
+      <p class="text-sm text-[#66706C] mt-1">{{ t('upgrade.desc') }}</p>
     </div>
     <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">{{ error }}</div>
-    <DataTable :headers="['ID','Ticket','Dari','Ke','Tambahan','Status','Tanggal']" :is-loading="isLoading" :is-empty="upgrades.length===0" empty-message="Belum ada upgrade">
+    <DataTable :headers="['ID','Ticket','Dari','Ke','Tambahan','Status','Tanggal']" :is-loading="isLoading" :is-empty="upgrades.length===0" :empty-message="t('upgrade.empty')">
       <tr v-for="u in upgrades" :key="u.id" class="hover:bg-[#F7F5EF]/50">
         <td class="px-6 py-3 text-sm">#{{ u.id }}</td>
         <td class="px-6 py-3 text-sm">{{ u.ticket_id }}</td>
@@ -50,8 +53,9 @@ const formatCurrency = (v: number) => new Intl.NumberFormat('id-ID', { style: 'c
         <td class="px-6 py-3 text-xs">{{ new Date(u.created_at).toLocaleDateString('id-ID') }}</td>
       </tr>
     </DataTable>
-    <div v-if="!isLoading && upgrades.length===0" class="p-6 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
-      Fitur upgrade tiket belum digunakan pada alur orders saat ini (tabel legacy ticket_upgrades). Data akan muncul jika ada upgrade kategori.
+    <div v-if="!isLoading && upgrades.length===0" class="p-6 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 flex gap-3">
+      <span class="text-lg">ℹ️</span>
+      <span>{{ t('upgrade.legacy_note') }}</span>
     </div>
   </div>
 </template>
