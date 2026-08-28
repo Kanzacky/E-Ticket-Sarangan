@@ -56,12 +56,11 @@ it('returns empty trend when no data for period', function () {
     expect($res->json('success'))->toBeTrue();
 });
 
-it('requires admin for audit logs, checkins, upgrades, settings', function () {
+it('requires admin for audit logs, checkins, settings', function () {
     $wisatawan = User::factory()->create(['role' => 'wisatawan']);
     Sanctum::actingAs($wisatawan, ['*']);
     $this->getJson('/api/admin/audit-logs')->assertForbidden();
     $this->getJson('/api/admin/checkins')->assertForbidden();
-    $this->getJson('/api/admin/upgrades')->assertForbidden();
     $this->getJson('/api/admin/settings')->assertForbidden();
 });
 

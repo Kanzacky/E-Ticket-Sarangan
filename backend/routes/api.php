@@ -55,7 +55,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/analytics', [\App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController::class, 'index']);
     Route::get('/audit-logs', [\App\Http\Controllers\Api\V1\Admin\AdminAuditLogController::class, 'index']);
     Route::get('/checkins', [\App\Http\Controllers\Api\V1\Admin\AdminCheckinController::class, 'index']);
-    Route::get('/upgrades', [\App\Http\Controllers\Api\V1\Admin\AdminTicketUpgradeController::class, 'index']);
     Route::get('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'index']);
     Route::patch('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'update']);
 
@@ -96,17 +95,17 @@ Route::prefix('auth')->group(function () {
 // Orders Endpoints (Sanctum protected)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
 
     Route::middleware('role:petugas')->group(function () {
-        Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify']);
+        Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify'])->middleware('throttle:30,1');
         Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
     });
 
     // Accommodation Bookings
     Route::get('/accommodation-bookings', [AccommodationBookingController::class, 'index']);
-    Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store']);
+    Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store'])->middleware('throttle:10,1');
 
     // Notifications (all authenticated roles)
     Route::get('/notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
