@@ -161,7 +161,13 @@
     "book_now": "Book Now",
     "processing": "Processing...",
     "need_login": "You will be redirected to login first.",
-    "search_placeholder": "Search accommodation..."
+    "search_placeholder": "Search accommodation...",
+    "sort": {
+      "rating": "Highest Rating",
+      "distance": "Nearest Distance",
+      "price_asc": "Lowest Price",
+      "price_desc": "Highest Price"
+    }
   },
   "upgrade": {
     "title": "Ticket Upgrades",

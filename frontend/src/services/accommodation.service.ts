@@ -21,6 +21,11 @@ export interface Accommodation {
   rating: number
   facilities: string[] | null
   is_active: boolean
+  google_place_id?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  distance_km?: number | null
+  source?: string | null
 }
 
 export interface AccommodationBooking {
@@ -55,7 +60,7 @@ export interface CreateAccommodationBookingPayload {
   notes?: string
 }
 
-export async function getAccommodationsApi(params?: { page?: number; per_page?: number; search?: string }): Promise<{ data: Accommodation[]; meta: PaginatedMeta }> {
+export async function getAccommodationsApi(params?: { page?: number; per_page?: number; search?: string; sort?: string }): Promise<{ data: Accommodation[]; meta: PaginatedMeta }> {
   const res = await api.get<ApiResponse<Accommodation[]>>('/accommodations', { params })
   return { data: res.data.data, meta: res.data.meta as unknown as PaginatedMeta }
 }

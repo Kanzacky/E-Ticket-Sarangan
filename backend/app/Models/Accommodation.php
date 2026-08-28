@@ -39,11 +39,22 @@ class Accommodation extends Model
             'is_active' => 'boolean',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
+            'distance_km' => 'decimal:3',
         ];
     }
 
     public function bookings(): HasMany
     {
         return $this->hasMany(AccommodationBooking::class);
+    }
+
+    public function getDistanceKmAttribute(): ?float
+    {
+        return $this->attributes['distance_km'] ?? null;
+    }
+
+    public function scopeSortByDistance($query, string $direction = 'asc')
+    {
+        return $query->orderBy('distance_km', $direction);
     }
 }

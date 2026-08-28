@@ -5,6 +5,7 @@ import {
   Star,
   Building,
   Search,
+  ArrowUpDown,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { onMounted, ref, watch } from 'vue'
@@ -21,6 +22,7 @@ const accommodations = ref<Accommodation[]>([])
 const isLoading = ref(true)
 const errorMessage = ref('')
 const searchQuery = ref('')
+const sortBy = ref<string>('rating')
 const meta = ref<PaginatedMeta>({ current_page: 1, last_page: 1, per_page: 12, total: 0 })
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -31,6 +33,7 @@ async function fetchAccommodations() {
       page: meta.value.current_page,
       per_page: 12,
       search: searchQuery.value.trim() || undefined,
+      sort: sortBy.value || undefined,
     })
     accommodations.value = result.data
     meta.value = result.meta
@@ -47,6 +50,12 @@ async function fetchAccommodations() {
 
 function goToPage(page: number) {
   meta.value.current_page = page
+  fetchAccommodations()
+}
+
+function handleSortChange(sort: string) {
+  sortBy.value = sort
+  meta.value.current_page = 1
   fetchAccommodations()
 }
 
@@ -82,10 +91,21 @@ function handleLihatDetail(id: number) {
         </p>
       </div>
 
-      <!-- Search -->
-      <div v-if="!isLoading && !errorMessage" class="relative w-full sm:w-72 mb-6">
-        <Search class="w-4 h-4 absolute left-3 top-2.5 text-[#66706C]" />
-        <input v-model="searchQuery" :placeholder="t('accommodation.search_placeholder')" class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:ring-1 focus:ring-[#173B35]" />
+      <!-- Search & Sort -->
+      <div v-if="!isLoading && !errorMessage" class="flex flex-col sm:flex-row gap-4 mb-6">
+        <div class="relative w-full sm:w-72">
+          <Search class="w-4 h-4 absolute left-3 top-2.5 text-[#66706C]" />
+          <input v-model="searchQuery" :placeholder="t('accommodation.search_placeholder')" class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:ring-1 focus:ring-[#173B35]" />
+        </div>
+        <div class="relative w-full sm:w-48">
+          <ArrowUpDown class="w-4 h-4 absolute left-3 top-2.5 text-[#66706C]" />
+          <select v-model="sortBy" @change="handleSortChange(sortBy)" class="w-full pl-9 pr-8 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:ring-1 focus:ring-[#173B35] appearance-none">
+            <option value="rating">{{ t('accommodation.sort.rating') }}</option>
+            <option value="distance">{{ t('accommodation.sort.distance') }}</option>
+            <option value="price_asc">{{ t('accommodation.sort.price_asc') }}</option>
+            <option value="price_desc">{{ t('accommodation.sort.price_desc') }}</option>
+          </select>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -119,6 +139,9 @@ function handleLihatDetail(id: number) {
               <h3 class="text-xl font-bold text-white mb-1">{{ item.name }}</h3>
               <p class="text-xs text-white/80 flex items-center gap-1">
                 <MapPin class="h-3.5 w-3.5 shrink-0" /> {{ item.address }}
+              </p>
+              <p v-if="item.distance_km !== null && item.distance_km !== undefined" class="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <MapPin class="h-3.5 w-3.5 shrink-0" /> {{ item.distance_km }} km dari Telaga Sarangan
               </p>
             </div>
           </div>

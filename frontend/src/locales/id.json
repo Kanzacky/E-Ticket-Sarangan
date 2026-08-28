@@ -161,7 +161,13 @@
     "book_now": "Buat Reservasi Sekarang",
     "processing": "Memproses...",
     "need_login": "Anda akan diarahkan ke halaman login terlebih dahulu.",
-    "search_placeholder": "Cari penginapan..."
+    "search_placeholder": "Cari penginapan...",
+    "sort": {
+      "rating": "Rating Tertinggi",
+      "distance": "Jarak Terdekat",
+      "price_asc": "Harga Termurah",
+      "price_desc": "Harga Termahal"
+    }
   },
   "upgrade": {
     "title": "Upgrade Tiket",

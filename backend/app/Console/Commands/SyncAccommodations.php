@@ -106,6 +106,8 @@ class SyncAccommodations extends Command
             $latPlace = $place['geometry']['location']['lat'] ?? $lat;
             $lngPlace = $place['geometry']['location']['lng'] ?? $lng;
 
+            $distanceKm = $service->calculateDistance($lat, $lng, $latPlace, $lngPlace);
+
             $details = null;
             $phone = null;
             $priceLevel = null;
@@ -136,6 +138,7 @@ class SyncAccommodations extends Command
                 'google_place_id' => $placeId,
                 'latitude' => $latPlace,
                 'longitude' => $lngPlace,
+                'distance_km' => $distanceKm,
                 'source' => 'google',
             ];
 
@@ -149,16 +152,17 @@ class SyncAccommodations extends Command
                     'google_place_id' => $placeId,
                     'latitude' => $latPlace,
                     'longitude' => $lngPlace,
+                    'distance_km' => $distanceKm,
                     'source' => 'google',
                     // phone hanya update jika ada dari details
                     'phone' => $phone ?? $existing->phone,
                 ]);
                 $updated++;
-                $this->line("  Updated: {$name} ({$placeId})");
+                $this->line("  Updated: {$name} ({$placeId}) distance {$distanceKm}km");
             } else {
                 Accommodation::create($payload);
                 $created++;
-                $this->line("  Created: {$name} ({$placeId}) rating {$rating} price {$price}");
+                $this->line("  Created: {$name} ({$placeId}) rating {$rating} price {$price} distance {$distanceKm}km");
             }
         }
 
