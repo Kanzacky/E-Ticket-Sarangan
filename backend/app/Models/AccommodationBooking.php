@@ -20,6 +20,9 @@ class AccommodationBooking extends Model
         'guest_phone',
         'status',
         'notes',
+        'payment_id',
+        'payment_url',
+        'payment_expires_at',
     ];
 
     protected function casts(): array
@@ -30,6 +33,7 @@ class AccommodationBooking extends Model
             'rooms' => 'integer',
             'guests' => 'integer',
             'total_price' => 'integer',
+            'payment_expires_at' => 'datetime',
         ];
     }
 

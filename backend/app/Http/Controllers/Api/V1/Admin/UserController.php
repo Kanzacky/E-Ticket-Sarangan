@@ -14,31 +14,31 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $users = User::latest()->get(['id', 'name', 'email', 'role', 'phone', 'created_at']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Daftar pengguna berhasil diambil',
-            'data' => $users,
-        ]);
+        $query = User::query();
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
+        $perPage = $request->query('per_page');
+        if ($perPage) {
+            $paginated = $query->latest()->paginate((int) $perPage);
+            return response()->json(['success' => true, 'message' => 'Daftar pengguna berhasil diambil', 'data' => $paginated->items(), 'meta' => ['current_page' => $paginated->currentPage(), 'last_page' => $paginated->lastPage(), 'per_page' => $paginated->perPage(), 'total' => $paginated->total()]]);
+        }
+        $users = $query->latest()->get(['id', 'name', 'email', 'role', 'phone', 'created_at']);
+        return response()->json(['success' => true, 'message' => 'Daftar pengguna berhasil diambil', 'data' => $users]);
     }
 
     public function store(UserStoreRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        
         $validated['role'] = strtolower($validated['role']);
         $validated['password'] = Hash::make($validated['password']);
-
         $user = User::create($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pengguna berhasil ditambahkan',
-            'data' => $user->only(['id', 'name', 'email', 'role', 'phone', 'created_at']),
-        ], 201);
+        \App\Services\AuditService::log($request, 'create_user', User::class, $user->id, null, $validated);
+        return response()->json(['success' => true, 'message' => 'Pengguna berhasil ditambahkan', 'data' => $user->only(['id', 'name', 'email', 'role', 'phone', 'created_at'])], 201);
     }
 
     public function dashboard(): JsonResponse
@@ -83,27 +83,18 @@ class UserController extends Controller
     public function update(UserUpdateRequest $request, User $user): JsonResponse
     {
         $validated = $request->validated();
-
-        if (isset($validated['role'])) {
-            $validated['role'] = strtolower($validated['role']);
-        }
-
+        $old = $user->toArray();
+        if (isset($validated['role'])) $validated['role'] = strtolower($validated['role']);
         $user->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pengguna berhasil diperbarui',
-            'data' => $user->only(['id', 'name', 'email', 'role', 'phone']),
-        ]);
+        \App\Services\AuditService::log($request, 'update_user', User::class, $user->id, $old, $validated);
+        return response()->json(['success' => true, 'message' => 'Pengguna berhasil diperbarui', 'data' => $user->only(['id', 'name', 'email', 'role', 'phone'])]);
     }
 
     public function destroy(User $user): JsonResponse
     {
+        $old = $user->toArray();
         $user->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pengguna berhasil dihapus',
-        ]);
+        \App\Services\AuditService::log(request(), 'delete_user', User::class, $old['id'] ?? null, $old, null);
+        return response()->json(['success' => true, 'message' => 'Pengguna berhasil dihapus']);
     }
 }

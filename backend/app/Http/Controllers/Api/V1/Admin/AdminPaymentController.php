@@ -9,29 +9,34 @@ use Illuminate\Http\JsonResponse;
 
 class AdminPaymentController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        // For this system, Orders act as the primary transaction/payment record.
-        // We'll fetch orders, ideally those that aren't pending, to represent payments.
-        // But for completeness, we return all orders so admin can see FAILED/PENDING too.
-        $payments = Order::with('user')->orderBy('id', 'desc')->get()->map(function ($order) {
+        $query = Order::with('user')->orderBy('id', 'desc');
+        if ($s=$request->query('search')) {
+            $query->where(function($q) use ($s){
+                $q->where('order_code','ilike',"%{$s}%")->orWhere('customer_name','ilike',"%{$s}%");
+            });
+        }
+        if ($status=$request->query('status')) $query->where('status',$status);
+        $perPage=$request->query('per_page');
+        $orders = $perPage ? $query->paginate((int)$perPage) : $query->get();
+        $items = ($orders instanceof \Illuminate\Pagination\LengthAwarePaginator ? $orders->items() : $orders);
+        $payments = collect($items)->map(function ($order) {
             return [
                 'id' => $order->id,
                 'transaction_id' => 'TRX-' . $order->order_code,
                 'customer_name' => $order->customer_name ?? $order->user?->name ?? 'Tamu',
-                'payment_method' => 'Bank Transfer / E-Wallet', // Mock or derive if stored
+                'payment_method' => 'Xendit Invoice',
                 'amount' => $order->total_amount,
                 'status' => $order->status,
                 'paid_at' => in_array($order->status, ['PAID', 'COMPLETED']) ? $order->updated_at : null,
                 'created_at' => $order->created_at,
             ];
         });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data pembayaran berhasil diambil',
-            'data' => $payments,
-        ]);
+        if ($orders instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            return response()->json(['success'=>true,'message'=>'Data pembayaran berhasil diambil','data'=>$payments,'meta'=>['current_page'=>$orders->currentPage(),'last_page'=>$orders->lastPage(),'per_page'=>$orders->perPage(),'total'=>$orders->total()]]);
+        }
+        return response()->json(['success'=>true,'message'=>'Data pembayaran berhasil diambil','data'=>$payments]);
     }
 
     public function updateStatus(Request $request, $id): JsonResponse
@@ -49,17 +54,10 @@ class AdminPaymentController extends Controller
             ], 404);
         }
 
+        $old=$order->status;
         $order->status = $request->status;
         $order->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status pembayaran berhasil diupdate',
-            'data' => [
-                'id' => $order->id,
-                'status' => $order->status,
-                'paid_at' => in_array($order->status, ['PAID', 'COMPLETED']) ? $order->updated_at : null,
-            ]
-        ]);
+        \App\Services\AuditService::log($request,'update_payment_status',Order::class,$order->id,['status'=>$old],['status'=>$order->status]);
+        return response()->json(['success'=>true,'message'=>'Status pembayaran berhasil diupdate','data'=>['id'=>$order->id,'status'=>$order->status,'paid_at'=>in_array($order->status,['PAID','COMPLETED'])?$order->updated_at:null]]);
     }
 }

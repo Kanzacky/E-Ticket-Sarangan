@@ -15,17 +15,62 @@ class XenditWebhookController extends Controller
      */
     public function handleWebhook(Request $request): JsonResponse
     {
-        // 1. In a real-world scenario, you should verify the Xendit Callback Token here:
-        // $callbackToken = $request->header('x-callback-token');
-        // if ($callbackToken !== env('XENDIT_CALLBACK_TOKEN')) {
-        //     return response()->json(['message' => 'Unauthorized'], 401);
-        // }
+        $expectedToken = env('XENDIT_CALLBACK_TOKEN');
+        if (!empty($expectedToken)) {
+            $callbackToken = $request->header('x-callback-token');
+            if ($callbackToken !== $expectedToken) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+        }
 
         $externalId = $request->input('external_id');
         $status = $request->input('status');
 
         if (!$externalId || !$status) {
             return response()->json(['message' => 'Invalid payload'], 400);
+        }
+
+        // Accommodation booking (ACC-...)
+        if (str_starts_with($externalId, 'ACC-')) {
+            $booking = \App\Models\AccommodationBooking::where('booking_code', $externalId)->first();
+            if (!$booking) {
+                return response()->json(['message' => 'Booking not found, but webhook received'], 200);
+            }
+            if (in_array($status, ['PAID', 'SETTLED'])) {
+                if ($booking->status === 'pending') {
+                    $booking->status = 'confirmed';
+                    $booking->save();
+                    try {
+                        \App\Services\NotificationService::send(
+                            $booking->user_id,
+                            'Pembayaran penginapan berhasil',
+                            "Booking {$booking->booking_code} lunas. Penginapan siap digunakan.",
+                            'accommodation_paid',
+                            ['booking_code' => $booking->booking_code]
+                        );
+                    } catch (\Throwable $e) {}
+                }
+            } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
+                if ($booking->status === 'pending') {
+                    $booking->status = 'cancelled';
+                    $booking->save();
+                    // release kamar
+                    try {
+                        $acc = $booking->accommodation;
+                        if ($acc) { $acc->available_rooms += $booking->rooms; $acc->save(); }
+                    } catch (\Throwable $e) {}
+                    try {
+                        \App\Services\NotificationService::send(
+                            $booking->user_id,
+                            'Booking penginapan kadaluarsa',
+                            "Booking {$booking->booking_code} dibatalkan karena pembayaran tidak selesai.",
+                            'accommodation_expired',
+                            ['booking_code' => $booking->booking_code]
+                        );
+                    } catch (\Throwable $e) {}
+                }
+            }
+            return response()->json(['message' => 'Webhook accommodation handled'], 200);
         }
 
         $order = Order::where('order_code', $externalId)->first();
@@ -49,9 +94,10 @@ class XenditWebhookController extends Controller
                 $order->save();
                 try { \App\Services\NotificationService::sendOrderPaid($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif paid failed: '.$e->getMessage()); }
             }
-        } elseif ($status === 'EXPIRED') {
+        } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
             if ($order->status === 'PENDING') {
-                $order->status = 'EXPIRED';
+                $statusToSet = $status === 'EXPIRED' ? 'EXPIRED' : 'FAILED';
+                $order->status = $statusToSet;
                 $order->save();
                 try { \App\Services\NotificationService::sendOrderExpired($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif expired failed: '.$e->getMessage()); }
             }

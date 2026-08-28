@@ -99,4 +99,33 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate(['email' => 'required|email']);
+        $status = \Illuminate\Support\Facades\Password::sendResetLink($request->only('email'));
+        if ($status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT) {
+            return ApiResponse::success('Link reset password telah dikirim (cek log jika mail=log)');
+        }
+        return ApiResponse::error('Email tidak ditemukan', 404);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+        $status = \Illuminate\Support\Facades\Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill(['password' => Hash::make($password)])->save();
+            }
+        );
+        if ($status === \Illuminate\Support\Facades\Password::PASSWORD_RESET) {
+            return ApiResponse::success('Password berhasil direset');
+        }
+        return ApiResponse::error('Token tidak valid atau kadaluarsa', 400);
+    }
 }
