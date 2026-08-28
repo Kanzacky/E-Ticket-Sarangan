@@ -30,7 +30,6 @@ Sudah operasional untuk demo/produksi terbatas (pesan–bayar–scan–CRUD + pe
 | Auth Sanctum (register, login, logout, profil `GET/PATCH /auth/me`) | Ada |
 | Pesan tiket, kuota per tanggal (`lockForUpdate` + cek `PENDING`+`PAID`), riwayat, QR | Ada (`orders` / `order_items`) — `backend/app/Http/Controllers/Api/V1/OrderController.php:59` |
 | Pembayaran **Xendit** (invoice + webhook) | Ada; verifikasi `x-callback-token` masih dikomentari di `backend/app/Http/Controllers/Api/V1/XenditWebhookController.php:19` |
-| Pembayaran **Midtrans** | Legacy; `midtrans/midtrans-php ^2.6` masih ter-install, `backend/app/Services/MidtransService.php:1`, `backend/config/midtrans.php:1`, webhook `POST /payments/midtrans/notification` mengarah ke model `Booking` dan **tidak dipakai** alur `orders` |
 | Scan QR petugas + riwayat scan | Ada (satu QR per pesanan, bukan per orang). Validasi: `PAID` saja, cek `qr_expires_at`, tolak scan duplikat. `backend/app/Http/Controllers/Api/V1/ScannerController.php:17` + `ScanLog` |
 | Admin: user, jenis tiket, kategori, order, pembayaran, laporan ringkas | Ada — `backend/app/Http/Controllers/Api/V1/Admin/` |
 | Penginapan (katalog publik + booking kamar + CRUD admin) | Ada; belum terhubung pembayaran (kurangi `available_rooms` langsung, status `pending`) — `backend/app/Http/Controllers/Api/V1/AccommodationBookingController.php:32` |
@@ -47,16 +46,15 @@ graph TD;
     Vue["Vue 3 SPA (Vercel)"] -->|Axios REST /api| Laravel["Laravel 12 (Vercel Container)"];
     Laravel -->|Eloquent| Postgres["Supabase PostgreSQL"];
     Laravel <-->|Invoice + webhook /payments/xendit/webhook| Xendit["Xendit"];
-    Laravel -.->|Legacy webhook /payments/midtrans/notification| Midtrans["Midtrans (tidak dipakai orders)"]
 ```
 
 | Folder | Isi |
 |:---|:---|
 | `frontend/` | Vue 3, Vite, TypeScript, Pinia, Vue Router, Tailwind CSS, vue-i18n, `qrcode.vue`, `vue-qrcode-reader` |
-| `backend/` | Laravel 12, PHP 8.3+, Sanctum 4.3, Pest 3, `xendit/xendit-php`, `midtrans/midtrans-php` |
+| `backend/` | Laravel 12, PHP 8.3+, Sanctum 4.3, Pest 3, `xendit/xendit-php` |
 | `docs/` | Catatan arsitektur / DB / Supabase (sebagian belum diselaraskan dengan kode) |
 
-Model domain aktif untuk tiket adalah **Order** (`ETK-YYYYMMDD-XXXXXX`) + `OrderItem`. Tabel lama (`bookings`, `booking_visitors`, `tickets`, `payments`, `checkins`, `ticket_upgrades`, `notifications`, `audit_logs`) masih ada di `backend/database/migrations/` untuk kompatibilitas, tapi webhook Midtrans saja yang masih menggunakannya.
+Model domain aktif untuk tiket adalah **Order** (`ETK-YYYYMMDD-XXXXXX`) + `OrderItem`. Tabel lama (`bookings`, `booking_visitors`, `tickets`, `payments`, `checkins`, `ticket_upgrades`, `audit_logs`) masih ada di `backend/database/migrations/` untuk kompatibilitas historis.
 
 ## Peran pengguna
 
@@ -107,11 +105,9 @@ Order `PAID` menampilkan QR berisi `order_code` (`frontend/src/views/booking/` +
 - Riwayat `GET /scan/history` per petugas.
 
 ### 4. Admin Payments (virtual)
-`GET /admin/payments` (`backend/app/Http/Controllers/Api/V1/Admin/AdminPaymentController.php:12`) memetakan `Order` menjadi pembayaran (tidak ada tabel `payments` untuk alur baru):
+`GET /admin/payments` (`backend/app/Http/Controllers/Api/V1/Admin/AdminPaymentController.php:12`) memetakan `Order` menjadi pembayaran (tidak ada tabel `payments` untuk alur Xendit):
 `{ id: order.id, transaction_id: "TRX-"+order_code, amount: total_amount, status: order.status, paid_at: updated_at jika PAID/COMPLETED }`.
 `PATCH /admin/payments/{id}/status` untuk override manual (`PAID,PENDING,COMPLETED,FAILED,CANCELLED`) — fallback jika webhook belum masuk.
-
-> **Midtrans legacy:** `POST /payments/midtrans/notification` (`backend/app/Http/Controllers/Api/V1/PaymentCallbackController.php:17`) verifikasi `sha512(order_id+status_code+gross_amount+serverKey)`, cari `Booking` via `explode('-', order_id)[0]`, update `payments`/`bookings`. Tidak tersentuh UI `orders`. Biarkan untuk referensi atau hapus bila yakin tidak butuh.
 
 ## Penginapan
 
@@ -227,7 +223,6 @@ Prefix: `/api`. Bentuk respons umum: `{ success, message, data, meta }` atau `{ 
 | GET | `/accommodation-bookings` | Sanctum | Riwayat booking penginapan user |
 | POST | `/accommodation-bookings` | Sanctum | Booking penginapan |
 | POST | `/payments/xendit/webhook` | publik | Webhook Xendit (alias `POST /webhook`) |
-| POST | `/payments/midtrans/notification` | publik | Webhook Midtrans legacy |
 | GET | `/admin/users`, POST, GET/{id}, PATCH/{id}, DELETE/{id} | admin | CRUD user |
 | GET | `/admin/ticket-types`, POST, PATCH/{id}, DELETE/{id} | admin | CRUD jenis tiket |
 | GET | `/admin/ticket-categories`, POST, PATCH/{id}, DELETE/{id} | admin | CRUD kategori |

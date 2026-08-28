@@ -9,7 +9,6 @@ use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\AdminTicketTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\AdminAccommodationController;
-use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\XenditWebhookController;
 
@@ -108,9 +107,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\V1\NotificationController::class, 'destroy']);
 });
-
-// Midtrans Webhook
-Route::post('/payments/midtrans/notification', [PaymentCallbackController::class, 'handleNotification']);
 
 // Xendit Webhook
 Route::post('/payments/xendit/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']);
