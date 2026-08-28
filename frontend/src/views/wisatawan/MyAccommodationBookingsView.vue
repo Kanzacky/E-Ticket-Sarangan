@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Calendar, MapPin, Users, CreditCard, Search, Building, ExternalLink, LoaderCircle, AlertCircle } from 'lucide-vue-next'
+import { Calendar, MapPin, Users, CreditCard, Search, Building, ExternalLink, LoaderCircle } from 'lucide-vue-next'
 import { getMyAccommodationBookingsApi } from '@/services/accommodation.service'
 import type { AccommodationBooking } from '@/services/accommodation.service'
 import { formatCurrency } from '@/utils/formatters'
