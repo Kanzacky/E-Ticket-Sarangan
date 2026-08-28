@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/services/api'
 import { Search, Eye, Filter, Trash2, X, Plus, Edit } from 'lucide-vue-next'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 interface User {
   id: number
@@ -23,7 +24,11 @@ const route = useRoute()
 const isPetugasPage = computed(() => route.name === 'admin.petugas')
 
 const searchQuery = ref('')
-const filterRole = ref('all') // Internal filter (if needed)
+const filterRole = ref('all')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
 
 const pageTitle = computed(() => isPetugasPage.value ? 'Petugas & Admin' : 'Wisatawan')
 const pageDescription = computed(() => isPetugasPage.value ? 'Kelola data petugas dan administrator sistem.' : 'Kelola data wisatawan terdaftar pada sistem e-Ticket Sarangan.')
@@ -46,9 +51,23 @@ const fetchUsers = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    const response = await api.get('/admin/users')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    const response = await api.get(`/admin/users?${params.toString()}`)
     if (response.data.success) {
-      users.value = response.data.data
+      // support both paginated (data + meta) and legacy (data array)
+      if (response.data.meta && Array.isArray(response.data.data)) {
+        users.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        users.value = response.data.data
+        total.value = users.value.length
+        lastPage.value = 1
+      }
     }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Gagal memuat data pengguna'
@@ -57,28 +76,29 @@ const fetchUsers = async () => {
   }
 }
 
-onMounted(() => {
-  fetchUsers()
+onMounted(() => { fetchUsers() })
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchUsers() }, 400)
 })
+
+function handlePageChange(page: number) {
+  if (page < 1 || page > lastPage.value) return
+  currentPage.value = page
+  void fetchUsers()
+}
 
 const filteredUsers = computed(() => {
   return users.value.filter(user => {
-    // 1. Filter by page type
     if (isPetugasPage.value) {
       if (user.role === 'wisatawan') return false
     } else {
       if (user.role !== 'wisatawan') return false
     }
-
-    // 2. Filter by search query
-    const matchesSearch = 
-      user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    
-    // 3. Filter by dropdown (only relevant for Petugas page, since Wisatawan page only has 'wisatawan')
     const matchesRole = filterRole.value === 'all' || user.role === filterRole.value
-    
-    return matchesSearch && matchesRole
+    return matchesRole
   })
 })
 
@@ -97,11 +117,8 @@ const deleteUser = async (id: number) => {
   if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return
   try {
     await api.delete(`/admin/users/${id}`)
-    users.value = users.value.filter(u => u.id !== id)
-    if (selectedUser.value?.id === id) {
-      isDetailOpen.value = false
-      selectedUser.value = null
-    }
+    if (selectedUser.value?.id === id) { isDetailOpen.value = false; selectedUser.value = null }
+    await fetchUsers()
   } catch (err: any) {
     alert(err.response?.data?.message || 'Gagal menghapus pengguna')
   }
@@ -128,34 +145,16 @@ const submitForm = async () => {
   try {
     if (formMode.value === 'add') {
       const response = await api.post('/admin/users', form.value)
-      if (response.data.success) {
-        users.value.unshift(response.data.data)
-        isFormOpen.value = false
-      }
+      if (response.data.success) { isFormOpen.value = false; await fetchUsers() }
     } else {
-      // Edit mode
-      const payload: any = {
-        name: form.value.name,
-        email: form.value.email,
-        role: form.value.role
-      }
-      if (form.value.password) {
-        payload.password = form.value.password
-      }
+      const payload: any = { name: form.value.name, email: form.value.email, role: form.value.role }
+      if (form.value.password) payload.password = form.value.password
       const response = await api.patch(`/admin/users/${form.value.id}`, payload)
-      if (response.data.success) {
-        const index = users.value.findIndex(u => u.id === form.value.id)
-        if (index !== -1) {
-          users.value[index] = { ...users.value[index], ...response.data.data }
-        }
-        isFormOpen.value = false
-      }
+      if (response.data.success) { isFormOpen.value = false; await fetchUsers() }
     }
   } catch (err: any) {
     alert(err.response?.data?.message || 'Gagal menyimpan data pengguna')
-  } finally {
-    isSubmitting.value = false
-  }
+  } finally { isSubmitting.value = false }
 }
 </script>
 
@@ -270,6 +269,7 @@ const submitForm = async () => {
         </td>
       </tr>
     </DataTable>
+    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
 
     <!-- Detail Drawer -->
     <div v-if="isDetailOpen && selectedUser" class="fixed inset-0 z-50 overflow-hidden">

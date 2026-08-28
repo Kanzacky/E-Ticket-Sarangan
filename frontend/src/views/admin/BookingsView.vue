@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Eye, Filter, X } from 'lucide-vue-next'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 interface Order {
   id: number
@@ -22,6 +23,10 @@ const error = ref('')
 
 const searchQuery = ref('')
 const filterStatus = ref('all')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
 
 const isDetailOpen = ref(false)
 const selectedOrder = ref<Order | null>(null)
@@ -30,32 +35,39 @@ const fetchOrders = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    const response = await api.get('/admin/orders')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+    const response = await api.get(`/admin/orders?${params.toString()}`)
     if (response.data.success) {
-      orders.value = response.data.data
+      if (response.data.meta) {
+        orders.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        orders.value = response.data.data
+        total.value = orders.value.length
+        lastPage.value = 1
+      }
     }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Gagal memuat data pesanan'
-  } finally {
-    isLoading.value = false
-  }
+  } finally { isLoading.value = false }
 }
 
-onMounted(() => {
-  fetchOrders()
+onMounted(() => { fetchOrders() })
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchOrders() }, 400)
 })
+watch(filterStatus, () => { currentPage.value = 1; void fetchOrders() })
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchOrders() }
 
-const filteredOrders = computed(() => {
-  return orders.value.filter(order => {
-    const matchesSearch = 
-      order.order_code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      (order.user?.name || order.customer_name).toLowerCase().includes(searchQuery.value.toLowerCase())
-    
-    const matchesStatus = filterStatus.value === 'all' || order.status.toLowerCase() === filterStatus.value
-    
-    return matchesSearch && matchesStatus
-  })
-})
+const filteredOrders = computed(() => orders.value)
 
 const getStatusTone = (status: string) => {
   switch (status.toLowerCase()) {
@@ -86,22 +98,10 @@ const openDetail = (order: Order) => {
 
 const updateStatus = async (newStatus: string) => {
   if (!selectedOrder.value) return
-  
   try {
-    const response = await api.patch(`/admin/orders/${selectedOrder.value.order_code}/status`, {
-      status: newStatus
-    })
-    
-    if (response.data.success) {
-      selectedOrder.value.status = newStatus
-      const index = orders.value.findIndex(o => o.order_code === selectedOrder.value?.order_code)
-      if (index !== -1 && orders.value[index]) {
-        orders.value[index].status = newStatus
-      }
-    }
-  } catch (err: any) {
-    alert(err.response?.data?.message || 'Gagal mengubah status')
-  }
+    const response = await api.patch(`/admin/orders/${selectedOrder.value.order_code}/status`, { status: newStatus })
+    if (response.data.success) { selectedOrder.value.status = newStatus; await fetchOrders() }
+  } catch (err: any) { alert(err.response?.data?.message || 'Gagal mengubah status') }
 }
 </script>
 
@@ -184,6 +184,7 @@ const updateStatus = async (newStatus: string) => {
         </td>
       </tr>
     </DataTable>
+    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
 
     <!-- Detail Drawer -->
     <div v-if="isDetailOpen && selectedOrder" class="fixed inset-0 z-50 overflow-hidden">

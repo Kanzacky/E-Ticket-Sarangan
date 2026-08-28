@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, CreditCard } from 'lucide-vue-next'
 import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 interface Payment {
@@ -20,6 +21,10 @@ const payments = ref<Payment[]>([])
 const isLoading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
 const filterStatus = ref('all')
 const isUpdating = ref(false)
 
@@ -27,9 +32,23 @@ const fetchPayments = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    const response = await api.get('/admin/payments')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+    const response = await api.get('/admin/payments?'+params.toString())
     if (response.data.success) {
-      payments.value = response.data.data
+      if (response.data.meta) {
+        payments.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        payments.value = response.data.data
+        total.value = payments.value.length
+        lastPage.value = 1
+      }
     }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Gagal memuat data pembayaran'
@@ -41,6 +60,15 @@ const fetchPayments = async () => {
 onMounted(() => {
   fetchPayments()
 })
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchPayments() }, 400)
+})
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchPayments() }
+
+watch(filterStatus, () => { currentPage.value=1; void fetchPayments() })
 
 const filteredPayments = computed(() => {
   return payments.value.filter(p => {
@@ -180,5 +208,6 @@ const updateStatus = async (id: number, newStatus: string) => {
         </td>
       </tr>
     </DataTable>
+    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
   </div>
 </template>

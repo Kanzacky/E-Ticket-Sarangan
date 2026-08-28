@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Edit, Plus, Trash2, X } from 'lucide-vue-next'
 import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 interface TicketCategory {
@@ -20,6 +21,10 @@ const categories = ref<TicketCategory[]>([])
 const isLoading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
 
 const isFormOpen = ref(false)
 const isSubmitting = ref(false)
@@ -39,9 +44,22 @@ const fetchCategories = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    const response = await api.get('/admin/ticket-categories')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    const response = await api.get('/admin/ticket-categories?'+params.toString())
     if (response.data.success) {
-      categories.value = response.data.data
+      if (response.data.meta) {
+        categories.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        categories.value = response.data.data
+        total.value = categories.value.length
+        lastPage.value = 1
+      }
     }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Gagal memuat data paket wisata'
@@ -53,6 +71,14 @@ const fetchCategories = async () => {
 onMounted(() => {
   fetchCategories()
 })
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchCategories() }, 400)
+})
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchCategories() }
+
 
 const filteredCategories = computed(() => {
   return categories.value.filter(c => 
@@ -214,6 +240,7 @@ const deleteCategory = async (id: number) => {
         </td>
       </tr>
     </DataTable>
+    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
 
     <!-- Modal Form (Drawer approach) -->
     <div v-if="isFormOpen" class="fixed inset-0 z-50 overflow-hidden">

@@ -22,6 +22,24 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true, guest: true },
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/auth/ForgotPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
+    path: '/reset-password/:token',
+    name: 'reset-password-token',
+    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
     path: '/booking/success/:orderCode',
     name: 'booking.success',
     component: () => import('@/views/booking/BookingSuccessView.vue'),
