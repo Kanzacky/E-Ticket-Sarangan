@@ -10,18 +10,17 @@ import {
   Ticket,
   Users,
   X,
-  ChevronLeft,
-  ChevronRight,
   RefreshCw,
 } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import axios from 'axios'
 import QrcodeVue from 'qrcode.vue'
 
-import { getMyOrdersApi } from '@/services/order.service'
+import { getMyOrdersApi, type PaginatedMeta } from '@/services/order.service'
 import type { Order, OrderStatus } from '@/types/booking.types'
 import { formatCurrency, formatDateTime, formatDate } from '@/utils/formatters'
 import { useAuthStore } from '@/stores/auth'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const authStore = useAuthStore()
 
@@ -34,14 +33,21 @@ const selectedOrder = ref<Order | null>(null)
 
 // Pagination
 const currentPage = ref(1)
-const pageSize = ref(10)
+const perPage = ref(15)
+const meta = ref<PaginatedMeta>({ current_page: 1, last_page: 1, per_page: 15, total: 0 })
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 async function fetchOrders() {
   try {
     isLoading.value = true
     errorMessage.value = ''
-    const data = await getMyOrdersApi()
-    orders.value = data
+    const result = await getMyOrdersApi({
+      page: currentPage.value,
+      per_page: perPage.value,
+      search: searchQuery.value.trim() || undefined,
+    })
+    orders.value = result.data
+    meta.value = result.meta
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMessage.value = error.response.data.message as string
@@ -54,52 +60,33 @@ async function fetchOrders() {
   }
 }
 
+function goToPage(page: number) {
+  currentPage.value = page
+  fetchOrders()
+}
+
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1
+    fetchOrders()
+  }, 400)
+})
+
 onMounted(() => void fetchOrders())
 
-// Stats computed
-const stats = computed(() => ({
-  all: orders.value.length,
-  pending: orders.value.filter(o => o.status === 'PENDING').length,
-  paid: orders.value.filter(o => o.status === 'PAID').length,
-  completed: orders.value.filter(o => o.status === 'COMPLETED').length,
-  cancelled: orders.value.filter(o => o.status === 'CANCELLED').length,
-  expired: orders.value.filter(o => o.status === 'EXPIRED').length,
-}))
-
-const filteredOrders = computed(() => {
+function selectStatus(key: string) {
+  selectedStatus.value = key
   currentPage.value = 1
-  return orders.value.filter((order) => {
-    const matchesStatus =
-      selectedStatus.value === 'ALL' || order.status === selectedStatus.value
-
-    const matchesSearch =
-      searchQuery.value.trim() === '' ||
-      order.order_code.toLowerCase().includes(searchQuery.value.toLowerCase().trim()) ||
-      order.customer_name.toLowerCase().includes(searchQuery.value.toLowerCase().trim())
-
-    return matchesStatus && matchesSearch
-  })
-})
-
-const totalPages = computed(() => Math.ceil(filteredOrders.value.length / pageSize.value))
-
-const paginatedOrders = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  return filteredOrders.value.slice(start, start + pageSize.value)
-})
-
-function setPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
+  fetchOrders()
 }
 
 const statusTabs = [
-  { key: 'ALL', label: 'Semua', count: computed(() => stats.value.all) },
-  { key: 'PENDING', label: 'Menunggu Bayar', count: computed(() => stats.value.pending) },
-  { key: 'PAID', label: 'Lunas', count: computed(() => stats.value.paid) },
-  { key: 'COMPLETED', label: 'Sudah Digunakan', count: computed(() => stats.value.completed) },
-  { key: 'CANCELLED', label: 'Dibatalkan', count: computed(() => stats.value.cancelled) },
+  { key: 'ALL', label: 'Semua' },
+  { key: 'PENDING', label: 'Menunggu Bayar' },
+  { key: 'PAID', label: 'Lunas' },
+  { key: 'COMPLETED', label: 'Sudah Digunakan' },
+  { key: 'CANCELLED', label: 'Dibatalkan' },
 ]
 
 function getStatusBadgeClass(status: OrderStatus) {
@@ -147,14 +134,6 @@ function openDetail(order: Order) {
 function closeDetail() {
   selectedOrder.value = null
 }
-
-// Stat card styles
-const statCards = computed(() => [
-  { label: 'Total Pesanan', value: stats.value.all, color: 'text-[#173B35]', bg: 'bg-[#173B35]/8' },
-  { label: 'Menunggu Bayar', value: stats.value.pending, color: 'text-orange-600', bg: 'bg-orange-50' },
-  { label: 'Lunas', value: stats.value.paid, color: 'text-green-700', bg: 'bg-green-50' },
-  { label: 'Dibatalkan', value: stats.value.cancelled + stats.value.expired, color: 'text-red-600', bg: 'bg-red-50' },
-])
 </script>
 
 <template>
@@ -185,20 +164,6 @@ const statCards = computed(() => [
     </div>
 
     <!-- ======================================================= -->
-    <!-- STATS ROW                                               -->
-    <!-- ======================================================= -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div
-        v-for="stat in statCards"
-        :key="stat.label"
-        class="bg-white border border-[#173B35]/10 rounded-xl p-4"
-      >
-        <p class="text-xs text-[#66706C] font-medium mb-1">{{ stat.label }}</p>
-        <p class="text-3xl font-black" :class="stat.color">{{ stat.value }}</p>
-      </div>
-    </div>
-
-    <!-- ======================================================= -->
     <!-- PESANAN SECTION                                         -->
     <!-- ======================================================= -->
     <div class="bg-white border border-[#173B35]/10 rounded-xl overflow-hidden">
@@ -213,10 +178,9 @@ const statCards = computed(() => [
             type="button"
             class="whitespace-nowrap px-4 py-4 text-sm border-b-2 transition-all"
             :class="getStatusTabClass(tab.key)"
-            @click="selectedStatus = tab.key"
+            @click="selectStatus(tab.key)"
           >
             {{ tab.label }}
-            <span class="ml-1.5 text-xs font-normal opacity-70">({{ tab.count.value }})</span>
           </button>
         </div>
 
@@ -280,7 +244,7 @@ const statCards = computed(() => [
       <!-- EMPTY STATE                                             -->
       <!-- ======================================================= -->
       <div
-        v-else-if="filteredOrders.length === 0"
+        v-else-if="orders.length === 0"
         class="py-20 flex flex-col items-center gap-4 px-6 text-center"
       >
         <div class="w-16 h-16 rounded-full bg-[#F7F5EF] flex items-center justify-center">
@@ -318,7 +282,7 @@ const statCards = computed(() => [
       <!-- ======================================================= -->
       <div v-else class="divide-y divide-[#173B35]/8">
         <div
-          v-for="order in paginatedOrders"
+          v-for="order in orders"
           :key="order.id"
           class="flex flex-col sm:flex-row gap-4 p-4 sm:p-5 hover:bg-[#F7F5EF]/60 transition-colors"
         >
@@ -405,50 +369,14 @@ const statCards = computed(() => [
       <!-- ======================================================= -->
       <!-- PAGINATION                                              -->
       <!-- ======================================================= -->
-      <div
-        v-if="!isLoading && !errorMessage && filteredOrders.length > 0"
-        class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#173B35]/10 px-5 py-3 bg-[#F7F5EF]/50"
-      >
-        <!-- Page info -->
-        <p class="text-xs text-[#66706C]">
-          Menampilkan {{ Math.min((currentPage - 1) * pageSize + 1, filteredOrders.length) }}–{{ Math.min(currentPage * pageSize, filteredOrders.length) }}
-          dari {{ filteredOrders.length }} pesanan
-        </p>
-
-        <!-- Page controls -->
-        <div class="flex items-center gap-1">
-          <button
-            type="button"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-[#173B35]/15 text-[#66706C] transition hover:bg-white hover:border-[#4F7465] disabled:opacity-40 disabled:cursor-not-allowed"
-            :disabled="currentPage <= 1"
-            @click="setPage(currentPage - 1)"
-          >
-            <ChevronLeft class="h-4 w-4" />
-          </button>
-
-          <button
-            v-for="page in totalPages"
-            :key="page"
-            type="button"
-            class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition"
-            :class="page === currentPage
-              ? 'bg-[#173B35] text-white'
-              : 'border border-[#173B35]/15 text-[#66706C] hover:bg-white hover:border-[#4F7465]'"
-            @click="setPage(page)"
-          >
-            {{ page }}
-          </button>
-
-          <button
-            type="button"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-[#173B35]/15 text-[#66706C] transition hover:bg-white hover:border-[#4F7465] disabled:opacity-40 disabled:cursor-not-allowed"
-            :disabled="currentPage >= totalPages"
-            @click="setPage(currentPage + 1)"
-          >
-            <ChevronRight class="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <Pagination
+        v-if="!isLoading && !errorMessage && meta.total > 0"
+        :current-page="meta.current_page"
+        :last-page="meta.last_page"
+        :total="meta.total"
+        :per-page="meta.per_page"
+        @page-change="goToPage"
+      />
     </div>
 
     <!-- ======================================================= -->

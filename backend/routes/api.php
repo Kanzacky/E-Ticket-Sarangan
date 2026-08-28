@@ -119,3 +119,9 @@ Route::middleware('auth:sanctum')->group(function () {
 // Xendit Webhook
 Route::post('/payments/xendit/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']);
 Route::post('/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']); // Fallback alias
+
+// Vercel Cron — runs scheduled commands (hourly expire + daily sync)
+Route::get('/scheduled/commands', function () {
+    \Illuminate\Support\Facades\Artisan::call('schedule:run');
+    return response()->json(['success' => true, 'message' => 'Schedule run completed.']);
+});

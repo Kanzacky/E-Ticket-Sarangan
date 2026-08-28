@@ -3,24 +3,37 @@ import {
   ChevronRight, 
   MapPin, 
   Star,
-  Building
+  Building,
+  Search,
 } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-import { getAccommodationsApi, type Accommodation } from '@/services/accommodation.service'
+import { getAccommodationsApi, type Accommodation, type PaginatedMeta } from '@/services/accommodation.service'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const router = useRouter()
 
+const { t } = useI18n()
 const accommodations = ref<Accommodation[]>([])
 const isLoading = ref(true)
 const errorMessage = ref('')
+const searchQuery = ref('')
+const meta = ref<PaginatedMeta>({ current_page: 1, last_page: 1, per_page: 12, total: 0 })
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
-onMounted(async () => {
+async function fetchAccommodations() {
   try {
     isLoading.value = true
-    accommodations.value = await getAccommodationsApi()
+    const result = await getAccommodationsApi({
+      page: meta.value.current_page,
+      per_page: 12,
+      search: searchQuery.value.trim() || undefined,
+    })
+    accommodations.value = result.data
+    meta.value = result.meta
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMessage.value = error.response.data.message as string
@@ -30,7 +43,22 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+function goToPage(page: number) {
+  meta.value.current_page = page
+  fetchAccommodations()
+}
+
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    meta.value.current_page = 1
+    fetchAccommodations()
+  }, 400)
 })
+
+onMounted(() => void fetchAccommodations())
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID').format(price)
@@ -47,11 +75,17 @@ function handleLihatDetail(id: number) {
       
       <!-- Header -->
       <div class="mb-12">
-        <p class="text-[#C9965B] text-xs font-bold uppercase tracking-widest mb-2">Akomodasi Penginapan</p>
-        <h1 class="text-3xl md:text-4xl font-black text-[#173B35] mb-3">Daftar Penginapan & Villa</h1>
+        <p class="text-[#C9965B] text-xs font-bold uppercase tracking-widest mb-2">{{ t('accommodation.section') }}</p>
+        <h1 class="text-3xl md:text-4xl font-black text-[#173B35] mb-3">{{ t('accommodation.title') }}</h1>
         <p class="text-[#66706C] max-w-lg text-base">
-          Temukan tempat menginap terbaik di sekitar Telaga Sarangan untuk melengkapi liburan Anda.
+          {{ t('accommodation.subtitle') }}
         </p>
+      </div>
+
+      <!-- Search -->
+      <div v-if="!isLoading && !errorMessage" class="relative w-full sm:w-72 mb-6">
+        <Search class="w-4 h-4 absolute left-3 top-2.5 text-[#66706C]" />
+        <input v-model="searchQuery" :placeholder="t('accommodation.search_placeholder')" class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:ring-1 focus:ring-[#173B35]" />
       </div>
 
       <!-- Loading State -->
@@ -112,10 +146,10 @@ function handleLihatDetail(id: number) {
             <!-- Price & CTA -->
             <div class="pt-5 border-t border-[#E8E6DE] flex items-center justify-between mt-auto">
               <div>
-                <span class="text-xs text-[#66706C] block mb-0.5">Mulai dari</span>
+                <span class="text-xs text-[#66706C] block mb-0.5">{{ t('accommodation.starting_from') }}</span>
                 <span class="text-lg font-black text-[#173B35]">
                   Rp{{ formatPrice(item.price_per_night) }}
-                  <span class="text-xs font-normal text-[#66706C]">/malam</span>
+                  <span class="text-xs font-normal text-[#66706C]">{{ t('accommodation.per_night') }}</span>
                 </span>
               </div>
 
@@ -135,6 +169,17 @@ function handleLihatDetail(id: number) {
       <div v-else class="text-center py-16 text-[#66706C]">
         <Building class="w-12 h-12 mx-auto mb-3 opacity-30 text-[#4F7465]" />
         <p class="font-medium text-[#173B35]">Belum ada penginapan yang tersedia saat ini.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="!isLoading && !errorMessage" class="mt-6">
+        <Pagination
+          :current-page="meta.current_page"
+          :last-page="meta.last_page"
+          :total="meta.total"
+          :per-page="meta.per_page"
+          @page-change="goToPage"
+        />
       </div>
 
     </div>

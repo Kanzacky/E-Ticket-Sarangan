@@ -15,14 +15,34 @@ class AccommodationBookingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $bookings = AccommodationBooking::where('user_id', $request->user()->id)
+        $perPage = min((int) $request->input('per_page', 15), 50);
+
+        $query = AccommodationBooking::where('user_id', $request->user()->id)
             ->with('accommodation')
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('created_at');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_code', 'ilike', "%{$search}%")
+                  ->orWhere('guest_name', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        $paginated = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data' => $bookings,
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
         ]);
     }
 

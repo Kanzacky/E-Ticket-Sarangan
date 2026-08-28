@@ -24,12 +24,35 @@ class OrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::where('user_id', $request->user()->id)
-            ->with(['items.ticketType'])
-            ->latest()
-            ->get();
+        $perPage = min((int) $request->input('per_page', 15), 50);
 
-        return ApiResponse::success('Riwayat booking berhasil diambil', $orders);
+        $query = Order::where('user_id', $request->user()->id)
+            ->with(['items.ticketType'])
+            ->latest();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('order_code', 'ilike', "%{$search}%")
+                  ->orWhere('customer_name', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        $paginated = $query->paginate($perPage);
+
+        return ApiResponse::success(
+            'Riwayat booking berhasil diambil',
+            $paginated->items(),
+            [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ]
+        );
     }
 
     /**

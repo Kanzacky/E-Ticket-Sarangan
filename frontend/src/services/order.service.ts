@@ -1,6 +1,18 @@
 import api, { type ApiResponse } from '@/services/api'
 import type { CreateOrderPayload, Order, TicketType } from '@/types/booking.types'
 
+export interface PaginatedMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: PaginatedMeta
+}
+
 /**
  * GET /ticket-types - Ambil daftar jenis tiket aktif
  */
@@ -18,11 +30,11 @@ export const createOrderApi = async (payload: CreateOrderPayload): Promise<Order
 }
 
 /**
- * GET /orders - Ambil riwayat order milik user yang login
+ * GET /orders - Ambil riwayat order milik user yang login (paginated)
  */
-export const getMyOrdersApi = async (): Promise<Order[]> => {
-  const response = await api.get<ApiResponse<Order[]>>('/orders')
-  return response.data.data
+export const getMyOrdersApi = async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse<Order>> => {
+  const response = await api.get<ApiResponse<Order[]>>('/orders', { params })
+  return { data: response.data.data, meta: response.data.meta as PaginatedMeta }
 }
 
 /**

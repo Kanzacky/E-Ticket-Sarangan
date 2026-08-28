@@ -1,32 +1,48 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Calendar, MapPin, Users, CreditCard, Search, Building, ExternalLink, LoaderCircle } from 'lucide-vue-next'
-import { getMyAccommodationBookingsApi } from '@/services/accommodation.service'
+import { getMyAccommodationBookingsApi, type PaginatedMeta } from '@/services/accommodation.service'
 import type { AccommodationBooking } from '@/services/accommodation.service'
 import { formatCurrency } from '@/utils/formatters'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const bookings = ref<AccommodationBooking[]>([])
 const isLoading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
+const meta = ref<PaginatedMeta>({ current_page: 1, last_page: 1, per_page: 15, total: 0 })
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
-const fetch = async () => {
+const fetchBookings = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    bookings.value = await getMyAccommodationBookingsApi()
+    const result = await getMyAccommodationBookingsApi({
+      page: meta.value.current_page,
+      per_page: 15,
+      search: searchQuery.value.trim() || undefined,
+    })
+    bookings.value = result.data
+    meta.value = result.meta
   } catch (e: any) {
     error.value = e.response?.data?.message || 'Gagal memuat riwayat penginapan'
   } finally { isLoading.value = false }
 }
 
-onMounted(fetch)
+function goToPage(page: number) {
+  meta.value.current_page = page
+  fetchBookings()
+}
 
-const filtered = computed(() => {
-  if (!searchQuery.value.trim()) return bookings.value
-  const q = searchQuery.value.toLowerCase()
-  return bookings.value.filter(b => b.booking_code.toLowerCase().includes(q) || (b.accommodation?.name || '').toLowerCase().includes(q))
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    meta.value.current_page = 1
+    fetchBookings()
+  }, 400)
 })
+
+onMounted(fetchBookings)
 
 function statusTone(s: string) {
   switch (s) {
@@ -66,14 +82,14 @@ function formatDate(d: string) {
 
     <div v-else-if="error" class="p-6 bg-red-50 border border-red-200 rounded-xl text-center text-sm text-red-700">{{ error }}</div>
 
-    <div v-else-if="filtered.length===0" class="py-16 text-center">
+    <div v-else-if="bookings.length===0" class="py-16 text-center">
       <Building class="w-12 h-12 text-[#66706C]/30 mx-auto mb-3" />
       <p class="text-sm text-[#66706C]">Belum ada booking penginapan</p>
       <router-link to="/accommodations" class="mt-3 inline-flex px-4 py-2 bg-[#173B35] text-white rounded-lg text-sm font-bold">Lihat Penginapan</router-link>
     </div>
 
     <div v-else class="grid gap-4">
-      <div v-for="b in filtered" :key="b.id" class="bg-white rounded-xl border border-[#E8E6DE] p-5 flex flex-col sm:flex-row gap-4">
+      <div v-for="b in bookings" :key="b.id" class="bg-white rounded-xl border border-[#E8E6DE] p-5 flex flex-col sm:flex-row gap-4">
         <div class="flex-1">
           <div class="flex items-start justify-between gap-2">
             <div>
@@ -99,5 +115,15 @@ function formatDate(d: string) {
         </div>
       </div>
     </div>
+
+    <!-- Pagination -->
+    <Pagination
+      v-if="!isLoading && !error && meta.total > 0"
+      :current-page="meta.current_page"
+      :last-page="meta.last_page"
+      :total="meta.total"
+      :per-page="meta.per_page"
+      @page-change="goToPage"
+    />
   </div>
 </template>

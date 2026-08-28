@@ -29,3 +29,4 @@ class AccommodationFactory extends Factory
             'is_active' => $this->faker->boolean,
         ];
     }
+}

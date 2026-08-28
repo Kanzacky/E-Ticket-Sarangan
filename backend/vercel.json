@@ -14,5 +14,11 @@
         "service": "api"
       }
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/scheduled/commands",
+      "schedule": "0 * * * *"
+    }
   ]
 }

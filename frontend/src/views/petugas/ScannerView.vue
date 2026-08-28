@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { CheckCircle, XCircle, Ticket as TicketIcon, AlertTriangle } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { scanTicketApi } from '@/services/scanner.service'
 import type { ScanResponseData } from '@/services/scanner.service'
 import axios from 'axios'
 
+const { t } = useI18n()
 const isScanning = ref(false)
 const scanResult = ref<'idle' | 'loading' | 'valid' | 'invalid'>('idle')
 const invalidReason = ref('')
@@ -75,7 +77,7 @@ async function onDecode(result: any) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       invalidReason.value = error.response.data.message
     } else {
-      invalidReason.value = 'Terjadi kesalahan sistem saat memverifikasi tiket.'
+      invalidReason.value = t('scanner.wait')
     }
   }
 }
@@ -84,13 +86,13 @@ function onInit(promise: Promise<any>) {
   promise.catch(error => {
     isScanning.value = false
     if (error.name === 'NotAllowedError') {
-      cameraError.value = 'Akses kamera ditolak.'
+      cameraError.value = t('scanner.camera_denied')
     } else if (error.name === 'NotFoundError') {
-      cameraError.value = 'Kamera tidak ditemukan di perangkat ini.'
+      cameraError.value = t('scanner.camera_not_found')
     } else if (error.name === 'NotSupportedError') {
-      cameraError.value = 'Konteks tidak aman (butuh HTTPS atau localhost).'
+      cameraError.value = t('scanner.camera_https')
     } else {
-      cameraError.value = 'Gagal mengakses kamera: ' + error.message
+      cameraError.value = t('scanner.camera_failed') + ' ' + error.message
     }
   })
 }
@@ -115,8 +117,8 @@ function confirmCheckIn() {
 <template>
   <div class="space-y-6 pb-6">
     <div class="mb-6">
-      <h1 class="text-2xl font-black text-[#173B35]">Scan Tiket</h1>
-      <p class="text-sm font-medium text-[#66706C] mt-1">Arahkan kamera ke QR Code wisatawan</p>
+      <h1 class="text-2xl font-black text-[#173B35]">{{ t('scanner.title') }}</h1>
+      <p class="text-sm font-medium text-[#66706C] mt-1">{{ t('scanner.desc') }}</p>
     </div>
 
     <!-- Scanner Area -->
@@ -141,7 +143,7 @@ function confirmCheckIn() {
               <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-xl"></div>
             </div>
           </div>
-          <p class="text-white font-medium animate-pulse mt-4 bg-black/50 px-4 py-2 rounded-lg">Memindai QR Code...</p>
+          <p class="text-white font-medium animate-pulse mt-4 bg-black/50 px-4 py-2 rounded-lg">{{ t('scanner.scanning') }}</p>
         </div>
       </qrcode-stream>
 
@@ -156,44 +158,44 @@ function confirmCheckIn() {
         @click="startScan"
         class="absolute z-20 bg-white text-[#173B35] font-bold px-8 py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
       >
-        Mulai Scan
+        {{ t('scanner.start_scan') }}
       </button>
     </div>
 
     <!-- Loading State -->
     <div v-else-if="scanResult === 'loading'" class="bg-white rounded-2xl p-6 border border-[#E8E6DE] shadow-sm flex flex-col items-center justify-center aspect-[4/3] sm:aspect-video text-center">
       <div class="animate-spin rounded-full h-16 w-16 border-4 border-[#173B35]/20 border-t-[#173B35] mb-6"></div>
-      <h2 class="text-2xl font-black text-[#1D2724]">Memverifikasi Tiket...</h2>
-      <p class="text-[#66706C] text-sm mt-2">Mohon tunggu sebentar, sedang mengecek ke server.</p>
+      <h2 class="text-2xl font-black text-[#1D2724]">{{ t('scanner.verifying') }}</h2>
+      <p class="text-[#66706C] text-sm mt-2">{{ t('scanner.wait') }}</p>
     </div>
 
     <!-- Validation Result: VALID -->
     <div v-else-if="scanResult === 'valid'" class="bg-white rounded-2xl p-6 border border-emerald-200 shadow-sm max-w-lg mx-auto">
       <div class="flex flex-col items-center text-center border-b border-[#E8E6DE] pb-6 mb-6">
         <CheckCircle class="w-16 h-16 text-emerald-500 mb-3" />
-        <h2 class="text-2xl font-black text-emerald-600">Tiket Valid</h2>
-        <p class="text-[#66706C] text-sm mt-1">Sistem berhasil memverifikasi tiket.</p>
+        <h2 class="text-2xl font-black text-emerald-600">{{ t('scanner.valid') }}</h2>
+        <p class="text-[#66706C] text-sm mt-1">{{ t('scanner.verified') }}</p>
       </div>
       
       <div v-if="scannedData" class="space-y-4 mb-8">
         <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
-          <span class="text-sm font-medium text-[#66706C]">Kode Booking</span>
+          <span class="text-sm font-medium text-[#66706C]">{{ t('scanner.booking_code') }}</span>
           <span class="font-bold text-[#1D2724]">{{ scannedData.code }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
-          <span class="text-sm font-medium text-[#66706C]">Nama Pengunjung</span>
+          <span class="text-sm font-medium text-[#66706C]">{{ t('scanner.visitor_name') }}</span>
           <span class="font-bold text-[#1D2724]">{{ scannedData.name }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
-          <span class="text-sm font-medium text-[#66706C]">Tanggal Kunjungan</span>
+          <span class="text-sm font-medium text-[#66706C]">{{ t('scanner.visit_date') }}</span>
           <span class="font-bold text-[#1D2724]">{{ scannedData.date }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
-          <span class="text-sm font-medium text-[#66706C]">Jenis Tiket</span>
+          <span class="text-sm font-medium text-[#66706C]">{{ t('scanner.ticket_type') }}</span>
           <span class="font-bold text-[#1D2724] text-right truncate max-w-[150px] sm:max-w-[200px]">{{ scannedData.type }}</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-[#E8E6DE]/50">
-          <span class="text-sm font-medium text-[#66706C]">Jumlah Pengunjung</span>
+          <span class="text-sm font-medium text-[#66706C]">{{ t('scanner.quantity') }}</span>
           <div class="flex items-center gap-1.5 bg-[#F7F5EF] px-2.5 py-1 rounded-lg">
             <TicketIcon class="w-4 h-4 text-[#C9965B]" />
             <span class="font-bold text-[#1D2724]">{{ scannedData.qty }} Orang</span>
@@ -203,7 +205,7 @@ function confirmCheckIn() {
       
       <div class="grid grid-cols-1 gap-3">
         <button @click="confirmCheckIn" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors">
-          Tutup & Kembali Scan
+          {{ t('scanner.close_and_back') }}
         </button>
       </div>
     </div>
@@ -212,20 +214,20 @@ function confirmCheckIn() {
     <div v-else-if="scanResult === 'invalid'" class="bg-white rounded-2xl p-6 border border-red-200 shadow-sm max-w-lg mx-auto">
       <div class="flex flex-col items-center text-center border-b border-[#E8E6DE] pb-6 mb-6">
         <XCircle class="w-16 h-16 text-red-500 mb-3" />
-        <h2 class="text-2xl font-black text-red-600">Tiket Tidak Valid</h2>
-        <p class="text-[#66706C] text-sm mt-1">Sistem menolak tiket ini.</p>
+        <h2 class="text-2xl font-black text-red-600">{{ t('scanner.invalid') }}</h2>
+        <p class="text-[#66706C] text-sm mt-1">{{ t('scanner.rejected') }}</p>
       </div>
       
       <div class="bg-red-50 text-red-700 p-4 rounded-xl mb-8 flex items-start gap-3 text-sm font-medium border border-red-100">
         <AlertTriangle class="w-5 h-5 shrink-0 mt-0.5" />
         <div>
-          <span class="block font-bold mb-0.5">Alasan Penolakan:</span>
+          <span class="block font-bold mb-0.5">{{ t('scanner.reason') }}</span>
           <span>{{ invalidReason }}</span>
         </div>
       </div>
       
       <button @click="resetScanner" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-[#1D2724] hover:bg-black shadow-sm transition-colors">
-        Scan Ulang
+        {{ t('scanner.scan_again') }}
       </button>
     </div>
 
