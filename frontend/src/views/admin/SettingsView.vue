@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Save, Globe, Mail, Phone, MapPin, Building, CreditCard } from 'lucide-vue-next'
+import api from '@/services/api'
 
 const isSubmitting = ref(false)
+const isLoading = ref(true)
 const showSuccess = ref(false)
+const error = ref('')
 
 const form = ref({
   siteName: 'e-Ticket Telaga Sarangan',
@@ -12,20 +15,55 @@ const form = ref({
   contactPhone: '+62 811-1234-5678',
   address: 'Jl. Raya Telaga Sarangan, Magetan, Jawa Timur',
   operationalHours: 'Senin - Minggu: 07:00 - 17:00 WIB',
-  paymentGateway: 'production', // sandbox or production
-  taxRate: 11, // percent
+  paymentGateway: 'production',
+  taxRate: 11,
 })
 
-const saveSettings = () => {
+const fetchSettings = async () => {
+  isLoading.value = true
+  error.value = ''
+  try {
+    const res = await api.get('/admin/settings')
+    if (res.data.success) {
+      const d = res.data.data
+      form.value.siteName = d.site_name || form.value.siteName
+      form.value.siteDescription = d.site_description || form.value.siteDescription
+      form.value.contactEmail = d.contact_email || form.value.contactEmail
+      form.value.contactPhone = d.contact_phone || form.value.contactPhone
+      form.value.address = d.address || form.value.address
+      form.value.operationalHours = d.operational_hours || form.value.operationalHours
+      form.value.paymentGateway = d.payment_gateway || form.value.paymentGateway
+      form.value.taxRate = d.tax_rate ? Number(d.tax_rate) : form.value.taxRate
+    }
+  } catch (e: any) {
+    error.value = e.response?.data?.message || 'Gagal memuat pengaturan'
+  } finally { isLoading.value = false }
+}
+
+onMounted(fetchSettings)
+
+const saveSettings = async () => {
   isSubmitting.value = true
-  // Mock API call
-  setTimeout(() => {
-    isSubmitting.value = false
-    showSuccess.value = true
-    setTimeout(() => {
-      showSuccess.value = false
-    }, 3000)
-  }, 1000)
+  error.value = ''
+  try {
+    const payload = {
+      site_name: form.value.siteName,
+      site_description: form.value.siteDescription,
+      contact_email: form.value.contactEmail,
+      contact_phone: form.value.contactPhone,
+      address: form.value.address,
+      operational_hours: form.value.operationalHours,
+      payment_gateway: form.value.paymentGateway,
+      tax_rate: form.value.taxRate,
+    }
+    const res = await api.patch('/admin/settings', payload)
+    if (res.data.success) {
+      showSuccess.value = true
+      setTimeout(() => { showSuccess.value = false }, 3000)
+    }
+  } catch (e: any) {
+    error.value = e.response?.data?.message || 'Gagal menyimpan pengaturan'
+  } finally { isSubmitting.value = false }
 }
 </script>
 
@@ -37,7 +75,10 @@ const saveSettings = () => {
       <p class="text-sm font-medium text-[#66706C] mt-1">Konfigurasi informasi website dan parameter operasional.</p>
     </div>
 
-    <form @submit.prevent="saveSettings" class="space-y-6">
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">{{ error }}</div>
+    <div v-if="isLoading" class="p-8 text-center text-sm text-[#66706C]">Memuat pengaturan...</div>
+
+    <form v-else @submit.prevent="saveSettings" class="space-y-6">
       
       <!-- General Settings -->
       <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm overflow-hidden">

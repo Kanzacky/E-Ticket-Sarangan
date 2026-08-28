@@ -4,6 +4,7 @@ import { Menu, X, User, LogOut, ChevronRight } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import NotificationBell from '@/components/ui/NotificationBell.vue'
 
 const props = defineProps<{
   transparentTop?: boolean
@@ -121,6 +122,7 @@ function handlePesanTiket() {
         <div class="hidden lg:flex items-center gap-3">
           <!-- Authenticated -->
           <template v-if="authStore.isAuthenticated">
+            <NotificationBell :class="isScrolled ? '[&>div>button]:text-[#66706C] [&>div>button]:hover:bg-[#F7F5EF]' : '[&>div>button]:text-white/80 [&>div>button]:hover:bg-white/10'" />
             <div
               class="flex items-center gap-3 border-r pr-3 mr-1"
               :class="isScrolled ? 'border-[#173B35]/15' : 'border-white/20'"

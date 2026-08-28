@@ -52,6 +52,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Reports
     Route::get('/reports/summary', [\App\Http\Controllers\Api\V1\Admin\AdminReportController::class, 'summary']);
+    Route::get('/analytics', [\App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController::class, 'index']);
+    Route::get('/audit-logs', [\App\Http\Controllers\Api\V1\Admin\AdminAuditLogController::class, 'index']);
+    Route::get('/checkins', [\App\Http\Controllers\Api\V1\Admin\AdminCheckinController::class, 'index']);
+    Route::get('/upgrades', [\App\Http\Controllers\Api\V1\Admin\AdminTicketUpgradeController::class, 'index']);
+    Route::get('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'index']);
+    Route::patch('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'update']);
 
     // Dashboard Ringkas
     Route::get('/dashboard', [UserController::class, 'dashboard']);
