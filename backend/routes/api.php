@@ -63,11 +63,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/dashboard', [UserController::class, 'dashboard']);
 
     // Accommodations CRUD
-    // Accommodations CRUD
     Route::get('/accommodations', [AdminAccommodationController::class, 'index']);
     Route::post('/accommodations', [AdminAccommodationController::class, 'store']);
     Route::get('/accommodations/{id}', [AdminAccommodationController::class, 'show']);
     Route::patch('/accommodations/{id}', [AdminAccommodationController::class, 'update']);
+    Route::post('/accommodations/{id}', [AdminAccommodationController::class, 'update']); // for multipart file upload
     Route::delete('/accommodations/{id}', [AdminAccommodationController::class, 'destroy']);
 });
 

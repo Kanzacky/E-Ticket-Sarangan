@@ -28,7 +28,10 @@ export interface AccommodationBooking {
   total_price: number
   guest_name: string
   guest_phone: string
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'paid' | 'expired'
+  payment_id?: string | null
+  payment_url?: string | null
+  payment_expires_at?: string | null
   notes: string | null
   created_at: string
   accommodation?: Accommodation

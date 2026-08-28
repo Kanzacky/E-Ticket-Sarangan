@@ -8,16 +8,14 @@ use Illuminate\Http\JsonResponse;
 
 class AdminTicketUpgradeController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $upgrades = TicketUpgrade::with(['ticket', 'oldCategory', 'newCategory'])
-            ->latest()
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data upgrade tiket berhasil diambil',
-            'data' => $upgrades,
-        ]);
+        $query = TicketUpgrade::with(['ticket', 'oldCategory', 'newCategory']);
+        if ($perPage = $request->query('per_page')) {
+            $p = $query->latest()->paginate((int)$perPage);
+            return response()->json(['success'=>true,'message'=>'Data upgrade tiket berhasil diambil','data'=>$p->items(),'meta'=>['current_page'=>$p->currentPage(),'last_page'=>$p->lastPage(),'per_page'=>$p->perPage(),'total'=>$p->total()]]);
+        }
+        $upgrades = $query->latest()->get();
+        return response()->json(['success'=>true,'message'=>'Data upgrade tiket berhasil diambil','data'=>$upgrades]);
     }
 }

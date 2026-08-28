@@ -41,6 +41,19 @@ const form = ref({
   available_rooms: 1,
   is_active: true
 })
+const selectedImageFile = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
+
+function handleImageSelect(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0] || null
+  selectedImageFile.value = file
+  if (file) {
+    imagePreview.value = URL.createObjectURL(file)
+  } else {
+    imagePreview.value = null
+  }
+}
 
 const fetchAccommodations = async () => {
   isLoading.value = true
@@ -97,6 +110,8 @@ const formatCurrency = (value: number) => {
 
 const openForm = async (mode: 'add' | 'edit', item?: Accommodation) => {
   formMode.value = mode
+  selectedImageFile.value = null
+  imagePreview.value = null
   if (mode === 'edit' && item) {
     selectedId.value = item.id
     try {
@@ -114,6 +129,7 @@ const openForm = async (mode: 'add' | 'edit', item?: Accommodation) => {
           available_rooms: data.available_rooms,
           is_active: Boolean(data.is_active)
         }
+        imagePreview.value = data.image_url || null
       }
     } catch (err) {
       alert('Gagal mengambil detail penginapan')
@@ -139,26 +155,40 @@ const openForm = async (mode: 'add' | 'edit', item?: Accommodation) => {
 const submitForm = async () => {
   isSubmitting.value = true
   try {
-    const payload = {
-      ...form.value,
-      is_active: form.value.is_active ? 1 : 0
+    const hasFile = !!selectedImageFile.value
+    let response
+    if (hasFile) {
+      const fd = new FormData()
+      fd.append('name', form.value.name)
+      fd.append('description', form.value.description || '')
+      fd.append('address', form.value.address)
+      if (form.value.phone) fd.append('phone', form.value.phone)
+      fd.append('price_per_night', String(form.value.price_per_night))
+      fd.append('total_rooms', String(form.value.total_rooms))
+      fd.append('available_rooms', String(form.value.available_rooms))
+      fd.append('is_active', form.value.is_active ? '1' : '0')
+      if (form.value.image_url && !selectedImageFile.value) fd.append('image_url', form.value.image_url)
+      if (selectedImageFile.value) fd.append('image', selectedImageFile.value)
+      const headers = { 'Content-Type': 'multipart/form-data' }
+      if (formMode.value === 'add') {
+        response = await api.post('/admin/accommodations', fd, { headers })
+      } else {
+        fd.append('_method', 'PATCH')
+        response = await api.post(`/admin/accommodations/${selectedId.value}`, fd, { headers })
+      }
+    } else {
+      const payload: any = { ...form.value, is_active: form.value.is_active ? 1 : 0 }
+      if (formMode.value === 'add') {
+        response = await api.post('/admin/accommodations', payload)
+      } else {
+        response = await api.patch(`/admin/accommodations/${selectedId.value}`, payload)
+      }
     }
-    
-    if (formMode.value === 'add') {
-      const response = await api.post('/admin/accommodations', payload)
-      if (response.data.success) {
-        accommodations.value.unshift(response.data.data)
-        isFormOpen.value = false
-      }
-    } else if (formMode.value === 'edit' && selectedId.value) {
-      const response = await api.patch(`/admin/accommodations/${selectedId.value}`, payload)
-      if (response.data.success) {
-        const index = accommodations.value.findIndex(a => a.id === selectedId.value)
-        if (index !== -1) {
-          accommodations.value[index] = { ...accommodations.value[index], ...response.data.data }
-        }
-        isFormOpen.value = false
-      }
+    if (response.data.success) {
+      isFormOpen.value = false
+      selectedImageFile.value = null
+      imagePreview.value = null
+      await fetchAccommodations()
     }
   } catch (err: any) {
     alert(err.response?.data?.message || 'Gagal menyimpan penginapan')
@@ -353,6 +383,16 @@ const deleteAccommodation = async (id: number) => {
               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-[#E8E6DE] bg-white focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
               placeholder="https://..."
             >
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#1D2724] mb-1.5">Upload Gambar (opsional)</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/jpg" @change="handleImageSelect" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#173B35] file:text-white hover:file:bg-[#112a26] file:text-xs file:font-bold" />
+            <div v-if="imagePreview" class="mt-2">
+              <img :src="imagePreview" alt="Preview" class="h-24 w-auto rounded-lg border border-[#E8E6DE] object-cover" />
+              <p class="text-xs text-[#66706C] mt-1">Preview — akan diupload ke Storage (s3/public)</p>
+            </div>
+            <p class="text-xs text-[#66706C] mt-1">Jika memilih file, URL akan diabaikan.</p>
           </div>
 
           <div class="flex items-center gap-3 pt-2">

@@ -91,7 +91,7 @@ async function handleBook() {
   successMessage.value = ''
 
   try {
-    await createAccommodationBookingApi({
+    const booking = await createAccommodationBookingApi({
       accommodation_id: accommodation.value.id,
       check_in: form.check_in,
       check_out: form.check_out,
@@ -102,10 +102,15 @@ async function handleBook() {
       notes: form.notes,
     })
 
-    successMessage.value = 'Reservasi berhasil dibuat! Mengalihkan ke riwayat pesanan...'
-    setTimeout(() => {
-      void router.push({ name: 'wisatawan.tickets' }) // Accommodations history is usually there
-    }, 1500)
+    if (booking.payment_url) {
+      successMessage.value = 'Reservasi berhasil! Mengalihkan ke pembayaran Xendit...'
+      setTimeout(() => { window.location.href = booking.payment_url as string }, 800)
+    } else {
+      successMessage.value = 'Reservasi berhasil dibuat! Mengalihkan ke riwayat pesanan...'
+      setTimeout(() => {
+        void router.push({ name: 'wisatawan.tickets' })
+      }, 1500)
+    }
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMessage.value = error.response.data.message as string
