@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-Ticket Sarangan / Inovasi Digitalisasi Tiket Wisata Telaga Sarangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ===== RESET & FONT ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    background: #ffffff; /* warna latar putih */
+    color: #1A1A1A;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .deck { height: 100vh; width: 100vw; position: relative; }
+
+  /* ===== SLIDE ===== */
+  .slide {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 56px 64px;
+    overflow-y: auto;
+    background: #ffffff;
+  }
+  .slide.active { display: flex; }
+
+  .slide-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  /* ===== NAV (Navigasi Bawah) ===== */
+  .nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 28px;
+    background: #ffffff;
+    border-top: 1px solid #ececec;
+    z-index: 50;
+  }
+  .nav-left { font-size: 12px; color: #999; letter-spacing: 0.5px; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .btn {
+    padding: 8px 18px; border-radius: 8px; border: 1px solid #173B35;
+    background: #173B35; color: #fff; font-weight: 600; cursor: pointer;
+    font-size: 14px; transition: opacity .2s;
+  }
+  .btn.secondary { background: #fff; color: #173B35; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #d8d8d8; cursor: pointer; }
+  .dot.active { background: #173B35; width: 22px; border-radius: 5px; }
+  .slide-counter { font-size: 12px; color: #666; }
+
+  /* ===== ELEMEN KONTEN ===== */
+  .kicker {
+    font-size: 13px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #1e7a5c; margin-bottom: 8px;
+  }
+  h1 { font-size: 38px; line-height: 1.2; color: #173B35; font-weight: 800; letter-spacing: -0.5px; }
+  h2 { font-size: 28px; color: #173B35; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .subtitle { font-size: 16px; color: #555; margin-top: 8px; line-height: 1.6; }
+
+  /* Header slide untuk konsistensi */
+  .slide-head { margin-bottom: 24px; border-bottom: 2px solid #173B35; padding-bottom: 12px; }
+
+  /* Grid & Kolom */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+  /* Kartu */
+  .card {
+    background: #f7f9f8; border: 1px solid #e8e8e8; border-radius: 12px;
+    padding: 18px; 
+  }
+  .card h3 { font-size: 16px; color: #173B35; margin-bottom: 6px; font-weight: 700; }
+  .card p { font-size: 13.5px; color: #4a4a4a; line-height: 1.6; }
+  .card .num { font-size: 28px; font-weight: 800; color: #1e7a5c; }
+
+  /* Poin / bullet */
+  ul.points { list-style: none; margin-top: 8px; }
+  ul.points li {
+    font-size: 14.5px; color: #333; line-height: 1.75; padding-left: 22px;
+    position: relative; margin-bottom: 8px;
+  }
+  ul.points li::before {
+    content: "✓"; position: absolute; left: 0; color: #1e7a5c; font-weight: 700;
+  }
+  ul.points.arrow li::before { content: "→"; color: #173B35; }
+
+  /* tag / label */
+  .tag {
+    display: inline-block; background: #e8f4ef; color: #1e7a5c;
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-right: 6px;
+  }
+  .tag.dark { background: #173B35; color: #fff; }
+  .tag svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 5px; }
+
+  /* Tabel */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background: #f3f6f5; color: #173B35; font-weight: 700; }
+
+  /* Alur / bar */
+  .flow { display: flex; align-items: stretch; gap: 0; margin-top: 14px; }
+  .flow-step {
+    flex: 1; background: #f7f9f8; border: 1px solid #e8e8e8;
+    padding: 12px; border-radius: 8px; text-align: center; font-size: 12.5px; color: #333; line-height: 1.4;
+  }
+  .flow-step b { display: block; color: #173B35; font-size: 13.5px; margin-bottom: 3px; }
+  .flow-arrow { display: flex; align-items: center; font-size: 18px; color: #1e7a5c; padding: 0 6px; }
+
+  /* Ikon */
+  .ic { display: inline-flex; vertical-align: middle; width: 20px; height: 20px; margin-right: 8px; }
+  .card-head { display: flex; align-items: center; }
+  .card-head svg { width: 24px; height: 24px; color: #1e7a5c; margin-right: 8px; flex-shrink: 0; }
+  .card-head h3 { margin: 0; }
+  .big-icon { text-align: center; margin-bottom: 8px; }
+  .big-icon svg { width: 40px; height: 40px; color: #1e7a5c; }
+  .flow-step .fi { width: 30px; height: 30px; color: #173B35; margin: 0 auto 6px; display: block; }
+  .kicker .ic { width: 16px; height: 16px; margin-right: 6px; }
+
+  /* Bar keberhasilan / pembagi layar */
+  .divider { margin: 18px 0; }
+
+  /* Keterangan kecil */
+  .muted { color: #888; font-size: 12px; }
+  .center { text-align: center; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ============ SLIDE 1 : JUDUL ============ -->
+  <section class="slide active">
+    <div class="slide-inner center" style="justify-content:center; align-items:center; text-align:center;">
+      <div style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="#1e7a5c" stroke-width="1.5" style="width:64px;height:64px;" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-2-4-16 14M14 12l-4-2M16 18l-8-4"/><path d="M2 12a2 2 0 0 0 2-2V6l2-2h16l-1 4-1-1-1 2-1-1-1 2-1-1-1 2"/></svg></div>
+      <h1 style="font-size:46px;">e-TICKET SARANGAN</h1>
+      <div class="subtitle">
+        Inovasi Digitalisasi Sistem Tiket Wisata Berbasis Web<br>
+        untuk Meningkatkan Efisiensi dan Kualitas Pariwisata Telaga Sarangan
+      </div>
+      <div style="margin-top:30px; font-size:15px; color:#4a4a4a; line-height:1.8;">
+        <b style="color:#173B35;">Inovator:</b><br>
+        Zaki Adi Nugroho &nbsp;&nbsp; Risky Muhammad Ristya
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 2 : LATAR BELAKANG ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Dasar Pemikiran</div>
+        <h2>Latar Belakang &amp; Permasalahan</h2>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 8 5-5 5 15H2L8 3z"/></svg>
+            <h3>Potensi</h3>
+          </div>
+          <p>Telaga Sarangan adalah destinasi wisata unggulan Kabupaten Magetan dengan potensi wisata alam &amp; ekonomi lokal yang besar. Melibatkan wisatawan, pengelola, UMKM, kuliner, dan penginapan.</p>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <h3>Permasalahan</h3>
+          </div>
+          <p>Pengelolaan kunjungan masih perlu ditingkatkan dalam hal kemudahan pembelian &amp; pemeriksaan tiket, pengelolaan data kunjungan, serta akses informasi layanan wisata dan usaha lokal.</p>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <ul class="points">
+          <li><b>Wisatawan</b> membutuhkan akses lebih mudah ke tiket, informasi destinasi, UMKM, kuliner, dan penginapan.</li>
+          <li><b>Pelaku usaha lokal</b> butuh sarana digital untuk memperkenalkan produk &amp; layanannya.</li>
+        </ul>
+        <div class="card" style="background:#173B35; border-color:#173B35;">
+          <div class="card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <h3 style="color:#fff;">Perlu inovasi digital terintegrasi</h3>
+          </div>
+          <p style="color:#dfece7;">Bukan hanya media pembelian tiket, tetapi mengintegrasikan tiket, validasi kunjungan, informasi wisata, dan ekosistem ekonomi lokal dalam satu platform.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 3 : SASARAN & TUJUAN ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Sasaran &amp; Tujuan</div>
+        <h2>Untuk Siapa &amp; Apa Tujuannya</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="big-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="num center">1</div>
+          <h3 style="text-align:center;">Wisatawan</h3>
+          <p style="text-align:center;">Tiket digital, validasi QR Code, dan akses informasi wisata &amp; usaha lokal lebih mudah.</p>
+        </div>
+        <div class="card">
+          <div class="big-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h5v2a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M3 8h13"/><path d="M8 4v12"/><path d="M3 4h2v12H3z"/></svg></div>
+          <div class="num center">2</div>
+          <h3 style="text-align:center;">Pengelola Wisata</h3>
+          <p style="text-align:center;">Kelola tiket, validasi pengunjung, dan pencatatan/pemantauan data kunjungan terintegrasi.</p>
+        </div>
+        <div class="card">
+          <div class="big-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5 12h15L21 9l-4.5 1a3 3 0 0 1-4 0 3 3 0 0 1-4 0 3 3 0 0 1-4 0L3 9z"/><path d="M12 3c1.5 1 2 2 2 3"/></svg></div>
+          <div class="num center">3</div>
+          <h3 style="text-align:center;">Pelaku Usaha Lokal (UMKM &amp; Penginapan)</h3>
+          <p style="text-align:center;">Sarana digital untuk memperkenalkan produk &amp; layanan kepada wisatawan.</p>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <ul class="points arrow">
+        <li>Pelayanan wisata lebih <b>mudah &amp; efisien</b>.</li>
+        <li>Pengelolaan data kunjungan lebih <b>terintegrasi</b>.</li>
+        <li>Potensi <b>ekonomi lokal</b> kawasan Sarangan semakin berkembang.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 4 : RANCANG BANGUN ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Rancang Bangun / Desain Inovasi</div>
+        <h2>Platform Digital Terintegrasi</h2>
+      </div>
+      <div class="flow">
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg><b>Registrasi</b>Pendaftaran pengguna</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><b>Pilih &amp; Beli Tiket</b>Pembayaran digital (Xendit)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg><b>Tiket QR Code</b>Tiket digital unik</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><b>Validasi Masuk</b>Scan QR oleh petugas</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5 12h15L21 9l-4.5 1a3 3 0 0 1-4 0 3 3 0 0 1-4 0 3 3 0 0 1-4 0L3 9z"/><path d="M12 3c1.5 1 2 2 2 3"/></svg><b>Ekonomi Lokal</b>Informasi UMKM, kuliner, penginapan</div>
+      </div>
+      <div class="grid-2" style="margin-top:20px;">
+        <div class="card">
+          <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l4-4 4 4 5-5 4 4"/><path d="M3 20h18"/></svg><h3>Sisi Wisatawan (Frontend)</h3></div>
+          <ul class="points">
+            <li>Registrasi &amp; login pengguna</li>
+            <li>Pemesanan tiket + pembayaran aman</li>
+            <li>Tiket digital QR Code</li>
+            <li>Informasi destinasi, UMKM, kuliner, penginapan</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="12" y="6" width="3" height="11"/><rect x="17" y="12" width="3" height="5"/></svg><h3>Sisi Pengelola (Backend/Dashboard)</h3></div>
+          <ul class="points">
+            <li>Pengelolaan tiket &amp; kuota</li>
+            <li>Validasi QR Code kunjungan</li>
+            <li>Pencatatan &amp; dashboard data wisatawan</li>
+            <li>Monitoring &amp; evaluasi pengelolaan wisata</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:14px;">Dibangun berbasis teknologi web dengan basis data terintegrasi. Biaya meliputi perangkat lunak, hosting/server, domain, dan pendukung lainnya.</p>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 5 : KEBARUAN & KEUNGGULAN ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Kebaruan Keunikan Keunggulan</div>
+        <h2>Integrasi, Bukan Sekadar Transaksi</h2>
+      </div>
+      <div class="card" style="background:#e8f4ef; border-color:#cfe6dc;">
+        <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="#173B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg><h3>Kebaruan Utama</h3></div>
+        <p>Pengintegrasian <b>sistem tiket digital dan validasi kunjungan</b> dengan <b>informasi serta ekosistem ekonomi lokal</b> dalam satu platform.</p>
+      </div>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="card"><div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><h3>Kedalaman</h3></div><p>Merancang bangun sistem yang memadukan transaksi, validasi, dan ekonomi lokal secara holistik.</p></div>
+        <div class="card"><div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l4-4 4 4 5-5 4 4"/><path d="M3 20h18"/></svg><h3>Kemanfaatan Luas</h3></div><p>Berkontribusi pada pengelola, usaha lokal, serta wisatawan secara berkelanjutan.</p></div>
+        <div class="card"><div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg><h3>Keberlanjutan</h3></div><p>Data kunjungan dapat dimanfaatkan untuk monitoring, evaluasi, dan pengembangan ekosistem.</p></div>
+      </div>
+      <table>
+        <thead><tr><th>Keunggulan</th><th>Manfaat</th></tr></thead>
+        <tbody>
+          <tr><td>Pembelian &amp; validasi praktis</td><td>Proses lebih mudah dan efisien bagi wisatawan &amp; pengelola</td></tr>
+          <tr><td>Data terintegrasi</td><td>Pengelola memperoleh data kunjungan secara terpadu</td></tr>
+          <tr><td>Sarana digital usaha lokal</td><td>UMKM/kuliner/penginapan menjangkau wisatawan lebih luas</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 6 : KESESUAIAN DENGAN KRITERIA PENILAIAN ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Kesesuaian Kriteria Inovasi (Buku Pedoman Inotek 2026)</div>
+        <h2>Pemenuhan Kriteria Penilaian</h2>
+      </div>
+      <table>
+        <thead><tr><th>Kriteria Penilaian (Tahap II, Bobot 80%)</th><th>Kesesuaian e-Ticket Sarangan</th></tr></thead>
+        <tbody>
+          <tr><td><b>Kebaruan / Inovasi / Kreativitas</b></td><td>Menghubungkan tiket digital + validasi + ekosistem ekonomi lokal dalam satu platform (bukan sekadar transaksi).</td></tr>
+          <tr><td><b>Potensi Keberlanjutan / Komersialisasi</b></td><td>Data kunjungan untuk monitoring; terbuka didesiminasi &amp; diadopsi pengelola wisata lainnya.</td></tr>
+          <tr><td><b>Tingkat Kedalaman</b></td><td>Sistem terintegrasi frontend + backend + dashboard pemantauan + pembayaran digital.</td></tr>
+          <tr><td><b>Tingkat Kemanfaatan</b></td><td>Daya ungkit luas: wisatawan, pengelola daerah, dan pelaku usaha lokal UMKM/kuliner.</td></tr>
+        </tbody>
+      </table>
+      <ul class="points arrow" style="margin-top:14px;">
+        <li>Berskala <b>masyarakat luas</b> (destinasi wisata unggulan Magetan).</li>
+        <li>Inovasi <b>orisinil</b> dari ide sendiri (karya asli tim).</li>
+        <li>Tahap <b>penerapan/diseminasi</b>: sistem siap digunakan dan dapat diadopsi.</li>
+        <li>Memiliki <b>kekhasan daerah</b> (Sarangan) dengan nilai jual.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 7 : TEKNOLOGI & TAHAPAN ============ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker">Rancang Bangun</div>
+        <h2>Teknologi &amp; Tahapan Pengembangan</h2>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><h3>Stack Teknologi</h3></div>
+          <div style="margin-top:6px;">
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M9 16h6"/></svg>Laravel 12</span>
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Vue 3</span>
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>TypeScript</span>
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 5v14c0 1.66-4 3-9 3s-9-1.34-9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>PostgreSQL</span>
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8h4"/><path d="M8 12h8"/><path d="M12 16h4"/></svg>QR Code</span>
+            <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Pembayaran Digital</span>
+          </div>
+          <p style="margin-top:8px;">Platform web responsif dengan basis data terintegrasi, pembayaran digital, dan tiket berbasis QR Code.</p>
+        </div>
+        <div class="card">
+          <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3>Timeline</h3></div>
+          <ul class="points">
+            <li><b>Mulai dikembangkan:</b> 13 Agustus 2026</li>
+            <li>Perencanaan &amp; rancang bangun sistem</li>
+            <li>Pengembangan &amp; pengujian fitur</li>
+            <li>Implementasi &amp; evaluasi</li>
+          </ul>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="flow">
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12c2 1 2 2 2 3h4c0-1 0-2 2-3a7 7 0 0 0-4-12z"/></svg><b>Analisis Kebutuhan</b>Studi pengelolaan kunjungan</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg><b>Rancang Bangun</b>Desain sistem &amp; basis data</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><b>Pengembangan</b>Frontend, backend, pembayaran</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><b>Uji Coba</b>Validasi &amp; perbaikan</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><b>Penerapan</b>Gunakan di lapangan</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 8 : PENUTUP ============ -->
+  <section class="slide">
+    <div class="slide-inner center" style="justify-content:center; align-items:center; text-align:center;">
+      <h1 style="font-size:38px;">Terima Kasih</h1>
+      <p class="subtitle">
+        e-Ticket Sarangan &nbsp; Mewujudkan pariwisata Telaga Sarangan yang <b>terintegrasi, efisien, dan berkelanjutan</b>.
+      </p>
+      <div style="margin-top:26px; line-height:2; font-size:14px; color:#333;">
+        <b style="color:#173B35;">Zaki Adi Nugroho</b> &nbsp;&nbsp; <b style="color:#173B35;">Risky Muhammad Ristya</b>
+      </div>
+      <div style="margin-top:24px;">
+        <span class="tag dark" style="font-size:12px;">Source Code: github.com/Kanzacky/E-Ticket-Sarangan</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ NAVIGASI ============ -->
+<div class="nav">
+  <div class="nav-left">e-Ticket Sarangan / INOTEK AWARD 2026</div>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 8</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn secondary" id="fullscreen" title="Fullscreen (F)">⛶ Fullscreen</button>
+    <button class="btn secondary" id="prev">◀ Sebelumnya</button>
+    <button class="btn" id="next">Berikutnya ▶</button>
+  </div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+
+  const dotsWrap = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => go(i));
+    dotsWrap.appendChild(d);
+  });
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+    document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+    document.getElementById('prev').disabled = current === 0;
+    document.getElementById('next').disabled = current === total - 1;
+  }
+
+  function go(i) {
+    current = Math.max(0, Math.min(total - 1, i));
+    render();
+  }
+
+  document.getElementById('next').addEventListener('click', () => go(current + 1));
+  document.getElementById('prev').addEventListener('click', () => go(current - 1));
+
+  // Fullscreen toggle
+  const fsBtn = document.getElementById('fullscreen');
+  function isFullscreen() { return document.fullscreenElement || document.webkitFullscreenElement; }
+  function toggleFullscreen() {
+    if (isFullscreen()) {
+      document.exitFullscreen?.();
+    } else {
+      (document.documentElement.requestFullscreen ? document.documentElement.requestFullscreen() : document.documentElement.webkitRequestFullscreen?.());
+    }
+  }
+  fsBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', () => {
+    fsBtn.textContent = isFullscreen() ? '⛶ Keluar Fullscreen' : '⛶ Fullscreen';
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(total - 1);
+    if (e.key === 'f' || e.key === 'F' || e.key === 'F11') { e.preventDefault(); toggleFullscreen(); }
+  });
+
+  render();
+</script>
+
+</body>
+</html>
