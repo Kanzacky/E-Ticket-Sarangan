@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
+    Route::post('/orders/{order_code}/pay', [OrderController::class, 'pay'])->middleware('throttle:10,1');
 
     Route::middleware('role:petugas')->group(function () {
         Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify'])->middleware('throttle:30,1');

@@ -14,7 +14,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
-import { createOrderApi, getTicketTypesApi } from '@/services/order.service'
+import { createOrderApi, getTicketTypesApi, payOrderApi } from '@/services/order.service'
 import { useAuthStore } from '@/stores/auth'
 import type { CreateOrderPayload, TicketType } from '@/types/booking.types'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -118,15 +118,13 @@ function decrementQty(ticket: TicketType) {
   }
 }
 
-// Removed openReview function
-
 async function handleConfirmBooking() {
   errorMessage.value = ''
   if (!isFormValid.value) {
     if (totalQuantity.value === 0) {
-      errorMessage.value = t('booking.choose_min_one')
+      errorMessage.value = 'Silakan pilih minimal 1 tiket terlebih dahulu.'
     } else {
-      errorMessage.value = t('booking.complete_data')
+      errorMessage.value = 'Mohon lengkapi seluruh data kunjungan dan data pemesan.'
     }
     return
   }
@@ -146,11 +144,22 @@ async function handleConfirmBooking() {
 
   try {
     const createdOrder = await createOrderApi(payload)
-    
-    // Redirect langsung ke payment gateway jika URL pembayaran Xendit tersedia
-    if (createdOrder.payment_url && createdOrder.status === 'PENDING') {
+
+    if (createdOrder.payment_url) {
+      // Pesanan + invoice berhasil — langsung redirect Xendit
       window.location.href = createdOrder.payment_url
-    } else {
+      return
+    }
+
+    // Pesanan berhasil dibuat TAPI Xendit gagal di server
+    // Coba sekali lagi via endpoint /pay
+    try {
+      const retryUrl = await payOrderApi(createdOrder.order_code)
+      window.location.href = retryUrl
+    } catch {
+      // Xendit benar-benar gagal — arahkan ke halaman sukses agar bisa bayar nanti
+      errorMessage.value =
+        'Pesanan berhasil dibuat, namun link pembayaran belum tersedia. Silakan bayar melalui halaman Pesanan Saya.'
       void router.push({
         name: 'booking.success',
         params: { orderCode: createdOrder.order_code },
@@ -159,18 +168,25 @@ async function handleConfirmBooking() {
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status
+      const msg = error.response?.data?.message as string | undefined
       if (status === 401) {
         errorMessage.value = 'Sesi Anda telah berakhir. Silakan login terlebih dahulu.'
         void router.push({ name: 'login', query: { redirect: '/booking' } })
       } else if (status === 409) {
-        errorMessage.value = error.response?.data?.message || 'Kuota tiket tidak mencukupi untuk tanggal yang dipilih.'
+        errorMessage.value = msg || 'Kuota tiket tidak mencukupi untuk tanggal yang dipilih.'
       } else if (status === 422) {
-        errorMessage.value = error.response?.data?.message || 'Terdapat data booking yang tidak valid.'
+        errorMessage.value = msg || 'Terdapat data booking yang tidak valid.'
+      } else if (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK') {
+        // Kemungkinan pesanan sudah masuk tapi response tidak tersampaikan
+        errorMessage.value =
+          'Koneksi terputus saat memproses pesanan. Cek halaman Pesanan Saya — pesanan Anda mungkin sudah tersimpan.'
+        void router.push({ name: 'my-tickets' })
       } else {
-        errorMessage.value = 'Terjadi kesalahan server. Silakan coba lagi nanti.'
+        errorMessage.value =
+          msg || 'Terjadi kesalahan. Pesanan mungkin sudah tersimpan — cek halaman Pesanan Saya.'
       }
     } else {
-      errorMessage.value = 'Terjadi kesalahan server. Silakan coba lagi nanti.'
+      errorMessage.value = 'Terjadi kesalahan tidak terduga. Silakan coba lagi.'
     }
   } finally {
     isSubmitting.value = false
@@ -432,7 +448,7 @@ async function handleConfirmBooking() {
               @click="handleConfirmBooking"
             >
               <LoaderCircle v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-              <span v-else>{{ t('booking.to_payment') }}</span>
+              <span>{{ isSubmitting ? 'Memproses Pembayaran...' : 'Langsung ke Pembayaran' }}</span>
               <ChevronRight v-if="!isSubmitting" class="h-4 w-4" />
             </button>
 
