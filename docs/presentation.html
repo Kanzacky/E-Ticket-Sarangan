@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <title>INOTEK MAGETAN 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Base Styling */
+        body {
+            background-color: #ffffff;
+        }
+
+        .reveal {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            color: #334155;
+        }
+
+        .reveal h1,
+        .reveal h2,
+        .reveal h3,
+        .reveal h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            color: #173B35;
+            font-weight: 800;
+            text-transform: none;
+            margin-bottom: 25px;
+        }
+
+        .reveal h2 {
+            font-size: 1.6em !important;
+        }
+
+        .reveal p,
+        .reveal li {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .reveal .slide-number {
+            color: #173B35;
+            font-size: 14px;
+        }
+
+        /* Layout Grids */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .grid-container-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        /* Professional Cards */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card i {
+            font-size: 3em;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+
+        .card h4 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 0.85em;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Feature List Box */
+        .list-box {
+            text-align: left;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px 40px;
+            border-left: 8px solid #173B35;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            margin: 0 auto;
+            width: 90%;
+        }
+
+        .list-box li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .list-box li:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .list-box li i {
+            color: #10b981;
+            font-size: 1.5em;
+            margin-top: 5px;
+            margin-right: 20px;
+            width: 40px;
+            text-align: center;
+        }
+
+        /* Reveal.js state class to hide logo */
+        .hide-global-logo .global-logo-container {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        /* Cover Slide Enhancements */
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            padding-bottom: 0.15em;
+            /* Prevents text clipping on letters like g/y */
+            line-height: 1.1;
+        }
+
+        .pulse-logo {
+            animation: softPulse 3s infinite ease-in-out;
+        }
+
+        @keyframes softPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Typography Helpers */
+        .hero-title {
+            font-size: 3.2em !important;
+            letter-spacing: -1px;
+            margin-bottom: 10px !important;
+        }
+
+        .hero-subtitle {
+            color: #64748b !important;
+            font-weight: 500 !important;
+            font-size: 1.3em !important;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #173B35;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .quote-box {
+            background: #173B35;
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            width: 85%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.8em;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .comparison-table th {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .before-col {
+            background-color: #fef2f2;
+        }
+
+        .after-col {
+            background-color: #ecfdf5;
+        }
+
+        /* Modernize Navigation Controls (Bottom Right Buttons) */
+        .reveal .controls {
+            right: 40px;
+            bottom: 40px;
+        }
+
+        .reveal .controls button {
+            background-color: rgba(241, 245, 249, 0.8);
+            border-radius: 50%;
+            width: 45px !important;
+            height: 45px !important;
+            margin: 5px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            opacity: 0.8 !important;
+        }
+
+        .reveal .controls button:hover {
+            background-color: #10b981;
+            transform: scale(1.15) translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            opacity: 1 !important;
+        }
+
+        .reveal .controls-arrow {
+            color: #173B35;
+        }
+
+        .reveal .controls button:hover .controls-arrow {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- SLIDE 1: Pembukaan -->
+            <section>
+
+                <div style="margin-bottom: 30px;">
+                    <img src="frontend/public/images/logo.png" alt="Logo e-Ticket Sarangan"
+                        style="height: 130px; width: auto; object-fit: contain; margin: 0 auto; box-shadow: none; border: none; background: transparent;">
+                </div>
+
+                <h1 class="hero-title gradient-text"
+                    style="font-size: 3.8em !important; margin-bottom: 10px !important; letter-spacing: -1px;">e-Ticket
+                    Sarangan</h1>
+                <h3 class="hero-subtitle" style="font-size: 1.2em !important; margin-bottom: 40px !important;">
+                    Digitalisasi Tata Kelola Pariwisata Kabupaten Magetan</h3>
+
+                <div style="border-top: 4px solid #10b981; width: 60px; margin: 0 auto 30px auto; border-radius: 5px;">
+                </div>
+
+                <p
+                    style="font-size: 0.75em; color: #64748b; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
+                    Disusun Oleh Tim Inovator</p>
+
+                <div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin-top: 15px;">
+                    <div
+                        style="padding: 12px 25px; border-radius: 50px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; background: #f8fafc;">
+                        <p style="font-size: 0.9em; color: #1e293b; font-weight: 700; margin: 0;">
+                            <i class="fa-solid fa-user-tie" style="color: #10b981; margin-right: 8px;"></i> Zaki Adi
+                            Nugroho
+                        </p>
+                    </div>
+                    <div
+                        style="padding: 12px 25px; border-radius: 50px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; background: #f8fafc;">
+                        <p style="font-size: 0.9em; color: #1e293b; font-weight: 700; margin: 0;">
+                            <i class="fa-solid fa-user-tie" style="color: #10b981; margin-right: 8px;"></i> Risky
+                            Muhammad Ristya
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 2: Latar Belakang -->
+            <section>
+                <h2>Latar Belakang Permasalahan</h2>
+                <div class="grid-container">
+                    <div class="card">
+                        <i class="fa-solid fa-users-line"></i>
+                        <h4>Antrean Panjang</h4>
+                        <p>Kemacetan di pintu masuk akibat proses transaksi & validasi tiket manual yang lambat.</p>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-arrow-trend-down" style="color: #ef4444;"></i>
+                        <h4>Potensi Kebocoran PAD</h4>
+                        <p>Pengawasan tiket fisik (kertas) sangat lemah, rentan pemalsuan dan penggunaan ulang.</p>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-server"></i>
+                        <h4>Data Tidak Aktual</h4>
+                        <p>Pemkab kesulitan mendapat data real-time, rekapitulasi baru bisa dilakukan manual di
+                            penghujung hari.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 3: Kondisi Sebelum & Sesudah -->
+            <section>
+                <h2>Kondisi Sebelum Inovasi</h2>
+                <table class="comparison-table">
+                    <tr>
+                        <th style="width: 33%;">Aspek</th>
+                        <th style="width: 33%;" class="before-col"><i class="fa-solid fa-times-circle"
+                                style="color:#ef4444; margin-right:8px;"></i>Sebelum e-Ticket</th>
+                        <th style="width: 33%;" class="after-col"><i class="fa-solid fa-check-circle"
+                                style="color:#10b981; margin-right:8px;"></i>Sesudah Inovasi</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Pembelian Tiket</strong></td>
+                        <td class="before-col">Antre lama di loket, wajib uang tunai.</td>
+                        <td class="after-col">100% Online dari mana saja, pembayaran Cashless.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Validasi & Tiket</strong></td>
+                        <td class="before-col">Tiket fisik disobek manual (menumpuk sampah).</td>
+                        <td class="after-col">Tiket digital (QR Code) dipindai instan (Paperless).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pengawasan PAD</strong></td>
+                        <td class="before-col">Rekap manual tertinggal, rawan kebocoran.</td>
+                        <td class="after-col">Pencatatan otomatis real-time ke Dashboard Pemkab.</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- SLIDE 4: Sasaran & Tujuan -->
+            <section>
+                <h2>Sasaran & Tujuan Inovasi</h2>
+                <div class="grid-container">
+                    <div class="card" style="border-top: 4px solid #3b82f6;">
+                        <i class="fa-solid fa-person-walking-luggage" style="color: #3b82f6;"></i>
+                        <h4>Wisatawan</h4>
+                        <p>Memberikan kenyamanan ekstra bebas antrean via layanan pemesanan online.</p>
+                    </div>
+                    <div class="card" style="border-top: 4px solid #10b981;">
+                        <i class="fa-solid fa-user-shield" style="color: #10b981;"></i>
+                        <h4>Petugas Lapangan</h4>
+                        <p>Mempermudah tugas dengan validasi digital yang akurat dan hitungan detik.</p>
+                    </div>
+                    <div class="card" style="border-top: 4px solid #8b5cf6;">
+                        <i class="fa-solid fa-building-columns" style="color: #8b5cf6;"></i>
+                        <h4>Pemerintah Daerah</h4>
+                        <p>Mengamankan dan menaikkan potensi PAD melalui pengawasan data real-time.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 5: Materi Inovasi (Cara Kerja) -->
+            <section>
+                <h2>Materi Inovasi: Cara Kerja</h2>
+                <div class="list-box">
+                    <ul style="list-style: none; margin: 0; padding: 0;">
+                        <li>
+                            <i class="fa-solid fa-globe"></i>
+                            <div>
+                                <strong>Platform Web Responsif (Vue.js & Laravel)</strong><br>
+                                <span style="font-size: 0.85em; color: #64748b;">Pengunjung akses langsung via browser
+                                    HP tanpa perlu instalasi aplikasi di PlayStore.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-qrcode"></i>
+                            <div>
+                                <strong>Sistem QR Code Terenkripsi</strong><br>
+                                <span style="font-size: 0.85em; color: #64748b;">Pengunjung mendapat tiket digital
+                                    berbentuk QR unik. Petugas memindai menggunakan smartphone standar.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-money-bill-transfer"></i>
+                            <div>
+                                <strong>Pembayaran Cashless Terintegrasi</strong><br>
+                                <span style="font-size: 0.85em; color: #64748b;">Sinkron dengan Payment Gateway (QRIS,
+                                    VA) & mencatat data langsung ke Dashboard.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SLIDE 6: Keunggulan & Hasil -->
+            <section>
+                <h2>Keunggulan & Manfaat Lingkungan</h2>
+                <div class="grid-container-2">
+                    <div class="card"
+                        style="display: flex; align-items: flex-start; text-align: left; padding: 25px; gap: 20px;">
+                        <i class="fa-solid fa-leaf" style="font-size: 2.5em; margin: 0; flex-shrink: 0;"></i>
+                        <div>
+                            <h4 style="margin: 0 0 8px 0;">Manfaat Lingkungan</h4>
+                            <p>Sistem paperless secara masif menekan produksi limbah sobekan kertas di kawasan wisata.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        style="display: flex; align-items: flex-start; text-align: left; padding: 25px; gap: 20px;">
+                        <i class="fa-solid fa-lock" style="font-size: 2.5em; margin: 0; flex-shrink: 0;"></i>
+                        <div>
+                            <h4 style="margin: 0 0 8px 0;">Anti-Duplikasi</h4>
+                            <p>QR Code unik hanya berlaku satu kali pemindaian, menghapus total potensi pemalsuan.</p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        style="display: flex; align-items: flex-start; text-align: left; padding: 25px; gap: 20px;">
+                        <i class="fa-solid fa-chart-pie" style="font-size: 2.5em; margin: 0; flex-shrink: 0;"></i>
+                        <div>
+                            <h4 style="margin: 0 0 8px 0;">Peningkatan PAD</h4>
+                            <p>Transparansi absolut (*zero leakage*) pada pencatatan pendapatan daerah.</p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        style="display: flex; align-items: flex-start; text-align: left; padding: 25px; gap: 20px;">
+                        <i class="fa-solid fa-code-branch" style="font-size: 2.5em; margin: 0; flex-shrink: 0;"></i>
+                        <div>
+                            <h4 style="margin: 0 0 8px 0;">Rencana Keberlanjutan</h4>
+                            <p>Sangat terukur (scalable). Dirancang agar kelak diintegrasikan menjadi "Super App
+                                Pariwisata Magetan".</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 7: Penutup -->
+            <section data-state="hide-global-logo">
+
+                <h3
+                    style="color: #173B35; font-weight: 700; font-size: 1.6em; line-height: 1.5; margin: 0 auto; max-width: 900px;">
+                    "Wujudkan Tata Kelola Pariwisata Magetan yang<br>Modern, Transparan, dan Berdaya Saing Global."
+                </h3>
+
+                <div style="border-top: 2px solid #e2e8f0; width: 100px; margin: 40px auto 40px auto;"></div>
+
+                <p
+                    style="font-weight: 800; color: #10b981; letter-spacing: 4px; margin-bottom: 40px; font-size: 0.9em;">
+                    TERIMA KASIH</p>
+
+                <div style="display: flex; justify-content: center; gap: 80px; font-size: 0.75em;">
+                    <div style="text-align: center;">
+                        <p style="margin: 0 0 12px 0; font-weight: 700; color: #334155;">ZAKI ADI NUGROHO</p>
+                        <div style="display: flex; gap: 18px; justify-content: center;">
+                            <a href="https://github.com/Kanzacky" target="_blank"
+                                style="color: #64748b; text-decoration: none; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.2)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                                <i class="fa-brands fa-github" style="font-size: 1.8em;"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/zakiadinugroho/" target="_blank"
+                                style="color: #0077b5; text-decoration: none; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.2)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                                <i class="fa-brands fa-linkedin" style="font-size: 1.8em;"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <p style="margin: 0 0 12px 0; font-weight: 700; color: #334155;">RISKY MUHAMMAD RISTYA</p>
+                        <div style="display: flex; gap: 18px; justify-content: center;">
+                            <a href="https://github.com/Riuzy" target="_blank"
+                                style="color: #64748b; text-decoration: none; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.2)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                                <i class="fa-brands fa-github" style="font-size: 1.8em;"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/rizky-muhammad-ristya-3b7538373/" target="_blank"
+                                style="color: #0077b5; text-decoration: none; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.2)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                                <i class="fa-brands fa-linkedin" style="font-size: 1.8em;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: 'c/t',
+            transition: 'fade', // Transisi modern dan halus
+            backgroundTransition: 'fade',
+            controls: true,
+            progress: true,
+            center: true
+        });
+    </script>
+</body>
+
+</html>
