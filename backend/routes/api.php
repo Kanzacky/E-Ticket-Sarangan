@@ -9,7 +9,6 @@ use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\AdminTicketTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\AdminAccommodationController;
-use App\Http\Controllers\Api\V1\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\XenditWebhookController;
 
@@ -21,7 +20,7 @@ Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
 
 // Admin Routes (prefix: admin, middleware: auth sanctum)
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     // Users CRUD
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
@@ -53,31 +52,38 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Reports
     Route::get('/reports/summary', [\App\Http\Controllers\Api\V1\Admin\AdminReportController::class, 'summary']);
+    Route::get('/analytics', [\App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController::class, 'index']);
+    Route::get('/audit-logs', [\App\Http\Controllers\Api\V1\Admin\AdminAuditLogController::class, 'index']);
+    Route::get('/checkins', [\App\Http\Controllers\Api\V1\Admin\AdminCheckinController::class, 'index']);
+    Route::get('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'index']);
+    Route::patch('/settings', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'update']);
 
     // Dashboard Ringkas
     Route::get('/dashboard', [UserController::class, 'dashboard']);
 
     // Accommodations CRUD
-    // Accommodations CRUD
     Route::get('/accommodations', [AdminAccommodationController::class, 'index']);
     Route::post('/accommodations', [AdminAccommodationController::class, 'store']);
     Route::get('/accommodations/{id}', [AdminAccommodationController::class, 'show']);
     Route::patch('/accommodations/{id}', [AdminAccommodationController::class, 'update']);
+    Route::post('/accommodations/{id}', [AdminAccommodationController::class, 'update']); // for multipart file upload
     Route::delete('/accommodations/{id}', [AdminAccommodationController::class, 'destroy']);
 });
 
 // Petugas Routes (prefix: petugas, middleware: auth sanctum)
-Route::middleware('auth:sanctum')->prefix('petugas')->group(function () {
+Route::middleware(['auth:sanctum', 'role:petugas'])->prefix('petugas')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'dashboard']);
     Route::get('/visits', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'visits']);
     Route::get('/bookings', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'bookings']);
     Route::get('/users', [\App\Http\Controllers\Api\V1\Petugas\PetugasController::class, 'users']);
 });
 
-// Auth Endpoints
+// Auth Endpoints (throttled)
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/forgot-password', [\App\Http\Controllers\Api\V1\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+    Route::post('/reset-password', [\App\Http\Controllers\Api\V1\AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -89,21 +95,32 @@ Route::prefix('auth')->group(function () {
 // Orders Endpoints (Sanctum protected)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
 
-    // Scanner API
-    Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify']);
-    Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
+    Route::middleware('role:petugas')->group(function () {
+        Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify'])->middleware('throttle:30,1');
+        Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
+    });
 
     // Accommodation Bookings
     Route::get('/accommodation-bookings', [AccommodationBookingController::class, 'index']);
-    Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store']);
-});
+    Route::post('/accommodation-bookings', [AccommodationBookingController::class, 'store'])->middleware('throttle:10,1');
 
-// Midtrans Webhook
-Route::post('/payments/midtrans/notification', [PaymentCallbackController::class, 'handleNotification']);
+    // Notifications (all authenticated roles)
+    Route::get('/notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\V1\NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllAsRead']);
+    Route::patch('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\V1\NotificationController::class, 'destroy']);
+});
 
 // Xendit Webhook
 Route::post('/payments/xendit/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']);
 Route::post('/webhook', [App\Http\Controllers\Api\V1\XenditWebhookController::class, 'handleWebhook']); // Fallback alias
+
+// Vercel Cron — runs scheduled commands (hourly expire + daily sync)
+Route::get('/scheduled/commands', function () {
+    \Illuminate\Support\Facades\Artisan::call('schedule:run');
+    return response()->json(['success' => true, 'message' => 'Schedule run completed.']);
+});

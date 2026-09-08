@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "e-Ticket Sarangan",
-    "tagline": "Sistem tiket digital untuk wisata Sarangan",
     "tagline": "Sistem tiket digital untuk wisata Sarangan"
   },
   "common": {
@@ -15,13 +14,19 @@
     "edit": "Edit",
     "delete": "Hapus",
     "confirm": "Konfirmasi",
-    "retry": "Coba lagi"
+    "retry": "Coba lagi",
+    "total": "Total",
+    "empty": "Tidak ada data",
+    "period": "Periode"
   },
   "nav": {
     "home": "Beranda",
     "login": "Masuk",
     "register": "Daftar",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "accommodations": "Penginapan",
+    "booking": "Pesan Tiket",
+    "my_tickets": "Pesanan Saya"
   },
   "home": {
     "title": "e-Ticket Sarangan",
@@ -47,6 +52,127 @@
     "noAccount": "Belum punya akun?",
     "loginSuccess": "Berhasil masuk",
     "registerSuccess": "Pendaftaran berhasil, silakan masuk",
-    "loginError": "Email atau kata sandi salah"
+    "loginError": "Email atau kata sandi salah",
+    "forgotTitle": "Lupa Password",
+    "forgotDesc": "Masukkan email Anda, kami kirim link reset.",
+    "resetTitle": "Reset Password",
+    "resetDesc": "Masukkan token dari email dan password baru."
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "analytics": "Analitik",
+    "reports": "Laporan",
+    "users": "Pengguna",
+    "petugas": "Petugas",
+    "tickets": "Tiket Dasar",
+    "ticket_categories": "Paket Wisata",
+    "accommodations": "Penginapan",
+    "bookings": "Pesanan",
+    "payments": "Pembayaran",
+    "checkins": "Check-in",
+    "upgrades": "Upgrade Tiket",
+    "audit_logs": "Audit Logs",
+    "settings": "Pengaturan"
+  },
+  "notification": {
+    "title": "Notifikasi",
+    "empty": "Tidak ada notifikasi",
+    "mark_all": "Tandai semua dibaca",
+    "delete": "Hapus",
+    "unread": "Belum dibaca"
+  },
+  "analytics": {
+    "title": "Analitik",
+    "desc": "Performa penjualan, scan, dan penginapan",
+    "revenue": "Pendapatan",
+    "orders": "Pesanan Sukses",
+    "tickets": "Tiket Terjual",
+    "scans": "Scan Valid",
+    "trend": "Tren Pendapatan Harian",
+    "top_tickets": "Tiket Terpopuler",
+    "success_rate": "Success rate"
+  },
+  "booking": {
+    "title": "Pemesanan Tiket",
+    "subtitle": "Telaga Sarangan, Magetan",
+    "step1": "Pilih Tanggal Kunjungan",
+    "step2": "Pilih Jenis Tiket",
+    "step3": "Data Pemesan / Penanggung Jawab",
+    "visit_date": "Tanggal Kunjungan",
+    "ticket_type": "Jenis Tiket",
+    "customer_name": "Nama Lengkap Pemesan",
+    "customer_email": "Alamat Email",
+    "customer_phone": "No. Handphone / WhatsApp",
+    "summary": "Ringkasan Pesanan",
+    "total": "Total Biaya",
+    "total_tickets": "Total Tiket",
+    "available": "Tersedia",
+    "price_per_person": "/ orang",
+    "official_price": "Harga resmi Perda",
+    "ticket_valid_on": "Tiket berlaku pada tanggal yang dipilih.",
+    "choose_min_one": "Pilih minimal 1 tiket",
+    "complete_data": "Mohon lengkapi seluruh data kunjungan dan data pemesan.",
+    "to_payment": "Langsung ke Pembayaran",
+    "you_will_redirect": "Anda akan diarahkan ke halaman pembayaran aman (Xendit).",
+    "my_orders": "Pesanan Saya"
+  },
+  "scanner": {
+    "title": "Scan Tiket",
+    "desc": "Arahkan kamera ke QR Code wisatawan",
+    "start_scan": "Mulai Scan",
+    "scanning": "Memindai QR Code...",
+    "verifying": "Memverifikasi Tiket...",
+    "wait": "Mohon tunggu sebentar, sedang mengecek ke server.",
+    "valid": "Tiket Valid",
+    "invalid": "Tiket Tidak Valid",
+    "verified": "Sistem berhasil memverifikasi tiket.",
+    "rejected": "Sistem menolak tiket ini.",
+    "reason": "Alasan Penolakan:",
+    "booking_code": "Kode Booking",
+    "visitor_name": "Nama Pengunjung",
+    "visit_date": "Tanggal Kunjungan",
+    "ticket_type": "Jenis Tiket",
+    "quantity": "Jumlah Pengunjung",
+    "close_and_back": "Tutup & Kembali Scan",
+    "scan_again": "Scan Ulang",
+    "camera_denied": "Akses kamera ditolak.",
+    "camera_not_found": "Kamera tidak ditemukan di perangkat ini.",
+    "camera_https": "Konteks tidak aman (butuh HTTPS atau localhost).",
+    "camera_failed": "Gagal mengakses kamera:"
+  },
+  "accommodation": {
+    "title": "Daftar Penginapan & Villa",
+    "subtitle": "Temukan tempat menginap terbaik di sekitar Telaga Sarangan untuk melengkapi liburan Anda.",
+    "section": "Akomodasi Penginapan",
+    "detail_title": "Tentang Penginapan Ini",
+    "facilities": "Fasilitas Utama",
+    "no_description": "Tidak ada deskripsi yang tersedia untuk penginapan ini.",
+    "starting_from": "Mulai dari",
+    "per_night": "/malam",
+    "remaining": "Sisa {count} kamar tersedia",
+    "check_in": "Check-in",
+    "check_out": "Check-out",
+    "rooms": "Kamar",
+    "guests": "Tamu",
+    "guest_name": "Nama Lengkap",
+    "guest_phone": "No. WhatsApp",
+    "notes": "Catatan Tambahan (Opsional)",
+    "total_price": "Total Biaya",
+    "book_now": "Buat Reservasi Sekarang",
+    "processing": "Memproses...",
+    "need_login": "Anda akan diarahkan ke halaman login terlebih dahulu.",
+    "search_placeholder": "Cari penginapan...",
+    "sort": {
+      "rating": "Rating Tertinggi",
+      "distance": "Jarak Terdekat",
+      "price_asc": "Harga Termurah",
+      "price_desc": "Harga Termahal"
+    }
+  },
+  "upgrade": {
+    "title": "Upgrade Tiket",
+    "desc": "Monitoring upgrade kategori tiket (dari ticket_upgrades)",
+    "empty": "Belum ada upgrade",
+    "legacy_note": "Fitur upgrade tiket belum digunakan pada alur orders saat ini (tabel legacy ticket_upgrades). Data akan muncul jika ada upgrade kategori. Untuk upgrade, hubungi admin."
   }
 }

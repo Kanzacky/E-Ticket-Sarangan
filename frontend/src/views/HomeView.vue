@@ -32,10 +32,9 @@ onMounted(async () => {
     .finally(() => { isLoadingTickets.value = false })
 
   // Fetch accommodations
-  getAccommodationsApi()
+  getAccommodationsApi({ per_page: 3 })
     .then(res => {
-      // Show max 3 accommodations on home page
-      accommodations.value = res.slice(0, 3)
+      accommodations.value = res.data.slice(0, 3)
     })
     .catch(error => console.error('Failed to fetch accommodations', error))
     .finally(() => { isLoadingAccommodations.value = false })

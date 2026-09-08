@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Menu, Search, Bell, User, LogOut } from 'lucide-vue-next'
+import { Menu, Search, User, LogOut } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import NotificationBell from '@/components/ui/NotificationBell.vue'
 
 const props = defineProps<{
   pageTitle?: string
@@ -57,10 +58,7 @@ async function handleLogout() {
       <div class="h-6 w-px bg-[#E8E6DE] hidden md:block"></div>
 
       <!-- Notifications -->
-      <button class="relative p-2 rounded-full text-[#66706C] hover:text-[#173B35] hover:bg-[#F7F5EF] transition-colors">
-        <Bell class="w-5 h-5" />
-        <!-- Notification badge dot can go here if needed -->
-      </button>
+      <NotificationBell />
 
       <!-- Profile Dropdown -->
       <div class="relative">

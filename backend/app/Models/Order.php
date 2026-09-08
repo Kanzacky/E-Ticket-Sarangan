@@ -19,6 +19,9 @@ class Order extends Model
         'total_quantity',
         'total_amount',
         'status',
+        'payment_id',
+        'payment_url',
+        'qr_expires_at',
         'scanned_at',
         'scanned_by',
     ];
@@ -27,6 +30,7 @@ class Order extends Model
         'visit_date' => 'date:Y-m-d',
         'total_quantity' => 'integer',
         'total_amount' => 'float',
+        'qr_expires_at' => 'datetime',
         'scanned_at' => 'datetime',
     ];
 

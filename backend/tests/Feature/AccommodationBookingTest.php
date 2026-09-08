@@ -90,7 +90,7 @@ it('creates accommodation booking successfully', function () {
 
     $this->assertDatabaseHas('accommodations', [
         'id' => $accommodation->id,
-        'available_rooms' => 10,
+        'available_rooms' => 8,
     ]);
 });
 

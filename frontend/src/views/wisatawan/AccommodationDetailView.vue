@@ -4,7 +4,8 @@ import {
   MapPin, 
   Star,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Navigation,
 } from 'lucide-vue-next'
 import { onMounted, reactive, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -66,6 +67,21 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID').format(price)
 }
 
+const formatDistance = (km: number | undefined | null) => {
+  if (!km) return ''
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km} km`
+}
+
+const openDirections = () => {
+  if (!accommodation.value) return
+  const lat = accommodation.value.latitude
+  const lng = accommodation.value.longitude
+  if (!lat || !lng) return
+  // Google Maps directions from Telaga Sarangan (-7.67, 111.216) to accommodation
+  const url = `https://www.google.com/maps/dir/-7.67,111.216/${lat},${lng}/`
+  window.open(url, '_blank')
+}
+
 const totalNights = computed(() => {
   if (!form.check_in || !form.check_out) return 1
   const start = new Date(form.check_in)
@@ -91,7 +107,7 @@ async function handleBook() {
   successMessage.value = ''
 
   try {
-    await createAccommodationBookingApi({
+    const booking = await createAccommodationBookingApi({
       accommodation_id: accommodation.value.id,
       check_in: form.check_in,
       check_out: form.check_out,
@@ -102,10 +118,15 @@ async function handleBook() {
       notes: form.notes,
     })
 
-    successMessage.value = 'Reservasi berhasil dibuat! Mengalihkan ke riwayat pesanan...'
-    setTimeout(() => {
-      void router.push({ name: 'wisatawan.tickets' }) // Accommodations history is usually there
-    }, 1500)
+    if (booking.payment_url) {
+      successMessage.value = 'Reservasi berhasil! Mengalihkan ke pembayaran Xendit...'
+      setTimeout(() => { window.location.href = booking.payment_url as string }, 800)
+    } else {
+      successMessage.value = 'Reservasi berhasil dibuat! Mengalihkan ke riwayat pesanan...'
+      setTimeout(() => {
+        void router.push({ name: 'wisatawan.tickets' })
+      }, 1500)
+    }
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
       errorMessage.value = error.response.data.message as string
@@ -170,6 +191,9 @@ async function handleBook() {
               <p class="text-sm text-white/80 flex items-center gap-1.5">
                 <MapPin class="h-4 w-4 shrink-0" /> {{ accommodation.address }}
               </p>
+              <p v-if="accommodation.distance_km !== null && accommodation.distance_km !== undefined" class="text-sm text-white/90 flex items-center gap-1.5 mt-1">
+                <MapPin class="h-4 w-4 shrink-0" /> {{ formatDistance(accommodation.distance_km) }} dari Telaga Sarangan
+              </p>
             </div>
           </div>
 
@@ -209,6 +233,15 @@ async function handleBook() {
             <p class="text-xs font-medium mt-2" :class="accommodation.available_rooms > 0 ? 'text-[#4F7465]' : 'text-red-500'">
               Sisa {{ accommodation.available_rooms }} kamar tersedia
             </p>
+            <button 
+              v-if="accommodation.latitude && accommodation.longitude"
+              type="button"
+              @click="openDirections"
+              class="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-[#173B35] border border-[#173B35] rounded-lg hover:bg-[#F7F5EF] transition-colors"
+            >
+              <Navigation class="w-4 h-4" />
+              Lihat Rute
+            </button>
           </div>
 
           <form @submit.prevent="handleBook" class="p-6 space-y-5">

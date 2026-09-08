@@ -65,6 +65,7 @@ class ScannerController extends Controller
         $order->save();
 
         $logScan(true, 'Tiket Valid. Check-in berhasil.');
+        try { \App\Services\NotificationService::sendOrderScanned($order); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('Notif scanned failed: '.$e->getMessage()); }
 
         // Build display data for the scanner UI
         $ticketTypes = $order->items->map(function ($item) {

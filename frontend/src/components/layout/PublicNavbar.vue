@@ -4,6 +4,7 @@ import { Menu, X, User, LogOut, ChevronRight } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import NotificationBell from '@/components/ui/NotificationBell.vue'
 
 const props = defineProps<{
   transparentTop?: boolean
@@ -114,6 +115,9 @@ function handlePesanTiket() {
             <router-link to="/my-tickets" class="text-sm font-semibold transition-colors" :class="navLinkClass">
               Pesanan Saya
             </router-link>
+            <router-link to="/my-accommodations" class="text-sm font-semibold transition-colors" :class="navLinkClass">
+              Penginapan Saya
+            </router-link>
           </template>
         </nav>
 
@@ -121,6 +125,7 @@ function handlePesanTiket() {
         <div class="hidden lg:flex items-center gap-3">
           <!-- Authenticated -->
           <template v-if="authStore.isAuthenticated">
+            <NotificationBell :class="isScrolled ? '[&>div>button]:text-[#66706C] [&>div>button]:hover:bg-[#F7F5EF]' : '[&>div>button]:text-white/80 [&>div>button]:hover:bg-white/10'" />
             <div
               class="flex items-center gap-3 border-r pr-3 mr-1"
               :class="isScrolled ? 'border-[#173B35]/15' : 'border-white/20'"
@@ -260,6 +265,10 @@ function handlePesanTiket() {
             <template v-if="!['admin', 'petugas'].includes(authStore.user?.role || '')">
               <router-link to="/my-tickets" @click="isMobileMenuOpen = false" class="flex items-center justify-between py-3 text-[#1D2724] font-semibold border-b border-[#173B35]/8">
                 Pesanan Saya
+                <ChevronRight class="w-4 h-4 text-[#66706C]" />
+              </router-link>
+              <router-link to="/my-accommodations" @click="isMobileMenuOpen = false" class="flex items-center justify-between py-3 text-[#1D2724] font-semibold border-b border-[#173B35]/8">
+                Penginapan Saya
                 <ChevronRight class="w-4 h-4 text-[#66706C]" />
               </router-link>
             </template>

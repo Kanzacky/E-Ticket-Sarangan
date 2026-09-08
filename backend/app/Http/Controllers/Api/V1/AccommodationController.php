@@ -11,16 +11,40 @@ class AccommodationController extends Controller
     /**
      * GET /api/accommodations — daftar penginapan aktif.
      */
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $accommodations = Accommodation::where('is_active', true)
-            ->orderByDesc('rating')
-            ->get();
+        $perPage = min((int) $request->input('per_page', 12), 50);
+        $sort = $request->input('sort'); // 'distance', 'rating', 'price'
+
+        $query = Accommodation::where('is_active', true);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('address', 'ilike', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        match ($sort) {
+            'distance' => $query->sortByDistance('asc'),
+            'price_asc' => $query->orderBy('price_per_night', 'asc'),
+            'price_desc' => $query->orderBy('price_per_night', 'desc'),
+            default => $query->orderByDesc('rating'),
+        };
+
+        $paginated = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar penginapan berhasil dimuat.',
-            'data' => $accommodations,
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
         ]);
     }
 

@@ -11,6 +11,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
 import { createOrderApi, getTicketTypesApi } from '@/services/order.service'
@@ -20,6 +21,7 @@ import { formatCurrency, formatDate } from '@/utils/formatters'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 // State
 const isLoadingTickets = ref(true)
@@ -122,9 +124,9 @@ async function handleConfirmBooking() {
   errorMessage.value = ''
   if (!isFormValid.value) {
     if (totalQuantity.value === 0) {
-      errorMessage.value = 'Silakan pilih minimal 1 tiket terlebih dahulu.'
+      errorMessage.value = t('booking.choose_min_one')
     } else {
-      errorMessage.value = 'Mohon lengkapi seluruh data kunjungan dan data pemesan.'
+      errorMessage.value = t('booking.complete_data')
     }
     return
   }
@@ -226,12 +228,12 @@ async function handleConfirmBooking() {
           <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center gap-2 mb-4">
               <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">1</span>
-              <h2 class="text-lg font-semibold text-[var(--color-primary)]">Pilih Tanggal Kunjungan</h2>
+              <h2 class="text-lg font-semibold text-[var(--color-primary)]">{{ t('booking.step1') }}</h2>
             </div>
 
             <div>
               <label for="visit_date" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                Tanggal Rencana Kedatangan
+                {{ t('booking.visit_date') }}
               </label>
               <div class="relative">
                 <input
@@ -244,19 +246,19 @@ async function handleConfirmBooking() {
                 />
               </div>
               <p class="mt-2 flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
-                <Info class="h-3.5 w-3.5 text-[var(--color-primary)]" /> Tiket berlaku pada tanggal yang dipilih.
+                <Info class="h-3.5 w-3.5 text-[var(--color-primary)]" /> {{ t('booking.ticket_valid_on') }}
               </p>
             </div>
           </div>
 
-          <!-- Step 2: Pilih Jenis Tiket -->
+          <!-- Step 2: {{ t('booking.step2') }} -->
           <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
                 <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">2</span>
-                <h2 class="text-lg font-semibold text-[var(--color-primary)]">Pilih Jenis Tiket</h2>
+                <h2 class="text-lg font-semibold text-[var(--color-primary)]">{{ t('booking.step2') }}</h2>
               </div>
-              <span class="text-xs font-medium text-[var(--color-text-secondary)]">Harga resmi Perda</span>
+              <span class="text-xs font-medium text-[var(--color-text-secondary)]">{{ t('booking.official_price') }}</span>
             </div>
 
             <!-- Loading State -->
@@ -319,13 +321,13 @@ async function handleConfirmBooking() {
           <div class="rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <div class="flex items-center gap-2 mb-4">
               <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">3</span>
-              <h2 class="text-lg font-semibold text-[var(--color-primary)]">Data Pemesan / Penanggung Jawab</h2>
+              <h2 class="text-lg font-semibold text-[var(--color-primary)]">{{ t('booking.step3') }}</h2>
             </div>
 
             <div class="space-y-4">
               <div>
                 <label for="name" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                  Nama Lengkap Pemesan <span class="text-red-500">*</span>
+                  {{ t('booking.customer_name') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   id="name"
@@ -340,7 +342,7 @@ async function handleConfirmBooking() {
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label for="email" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                    Alamat Email <span class="text-red-500">*</span>
+                    {{ t('booking.customer_email') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     id="email"
@@ -354,7 +356,7 @@ async function handleConfirmBooking() {
 
                 <div>
                   <label for="phone" class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                    No. Handphone / WhatsApp <span class="text-red-500">*</span>
+                    {{ t('booking.customer_phone') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     id="phone"
@@ -374,7 +376,7 @@ async function handleConfirmBooking() {
         <div class="lg:col-span-5">
           <div class="sticky top-28 rounded-[12px] border border-[var(--color-border)] bg-white p-6">
             <h2 class="text-lg font-bold text-[var(--color-primary)] pb-3 border-b border-[var(--color-border)]">
-              Ringkasan Pesanan
+              {{ t('booking.summary') }}
             </h2>
 
             <div class="mt-4 space-y-3">
@@ -389,7 +391,7 @@ async function handleConfirmBooking() {
 
               <!-- Items Breakdown -->
               <div v-if="selectedItems.length === 0" class="py-6 text-center text-xs text-[var(--color-text-secondary)]">
-                Belum ada tiket yang dipilih
+                {{ t('booking.choose_min_one') }}
               </div>
 
               <div v-else class="space-y-2.5">
@@ -417,7 +419,7 @@ async function handleConfirmBooking() {
               </div>
 
               <div class="flex items-baseline justify-between pt-1">
-                <span class="text-base font-bold text-[var(--color-text-primary)]">Total Biaya</span>
+                <span class="text-base font-bold text-[var(--color-text-primary)]">{{ t('booking.total') }}</span>
                 <span class="text-2xl font-extrabold text-[var(--color-primary)]">{{ formatCurrency(totalAmount) }}</span>
               </div>
             </div>
@@ -430,12 +432,12 @@ async function handleConfirmBooking() {
               @click="handleConfirmBooking"
             >
               <LoaderCircle v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-              <span v-else>Langsung ke Pembayaran</span>
+              <span v-else>{{ t('booking.to_payment') }}</span>
               <ChevronRight v-if="!isSubmitting" class="h-4 w-4" />
             </button>
 
             <p class="mt-3 text-center text-xs text-[var(--color-text-secondary)]">
-              Anda akan diarahkan ke halaman pembayaran aman (Xendit).
+              {{ t('booking.you_will_redirect') }}
             </p>
           </div>
         </div>

@@ -22,6 +22,24 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true, guest: true },
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/auth/ForgotPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
+    path: '/reset-password/:token',
+    name: 'reset-password-token',
+    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    meta: { public: true, guest: true },
+  },
+  {
     path: '/booking/success/:orderCode',
     name: 'booking.success',
     component: () => import('@/views/booking/BookingSuccessView.vue'),
@@ -67,6 +85,11 @@ const routes: RouteRecordRaw[] = [
         path: '/accommodations/:id',
         name: 'wisatawan.accommodation-detail',
         component: () => import('@/views/wisatawan/AccommodationDetailView.vue'),
+      },
+      {
+        path: '/my-accommodations',
+        name: 'wisatawan.accommodation-bookings',
+        component: () => import('@/views/wisatawan/MyAccommodationBookingsView.vue'),
       },
     ],
   },
@@ -166,11 +189,6 @@ const routes: RouteRecordRaw[] = [
         path: 'checkins',
         name: 'admin.checkins',
         component: () => import('@/views/admin/CheckinsView.vue'),
-      },
-      {
-        path: 'upgrades',
-        name: 'admin.upgrades',
-        component: () => import('@/views/admin/UpgradesView.vue'),
       },
       {
         path: 'analytics',

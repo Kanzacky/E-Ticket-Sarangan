@@ -113,6 +113,9 @@ async function handleSubmit() {
                 <Eye v-else class="w-4 h-4" />
               </button>
             </div>
+            <div class="flex justify-end">
+              <router-link to="/forgot-password" class="text-xs font-bold text-[var(--color-primary)] hover:underline">Lupa password?</router-link>
+            </div>
           </div>
 
           <div class="pt-2">

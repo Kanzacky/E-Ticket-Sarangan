@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Accommodation extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
@@ -19,6 +22,10 @@ class Accommodation extends Model
         'rating',
         'facilities',
         'is_active',
+        'google_place_id',
+        'latitude',
+        'longitude',
+        'source',
     ];
 
     protected function casts(): array
@@ -30,11 +37,24 @@ class Accommodation extends Model
             'rating' => 'decimal:1',
             'facilities' => 'array',
             'is_active' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+            'distance_km' => 'decimal:3',
         ];
     }
 
     public function bookings(): HasMany
     {
         return $this->hasMany(AccommodationBooking::class);
+    }
+
+    public function getDistanceKmAttribute(): ?float
+    {
+        return $this->attributes['distance_km'] ?? null;
+    }
+
+    public function scopeSortByDistance($query, string $direction = 'asc')
+    {
+        return $query->orderBy('distance_km', $direction);
     }
 }

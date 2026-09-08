@@ -1,6 +1,13 @@
 import type { ApiResponse } from './api'
 import api from './api'
 
+export interface PaginatedMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+}
+
 export interface Accommodation {
   id: number
   name: string
@@ -14,6 +21,11 @@ export interface Accommodation {
   rating: number
   facilities: string[] | null
   is_active: boolean
+  google_place_id?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  distance_km?: number | null
+  source?: string | null
 }
 
 export interface AccommodationBooking {
@@ -28,7 +40,10 @@ export interface AccommodationBooking {
   total_price: number
   guest_name: string
   guest_phone: string
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'paid' | 'expired'
+  payment_id?: string | null
+  payment_url?: string | null
+  payment_expires_at?: string | null
   notes: string | null
   created_at: string
   accommodation?: Accommodation
@@ -45,9 +60,9 @@ export interface CreateAccommodationBookingPayload {
   notes?: string
 }
 
-export async function getAccommodationsApi(): Promise<Accommodation[]> {
-  const res = await api.get<ApiResponse<Accommodation[]>>('/accommodations')
-  return res.data.data
+export async function getAccommodationsApi(params?: { page?: number; per_page?: number; search?: string; sort?: string }): Promise<{ data: Accommodation[]; meta: PaginatedMeta }> {
+  const res = await api.get<ApiResponse<Accommodation[]>>('/accommodations', { params })
+  return { data: res.data.data, meta: res.data.meta as unknown as PaginatedMeta }
 }
 
 export async function getAccommodationApi(id: number): Promise<Accommodation> {
@@ -55,9 +70,9 @@ export async function getAccommodationApi(id: number): Promise<Accommodation> {
   return res.data.data
 }
 
-export async function getMyAccommodationBookingsApi(): Promise<AccommodationBooking[]> {
-  const res = await api.get<ApiResponse<AccommodationBooking[]>>('/accommodation-bookings')
-  return res.data.data
+export async function getMyAccommodationBookingsApi(params?: { page?: number; per_page?: number; search?: string; status?: string }): Promise<{ data: AccommodationBooking[]; meta: PaginatedMeta }> {
+  const res = await api.get<ApiResponse<AccommodationBooking[]>>('/accommodation-bookings', { params })
+  return { data: res.data.data, meta: res.data.meta as unknown as PaginatedMeta }
 }
 
 export async function createAccommodationBookingApi(
