@@ -12,7 +12,7 @@ RUN composer install --no-dev --no-interaction --no-progress --prefer-dist \
 # ─────────────────────────────────────────────────────────────
 # Stage 2: Runtime — FrankenPHP (Caddy + PHP) on Vercel Container
 # ─────────────────────────────────────────────────────────────
-FROM dunglas/frankenphp:1-php8.4-alpine
+FROM dunglas/frankenphp:1-php8.3-alpine
 WORKDIR /app
 
 # PostgreSQL extension (Supabase) + required Laravel extensions.
