@@ -37,16 +37,8 @@ class AuthController extends Controller
         $credentials = $request->validated();
 
         $user = User::where('email', $credentials['email'])->first();
-        $passwordVerified = $user ? Hash::check($credentials['password'], $user->password) : false;
 
-        // TEMPORARY diagnostic log — jangan pernah menampilkan password/hash.
-        Log::info('[Auth] login attempt', [
-            'email' => $credentials['email'],
-            'user_found' => $user !== null,
-            'password_verified' => $passwordVerified,
-        ]);
-
-        if (! $user || ! $passwordVerified) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return ApiResponse::error('Kredensial tidak valid', 401);
         }
 

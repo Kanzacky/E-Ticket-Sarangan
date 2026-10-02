@@ -29,8 +29,5 @@ if [ "${AUTO_MIGRATE:-true}" = "true" ]; then
     php artisan migrate --force --isolated
 fi
 
-# ── 5. Production optimizations (config/route/view/event cache) ─────────
-php artisan optimize || echo "[entrypoint] WARN: optimize gagal, lanjut tanpa cache" >&2
-
-# ── 6. Run FrankenPHP on $PORT ──────────────────────────────────────────
+# ── 5. Run FrankenPHP on $PORT ──────────────────────────────────────────
 exec "$@"
