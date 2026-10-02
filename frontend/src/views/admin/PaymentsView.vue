@@ -169,7 +169,9 @@ const formatDate = (dateStr: string | null) => {
           <span class="text-sm text-[#66706C]">{{ formatDate(payment.paid_at || payment.created_at) }}</span>
         </td>
       </tr>
-    </DataTable>
-    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
   </div>
 </template>

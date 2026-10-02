@@ -1,34 +1,57 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Search } from 'lucide-vue-next'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const users = ref<any[]>([])
 const isLoading = ref(true)
 const searchQuery = ref('')
 
-onMounted(async () => {
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
+
+const fetchUsers = async () => {
   try {
     isLoading.value = true
-    const response = await api.get('/petugas/users')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+
+    const response = await api.get(`/petugas/users?${params.toString()}`)
     if (response.data.success) {
-      users.value = response.data.data
+      if (response.data.meta) {
+        users.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        users.value = response.data.data
+        total.value = users.value.length
+        lastPage.value = 1
+      }
     }
   } catch (error) {
     console.error('Gagal mengambil data wisatawan', error)
   } finally {
     isLoading.value = false
   }
-})
+}
 
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value
-  const q = searchQuery.value.toLowerCase()
-  return users.value.filter(u => 
-    u.name.toLowerCase().includes(q) || 
-    u.email.toLowerCase().includes(q)
-  )
+onMounted(() => fetchUsers())
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  fetchUsers()
+}
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+  fetchUsers()
 })
 
 const formatDate = (dateString: string) => {
@@ -68,10 +91,10 @@ const formatDate = (dateString: string) => {
       <DataTable
         :headers="['Nama', 'Email', 'No. Telepon', 'Terdaftar']"
         :is-loading="isLoading"
-        :is-empty="filteredUsers.length === 0"
+        :is-empty="users.length === 0"
         empty-message="Tidak ada data wisatawan."
       >
-        <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-[#F7F5EF]/50 transition-colors border-b border-[#E8E6DE] last:border-0">
+        <tr v-for="user in users" :key="user.id" class="hover:bg-[#F7F5EF]/50 transition-colors border-b border-[#E8E6DE] last:border-0">
           <td class="px-6 py-4 whitespace-nowrap">
             <span class="text-sm font-bold text-[#1D2724]">{{ user.name }}</span>
           </td>
@@ -85,6 +108,9 @@ const formatDate = (dateString: string) => {
             <span class="text-sm font-medium text-[#66706C]">{{ formatDate(user.created_at) }}</span>
           </td>
         </tr>
+        <template #pagination>
+          <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+        </template>
       </DataTable>
     </div>
   </div>

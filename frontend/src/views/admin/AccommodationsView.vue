@@ -286,8 +286,10 @@ const deleteAccommodation = async (id: number) => {
           </div>
         </td>
       </tr>
-    </DataTable>
-    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
 
     <!-- Modal Form (Drawer approach) -->
     <div v-if="isFormOpen" class="fixed inset-0 z-50 overflow-hidden">

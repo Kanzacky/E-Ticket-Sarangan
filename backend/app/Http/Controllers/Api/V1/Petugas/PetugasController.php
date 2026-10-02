@@ -53,42 +53,54 @@ class PetugasController extends Controller
         ]);
     }
 
-    public function visits(): JsonResponse
+    public function visits(\Illuminate\Http\Request $request): JsonResponse
     {
         $today = Carbon::today();
-        $visits = Order::with('user:id,name,email')
+        $query = Order::with('user:id,name,email')
             ->whereDate('visit_date', $today)
             ->whereIn('status', ['PAID', 'COMPLETED'])
-            ->latest()
-            ->get();
+            ->latest();
+
+        if ($perPage = $request->query('per_page')) {
+            $p = $query->paginate((int)$perPage);
+            return response()->json(['success'=>true,'data'=>$p->items(),'meta'=>['current_page'=>$p->currentPage(),'last_page'=>$p->lastPage(),'per_page'=>$p->perPage(),'total'=>$p->total()]]);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $visits,
+            'data' => $query->get(),
         ]);
     }
 
-    public function bookings(): JsonResponse
+    public function bookings(\Illuminate\Http\Request $request): JsonResponse
     {
-        $bookings = Order::with(['user:id,name,email,phone', 'items.ticketType'])
-            ->latest()
-            ->get();
+        $query = Order::with(['user:id,name,email,phone', 'items.ticketType'])
+            ->latest();
+
+        if ($perPage = $request->query('per_page')) {
+            $p = $query->paginate((int)$perPage);
+            return response()->json(['success'=>true,'data'=>$p->items(),'meta'=>['current_page'=>$p->currentPage(),'last_page'=>$p->lastPage(),'per_page'=>$p->perPage(),'total'=>$p->total()]]);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $bookings,
+            'data' => $query->get(),
         ]);
     }
 
-    public function users(): JsonResponse
+    public function users(\Illuminate\Http\Request $request): JsonResponse
     {
-        $users = \App\Models\User::where('role', 'wisatawan')
-            ->latest()
-            ->get(['id', 'name', 'email', 'phone', 'created_at']);
+        $query = \App\Models\User::where('role', 'wisatawan')
+            ->latest();
+
+        if ($perPage = $request->query('per_page')) {
+            $p = $query->paginate((int)$perPage);
+            return response()->json(['success'=>true,'data'=>$p->items(),'meta'=>['current_page'=>$p->currentPage(),'last_page'=>$p->lastPage(),'per_page'=>$p->perPage(),'total'=>$p->total()]]);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $users,
+            'data' => $query->get(['id', 'name', 'email', 'phone', 'created_at']),
         ]);
     }
 }

@@ -1,45 +1,62 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Search } from 'lucide-vue-next'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const bookings = ref<any[]>([])
 const isLoading = ref(true)
 const searchQuery = ref('')
 const filterStatus = ref('all')
 
-onMounted(async () => {
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
+
+const fetchBookings = async () => {
   try {
     isLoading.value = true
-    const response = await api.get('/petugas/bookings')
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+
+    const response = await api.get(`/petugas/bookings?${params.toString()}`)
     if (response.data.success) {
-      bookings.value = response.data.data
+      if (response.data.meta) {
+        bookings.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        bookings.value = response.data.data
+        total.value = bookings.value.length
+        lastPage.value = 1
+      }
     }
   } catch (error) {
     console.error('Gagal mengambil data booking', error)
   } finally {
     isLoading.value = false
   }
+}
+
+onMounted(() => {
+  fetchBookings()
 })
 
-const filteredBookings = computed(() => {
-  let result = bookings.value
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  fetchBookings()
+}
 
-  if (filterStatus.value !== 'all') {
-    result = result.filter(b => b.status === filterStatus.value)
-  }
-
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase()
-    result = result.filter(b => 
-      b.order_code.toLowerCase().includes(q) || 
-      (b.user?.name || '').toLowerCase().includes(q)
-    )
-  }
-
-  return result
+watch([searchQuery, filterStatus], () => {
+  currentPage.value = 1
+  fetchBookings()
 })
 
 const formatDate = (dateString: string) => {
@@ -111,10 +128,10 @@ const formatStatusText = (status: string) => {
       <DataTable
         :headers="['Kode', 'Wisatawan', 'Tanggal Kunjungan', 'Status', 'Aksi']"
         :is-loading="isLoading"
-        :is-empty="filteredBookings.length === 0"
+        :is-empty="bookings.length === 0"
         empty-message="Tidak ada data booking."
       >
-        <tr v-for="booking in filteredBookings" :key="booking.id" class="hover:bg-[#F7F5EF]/50 transition-colors border-b border-[#E8E6DE] last:border-0">
+        <tr v-for="booking in bookings" :key="booking.id" class="hover:bg-[#F7F5EF]/50 transition-colors border-b border-[#E8E6DE] last:border-0">
           <td class="px-6 py-4 whitespace-nowrap">
             <span class="text-sm font-bold text-[#1D2724]">#{{ booking.order_code }}</span>
           </td>
@@ -136,6 +153,9 @@ const formatStatusText = (status: string) => {
             </router-link>
           </td>
         </tr>
+        <template #pagination>
+          <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+        </template>
       </DataTable>
     </div>
   </div>

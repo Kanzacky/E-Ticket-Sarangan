@@ -85,7 +85,9 @@ const formatDate = (s: string) => new Date(s).toLocaleString('id-ID')
         <td class="px-6 py-3 text-xs">{{ log.model_type || '-' }} <span v-if="log.model_id">#{{ log.model_id }}</span></td>
         <td class="px-6 py-3 text-xs">{{ log.ip_address || '-' }}</td>
       </tr>
-    </DataTable>
-    <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
   </div>
 </template>
