@@ -277,10 +277,16 @@ async function handleConfirmBooking() {
               <span class="text-xs font-medium text-[var(--color-text-secondary)]">{{ t('booking.official_price') }}</span>
             </div>
 
-            <!-- Loading State -->
-            <div v-if="isLoadingTickets" class="py-12 text-center text-[var(--color-text-secondary)]">
-              <LoaderCircle class="mx-auto h-8 w-8 animate-spin text-[var(--color-primary)]" />
-              <p class="mt-2 text-sm">Memuat tarif tiket...</p>
+            <!-- Loading State (Skeleton) -->
+            <div v-if="isLoadingTickets" class="space-y-4">
+              <div v-for="i in 3" :key="i" class="animate-pulse bg-[#F7F5EF] border border-[#E8E6DE] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-2 flex-1">
+                  <div class="h-5 bg-[#E8E6DE] rounded w-1/3"></div>
+                  <div class="h-4 bg-[#E8E6DE] rounded w-2/3"></div>
+                  <div class="h-6 bg-[#E8E6DE] rounded w-1/4 mt-2"></div>
+                </div>
+                <div class="h-10 bg-[#E8E6DE] rounded-xl w-32 shrink-0"></div>
+              </div>
             </div>
 
             <!-- Ticket List -->

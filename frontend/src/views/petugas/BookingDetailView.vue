@@ -39,10 +39,21 @@ const getStatusTone = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'paid': return 'info'
     case 'completed': return 'success'
-    case 'pending': return 'warning'
-    case 'cancelled': return 'danger'
     case 'failed': return 'danger'
+    case 'cancelled': return 'danger'
+    case 'pending': return 'warning'
     default: return 'neutral'
+  }
+}
+
+const formatStatusText = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'paid': return 'Lunas (Belum Scan)'
+    case 'completed': return 'Selesai (Sudah Scan)'
+    case 'failed': return 'Gagal'
+    case 'cancelled': return 'Dibatalkan'
+    case 'pending': return 'Menunggu Pembayaran'
+    default: return status
   }
 }
 </script>
@@ -59,10 +70,13 @@ const getStatusTone = (status: string) => {
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="bg-white rounded-2xl p-6 border border-[#E8E6DE] text-center py-12">
-      <div class="animate-spin rounded-full h-10 w-10 border-4 border-[#173B35]/20 border-t-[#173B35] mx-auto mb-4"></div>
-      <p class="text-[#66706C] font-medium">Memuat detail...</p>
+    <!-- Loading State (Skeleton) -->
+    <div v-if="isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="h-48 bg-white rounded-2xl border border-[#E8E6DE]"></div>
+        <div class="h-64 bg-white rounded-2xl border border-[#E8E6DE]"></div>
+      </div>
+      <div class="h-80 bg-white rounded-2xl border border-[#E8E6DE]"></div>
     </div>
 
     <!-- Content -->
@@ -124,7 +138,7 @@ const getStatusTone = (status: string) => {
         <div class="bg-white rounded-2xl border border-[#E8E6DE] p-6 text-center">
           <p class="text-xs font-bold text-[#66706C] mb-3 uppercase tracking-wider">Status Kunjungan</p>
           <StatusBadge :tone="getStatusTone(booking.status)" class="text-sm py-1.5 px-4">
-            <span class="capitalize">{{ booking.status === 'COMPLETED' ? 'Sudah Masuk' : booking.status }}</span>
+            <span class="capitalize font-bold">{{ formatStatusText(booking.status) }}</span>
           </StatusBadge>
           
           <div class="mt-6 pt-6 border-t border-[#E8E6DE]">

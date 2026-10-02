@@ -26,18 +26,14 @@ const props = defineProps<{
         </thead>
         
         <tbody class="divide-y divide-[#E8E6DE]">
-          <!-- Loading State -->
-          <tr v-if="isLoading">
-            <td :colspan="headers.length" class="px-6 py-12 text-center text-[#66706C]">
-              <div class="flex items-center justify-center gap-2">
-                <svg class="animate-spin h-5 w-5 text-[#173B35]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="text-sm font-medium">Memuat data...</span>
-              </div>
-            </td>
-          </tr>
+          <!-- Loading State (Skeleton) -->
+          <template v-if="isLoading">
+            <tr v-for="i in 5" :key="i" class="animate-pulse border-b border-[#E8E6DE] last:border-0">
+              <td v-for="(_, index) in headers" :key="index" class="px-6 py-5">
+                <div class="h-4 bg-[#E8E6DE] rounded-md w-full max-w-[80%]"></div>
+              </td>
+            </tr>
+          </template>
 
           <!-- Empty State -->
           <tr v-else-if="isEmpty">

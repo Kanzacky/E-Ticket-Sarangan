@@ -15,12 +15,23 @@ const formatDate = (dateString: string) => {
 
 const getStatusTone = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed': return 'success'
     case 'paid': return 'info'
+    case 'completed': return 'success'
     case 'failed': return 'danger'
     case 'cancelled': return 'danger'
     case 'pending': return 'warning'
     default: return 'neutral'
+  }
+}
+
+const formatStatusText = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid': return 'Lunas (Belum Scan)'
+    case 'completed': return 'Selesai (Sudah Scan)'
+    case 'failed': return 'Gagal'
+    case 'cancelled': return 'Dibatalkan'
+    case 'pending': return 'Menunggu Pembayaran'
+    default: return status
   }
 }
 </script>
@@ -52,6 +63,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Kunjungan Hari Ini"
         :value="summary.kunjungan_hari_ini"
+        :is-loading="isLoading"
       >
         <template #icon>
           <Users class="w-6 h-6" />
@@ -61,6 +73,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Diverifikasi"
         :value="summary.diverifikasi"
+        :is-loading="isLoading"
       >
         <template #icon>
           <CheckCircle class="w-6 h-6 text-emerald-600" />
@@ -70,6 +83,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Menunggu"
         :value="summary.menunggu"
+        :is-loading="isLoading"
       >
         <template #icon>
           <Clock class="w-6 h-6 text-amber-500" />
@@ -79,6 +93,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Tiket Bermasalah"
         :value="summary.bermasalah"
+        :is-loading="isLoading"
       >
         <template #icon>
           <AlertTriangle class="w-6 h-6 text-red-500" />
@@ -113,7 +128,7 @@ const getStatusTone = (status: string) => {
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <StatusBadge :tone="getStatusTone(visit.status)">
-              <span class="capitalize">{{ visit.status === 'COMPLETED' ? 'Sudah Masuk' : visit.status }}</span>
+              <span class="capitalize font-bold">{{ formatStatusText(visit.status) }}</span>
             </StatusBadge>
           </td>
         </tr>

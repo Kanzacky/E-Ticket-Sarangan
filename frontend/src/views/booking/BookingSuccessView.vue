@@ -6,7 +6,6 @@ import {
   CreditCard,
   FileText,
   Home,
-  LoaderCircle,
   Ticket,
   QrCode,
   ExternalLink,
@@ -65,10 +64,12 @@ function copyOrderCode() {
 <template>
   <main class="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4 py-12">
     <div class="w-full max-w-lg">
-      <!-- Loading State -->
-      <div v-if="isLoading" class="rounded-[12px] border border-[var(--color-border)] bg-white p-12 text-center">
-        <LoaderCircle class="mx-auto h-10 w-10 animate-spin text-[var(--color-primary)]" />
-        <p class="mt-4 text-sm text-[var(--color-text-secondary)] font-medium">Memuat data booking...</p>
+      <!-- Loading State (Skeleton) -->
+      <div v-if="isLoading" class="rounded-[12px] border border-[var(--color-border)] bg-white p-8 animate-pulse space-y-6">
+        <div class="h-16 w-16 bg-[#E8E6DE] rounded-full mx-auto"></div>
+        <div class="h-6 bg-[#E8E6DE] rounded w-1/2 mx-auto"></div>
+        <div class="h-4 bg-[#E8E6DE] rounded w-3/4 mx-auto"></div>
+        <div class="h-40 bg-[#E8E6DE] rounded-xl w-full mt-6"></div>
       </div>
 
       <!-- Error State -->

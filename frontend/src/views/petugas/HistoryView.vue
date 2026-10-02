@@ -55,11 +55,17 @@ const filteredLogs = computed(() => {
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="py-12 text-center bg-white rounded-2xl border border-[#E8E6DE]">
-      <div class="animate-pulse flex flex-col items-center">
-        <div class="h-10 w-10 bg-[#E8E6DE] rounded-full mb-4"></div>
-        <div class="h-4 w-32 bg-[#E8E6DE] rounded"></div>
+    <!-- Loading State (Skeleton) -->
+    <div v-if="isLoading" class="space-y-4">
+      <div v-for="i in 3" :key="i" class="rounded-2xl border border-[#E8E6DE] bg-white p-5 sm:p-6 animate-pulse flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 bg-[#E8E6DE] rounded-xl shrink-0"></div>
+          <div class="space-y-2">
+            <div class="h-5 w-32 bg-[#E8E6DE] rounded"></div>
+            <div class="h-4 w-24 bg-[#E8E6DE] rounded"></div>
+          </div>
+        </div>
+        <div class="h-8 w-24 bg-[#E8E6DE] rounded shrink-0"></div>
       </div>
     </div>
 

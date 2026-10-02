@@ -4,7 +4,6 @@ import {
   Calendar,
   Clock,
   Eye,
-  LoaderCircle,
   Plus,
   Search,
   Ticket,
@@ -199,9 +198,7 @@ function closeDetail() {
       <!-- ======================================================= -->
       <!-- LOADING STATE                                           -->
       <!-- ======================================================= -->
-      <div v-if="isLoading" class="py-16 flex flex-col items-center gap-3 text-[#66706C]">
-        <LoaderCircle class="h-8 w-8 animate-spin text-[#173B35]" />
-        <p class="text-sm font-medium">Memuat pesanan...</p>
+      <div v-if="isLoading" class="py-6 flex flex-col items-center gap-3 text-[#66706C]">
         <!-- Skeleton cards -->
         <div class="w-full px-6 space-y-4 mt-2">
           <div v-for="i in 3" :key="i" class="rounded-xl border border-[#173B35]/10 p-4 flex gap-4 animate-pulse">

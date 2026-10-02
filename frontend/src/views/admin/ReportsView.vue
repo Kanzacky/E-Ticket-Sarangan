@@ -158,9 +158,13 @@ const formatDate = (dateStr: string) => {
               </tr>
             </thead>
             <tbody class="divide-y divide-[#E8E6DE]">
-              <tr v-if="isLoading">
-                <td colspan="3" class="px-6 py-8 text-center text-sm text-[#66706C]">Memuat data...</td>
-              </tr>
+              <template v-if="isLoading">
+                <tr v-for="i in 5" :key="i" class="animate-pulse">
+                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-24"></div></td>
+                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-32 ml-auto"></div></td>
+                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-16 ml-auto"></div></td>
+                </tr>
+              </template>
               <tr v-else-if="trend.length === 0">
                 <td colspan="3" class="px-6 py-8 text-center text-sm text-[#66706C]">Tidak ada transaksi pada periode ini.</td>
               </tr>
@@ -183,7 +187,15 @@ const formatDate = (dateStr: string) => {
           </h3>
         </div>
         <div class="p-6 flex-1">
-          <div v-if="isLoading" class="text-center text-sm text-[#66706C] py-4">Memuat data...</div>
+          <div v-if="isLoading" class="space-y-4">
+            <div v-for="i in 5" :key="i" class="animate-pulse flex items-center justify-between">
+              <div class="flex items-center gap-3 w-full">
+                <div class="w-8 h-8 rounded-full bg-[#E8E6DE] shrink-0"></div>
+                <div class="h-4 bg-[#E8E6DE] rounded w-3/4"></div>
+              </div>
+              <div class="h-4 bg-[#E8E6DE] rounded w-8 shrink-0 ml-4"></div>
+            </div>
+          </div>
           <div v-else-if="topTickets.length === 0" class="text-center text-sm text-[#66706C] py-4">Belum ada data penjualan tiket.</div>
           <div v-else class="space-y-4">
             <div v-for="(ticket, idx) in topTickets" :key="idx" class="flex items-center justify-between">

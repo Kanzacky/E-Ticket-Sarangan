@@ -76,7 +76,9 @@ const saveSettings = async () => {
     </div>
 
     <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">{{ error }}</div>
-    <div v-if="isLoading" class="p-8 text-center text-sm text-[#66706C]">Memuat pengaturan...</div>
+    <div v-if="isLoading" class="space-y-6">
+      <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-[#E8E6DE] h-48 animate-pulse"></div>
+    </div>
 
     <form v-else @submit.prevent="saveSettings" class="space-y-6">
       

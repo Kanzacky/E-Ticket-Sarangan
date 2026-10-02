@@ -64,7 +64,14 @@ watch(() => authStore.isAuthenticated, (v) => {
       </div>
 
       <div class="max-h-96 overflow-y-auto">
-        <div v-if="notificationStore.isLoading" class="p-6 text-center text-sm text-[#66706C]">Memuat...</div>
+        <div v-if="notificationStore.isLoading" class="p-4 space-y-3">
+          <div v-for="i in 3" :key="i" class="animate-pulse flex gap-3">
+            <div class="flex-1 space-y-2 py-1">
+              <div class="h-4 bg-[#E8E6DE] rounded w-3/4"></div>
+              <div class="h-3 bg-[#E8E6DE] rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
         <div v-else-if="notificationStore.notifications.length === 0" class="p-8 text-center">
           <p class="text-sm text-[#66706C]">Tidak ada notifikasi</p>
         </div>

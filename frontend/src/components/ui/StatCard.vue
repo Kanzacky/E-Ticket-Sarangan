@@ -7,6 +7,7 @@ const props = defineProps<{
     value: number
     label: string
   }
+  isLoading?: boolean
 }>()
 </script>
 
@@ -16,7 +17,11 @@ const props = defineProps<{
       <div class="w-12 h-12 rounded-full bg-[#F7F5EF] flex items-center justify-center text-[#173B35]">
         <slot name="icon"></slot>
       </div>
-      <div>
+      <div v-if="isLoading" class="flex-1 space-y-2 animate-pulse">
+        <div class="h-3 w-1/2 bg-[#E8E6DE] rounded"></div>
+        <div class="h-6 w-3/4 bg-[#E8E6DE] rounded"></div>
+      </div>
+      <div v-else>
         <p class="text-xs font-bold text-[#66706C] uppercase tracking-wider mb-1">{{ title }}</p>
         <p class="text-2xl font-black text-[#1D2724] leading-none">{{ value }}</p>
         

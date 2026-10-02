@@ -71,11 +71,23 @@ const filteredOrders = computed(() => orders.value)
 
 const getStatusTone = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'paid': return 'success'
+    case 'paid': return 'info'
+    case 'completed': return 'success'
     case 'failed': return 'danger'
     case 'cancelled': return 'danger'
-    case 'pending': return 'info'
+    case 'pending': return 'warning'
     default: return 'neutral'
+  }
+}
+
+const formatStatusText = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid': return 'Lunas (Belum Scan)'
+    case 'completed': return 'Selesai (Sudah Scan)'
+    case 'failed': return 'Gagal'
+    case 'cancelled': return 'Dibatalkan'
+    case 'pending': return 'Menunggu Pembayaran'
+    default: return status
   }
 }
 
@@ -147,7 +159,8 @@ const updateStatus = async (newStatus: string) => {
             >
               <option value="all">Semua Status</option>
               <option value="pending">Pending</option>
-              <option value="paid">Lunas</option>
+              <option value="paid">Lunas (Belum Scan)</option>
+              <option value="completed">Selesai (Sudah Scan)</option>
               <option value="failed">Gagal</option>
               <option value="cancelled">Dibatalkan</option>
             </select>
@@ -171,7 +184,7 @@ const updateStatus = async (newStatus: string) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           <StatusBadge :tone="getStatusTone(order.status)">
-            <span class="capitalize">{{ order.status }}</span>
+            <span class="capitalize font-bold">{{ formatStatusText(order.status) }}</span>
           </StatusBadge>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -209,7 +222,7 @@ const updateStatus = async (newStatus: string) => {
             <div>
               <p class="text-xs font-bold text-[#66706C] uppercase tracking-wider mb-1">Status</p>
               <StatusBadge :tone="getStatusTone(selectedOrder.status)">
-                <span class="capitalize font-bold">{{ selectedOrder.status }}</span>
+                <span class="capitalize font-bold">{{ formatStatusText(selectedOrder.status) }}</span>
               </StatusBadge>
             </div>
             <div class="text-right">
@@ -253,20 +266,14 @@ const updateStatus = async (newStatus: string) => {
           </div>
           
           <!-- Actions -->
-          <div v-if="selectedOrder.status !== 'paid' && selectedOrder.status !== 'cancelled'" class="pt-4 border-t border-[#E8E6DE]">
+          <div v-if="selectedOrder.status === 'pending'" class="pt-4 border-t border-[#E8E6DE]">
             <p class="text-xs font-bold text-[#1D2724] uppercase tracking-wider mb-3">Tindakan Khusus</p>
             <div class="flex gap-3">
-              <button 
-                @click="updateStatus('paid')"
-                class="flex-1 px-4 py-2 text-sm font-bold text-white bg-[#173B35] hover:bg-[#112a26] rounded-lg transition-colors"
-              >
-                Tandai Lunas
-              </button>
               <button 
                 @click="updateStatus('cancelled')"
                 class="flex-1 px-4 py-2 text-sm font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 rounded-lg transition-colors"
               >
-                Batalkan
+                Batalkan Pesanan
               </button>
             </div>
           </div>

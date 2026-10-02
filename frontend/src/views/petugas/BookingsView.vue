@@ -53,10 +53,21 @@ const getStatusTone = (status: string) => {
   switch (status.toLowerCase()) {
     case 'paid': return 'info'
     case 'completed': return 'success'
-    case 'pending': return 'warning'
-    case 'cancelled': return 'danger'
     case 'failed': return 'danger'
+    case 'cancelled': return 'danger'
+    case 'pending': return 'warning'
     default: return 'neutral'
+  }
+}
+
+const formatStatusText = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid': return 'Lunas (Belum Scan)'
+    case 'completed': return 'Selesai (Sudah Scan)'
+    case 'failed': return 'Gagal'
+    case 'cancelled': return 'Dibatalkan'
+    case 'pending': return 'Menunggu Pembayaran'
+    default: return status
   }
 }
 </script>
@@ -87,10 +98,10 @@ const getStatusTone = (status: string) => {
       <div class="flex gap-2">
         <select v-model="filterStatus" class="bg-[#F7F5EF] border border-[#E8E6DE] rounded-xl px-4 py-2 text-sm font-medium text-[#1D2724] focus:outline-none focus:ring-2 focus:ring-[#173B35] transition-all">
           <option value="all">Semua Status</option>
-          <option value="PENDING">Pending</option>
-          <option value="PAID">Paid</option>
-          <option value="COMPLETED">Selesai</option>
-          <option value="CANCELLED">Batal</option>
+          <option value="PENDING">Menunggu Pembayaran</option>
+          <option value="PAID">Lunas (Belum Scan)</option>
+          <option value="COMPLETED">Selesai (Sudah Scan)</option>
+          <option value="CANCELLED">Dibatalkan</option>
         </select>
       </div>
     </div>
@@ -115,7 +126,7 @@ const getStatusTone = (status: string) => {
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <StatusBadge :tone="getStatusTone(booking.status)">
-              <span class="capitalize">{{ booking.status }}</span>
+              <span class="capitalize font-bold">{{ formatStatusText(booking.status) }}</span>
             </StatusBadge>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { Calendar, MapPin, Users, CreditCard, Search, Building, ExternalLink, LoaderCircle } from 'lucide-vue-next'
+import { Calendar, MapPin, Users, CreditCard, Search, Building, ExternalLink } from 'lucide-vue-next'
 import { getMyAccommodationBookingsApi, type PaginatedMeta } from '@/services/accommodation.service'
 import type { AccommodationBooking } from '@/services/accommodation.service'
 import { formatCurrency } from '@/utils/formatters'
@@ -75,9 +75,15 @@ function formatDate(d: string) {
       <input v-model="searchQuery" placeholder="Cari kode / penginapan..." class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:ring-1 focus:ring-[#173B35]" />
     </div>
 
-    <div v-if="isLoading" class="py-16 flex flex-col items-center gap-3">
-      <LoaderCircle class="w-8 h-8 animate-spin text-[#173B35]" />
-      <p class="text-sm text-[#66706C]">Memuat...</p>
+    <!-- Loading State (Skeleton) -->
+    <div v-if="isLoading" class="space-y-4">
+      <div v-for="i in 3" :key="i" class="animate-pulse bg-white border border-[#E8E6DE] rounded-xl p-5 flex flex-col sm:flex-row gap-4 justify-between">
+        <div class="space-y-2 flex-1">
+          <div class="h-5 bg-[#E8E6DE] rounded w-1/4"></div>
+          <div class="h-4 bg-[#E8E6DE] rounded w-1/2"></div>
+        </div>
+        <div class="h-8 bg-[#E8E6DE] rounded w-24 shrink-0"></div>
+      </div>
     </div>
 
     <div v-else-if="error" class="p-6 bg-red-50 border border-red-200 rounded-xl text-center text-sm text-red-700">{{ error }}</div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Calendar, Ticket, Users, CreditCard, QrCode, ArrowLeft, Copy, ExternalLink, Clock, AlertCircle, LoaderCircle } from 'lucide-vue-next'
+import { Calendar, Ticket, Users, CreditCard, QrCode, ArrowLeft, Copy, ExternalLink, Clock, AlertCircle } from 'lucide-vue-next'
 import QrcodeVue from 'qrcode.vue'
 import { getOrderByCodeApi } from '@/services/order.service'
 import type { Order } from '@/types/booking.types'
@@ -57,9 +57,11 @@ function getStatusClass(status: string) {
       <ArrowLeft class="w-4 h-4" /> Kembali
     </button>
 
-    <div v-if="isLoading" class="py-16 flex flex-col items-center gap-3">
-      <LoaderCircle class="w-8 h-8 animate-spin text-[#173B35]" />
-      <p class="text-sm text-[#66706C]">Memuat detail tiket...</p>
+    <div v-if="isLoading" class="animate-pulse bg-white rounded-2xl border border-[#E8E6DE] p-6 lg:p-8 space-y-6">
+      <div class="h-8 bg-[#E8E6DE] rounded w-1/3"></div>
+      <div class="h-4 bg-[#E8E6DE] rounded w-full"></div>
+      <div class="h-4 bg-[#E8E6DE] rounded w-2/3"></div>
+      <div class="h-32 bg-[#E8E6DE] rounded-xl w-full mt-6"></div>
     </div>
 
     <div v-else-if="error" class="p-8 bg-red-50 border border-red-200 rounded-xl text-center">

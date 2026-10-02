@@ -30,11 +30,23 @@ const totalVisitors = computed(() => summary.value?.visitors || 0)
 
 const getStatusTone = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'paid': return 'success'
+    case 'paid': return 'info'
+    case 'completed': return 'success'
     case 'failed': return 'danger'
     case 'cancelled': return 'danger'
-    case 'pending': return 'info'
+    case 'pending': return 'warning'
     default: return 'neutral'
+  }
+}
+
+const formatStatusText = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid': return 'Lunas (Belum Scan)'
+    case 'completed': return 'Selesai (Sudah Scan)'
+    case 'failed': return 'Gagal'
+    case 'cancelled': return 'Dibatalkan'
+    case 'pending': return 'Menunggu Pembayaran'
+    default: return status
   }
 }
 </script>
@@ -58,6 +70,7 @@ const getStatusTone = (status: string) => {
         title="Total Pendapatan"
         :value="formatCurrency(totalRevenue)"
         :trend="{ value: 12, label: 'vs bulan lalu' }"
+        :is-loading="isLoading"
       >
         <template #icon>
           <Banknote class="w-6 h-6" />
@@ -67,6 +80,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Total Booking"
         :value="totalOrders"
+        :is-loading="isLoading"
       >
         <template #icon>
           <ShoppingCart class="w-6 h-6" />
@@ -77,6 +91,7 @@ const getStatusTone = (status: string) => {
         title="Tiket Terjual"
         :value="totalTickets"
         :trend="{ value: 5, label: 'vs kemarin' }"
+        :is-loading="isLoading"
       >
         <template #icon>
           <Ticket class="w-6 h-6" />
@@ -86,6 +101,7 @@ const getStatusTone = (status: string) => {
       <StatCard
         title="Wisatawan"
         :value="totalVisitors"
+        :is-loading="isLoading"
       >
         <template #icon>
           <Users class="w-6 h-6" />
@@ -122,7 +138,7 @@ const getStatusTone = (status: string) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <StatusBadge :tone="getStatusTone(order.status)">
-                <span class="capitalize">{{ order.status }}</span>
+                <span class="capitalize font-bold">{{ formatStatusText(order.status) }}</span>
               </StatusBadge>
             </td>
           </tr>
