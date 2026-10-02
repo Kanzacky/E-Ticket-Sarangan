@@ -74,14 +74,17 @@ const formatDate = (dateStr: string) => {
   }).format(new Date(dateStr))
 }
 
+const colorPalette = ['#173B35', '#D4A373', '#66706C', '#A3B18A', '#E8E6DE']
+
 const trendChartData = computed(() => {
   return {
     labels: trend.value.map(t => formatDate(t.date)),
     datasets: [
       {
         label: 'Pendapatan (Rp)',
-        backgroundColor: '#173B35',
+        backgroundColor: trend.value.map((_, i) => colorPalette[i % colorPalette.length]),
         borderRadius: 4,
+        maxBarThickness: 32,
         data: trend.value.map(t => t.revenue)
       }
     ]
