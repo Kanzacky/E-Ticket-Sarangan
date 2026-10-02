@@ -26,8 +26,6 @@ const perPage = ref(10)
 const total = ref(0)
 const lastPage = ref(1)
 const filterStatus = ref('all')
-const isUpdating = ref(false)
-
 const fetchPayments = async () => {
   isLoading.value = true
   error.value = ''
@@ -95,28 +93,6 @@ const formatDate = (dateStr: string | null) => {
   }).format(new Date(dateStr))
 }
 
-const updateStatus = async (id: number, newStatus: string) => {
-  if (!confirm(`Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`)) return
-  
-  isUpdating.value = true
-  try {
-    const response = await api.patch(`/admin/payments/${id}/status`, { status: newStatus })
-    if (response.data.success) {
-      const index = payments.value.findIndex(p => p.id === id)
-      if (index !== -1) {
-        const paymentToUpdate = payments.value[index]
-        if (paymentToUpdate) {
-            paymentToUpdate.status = response.data.data.status
-            paymentToUpdate.paid_at = response.data.data.paid_at
-        }
-      }
-    }
-  } catch (err: any) {
-    alert(err.response?.data?.message || 'Gagal mengubah status')
-  } finally {
-    isUpdating.value = false
-  }
-}
 </script>
 
 <template>
@@ -133,7 +109,7 @@ const updateStatus = async (id: number, newStatus: string) => {
 
     <!-- Data Table -->
     <DataTable
-      :headers="['ID Transaksi', 'Pelanggan', 'Metode', 'Nominal', 'Status', 'Waktu Bayar', 'Aksi']"
+      :headers="['ID Transaksi', 'Pelanggan', 'Metode', 'Nominal', 'Status', 'Waktu Bayar']"
       :is-loading="isLoading"
       :is-empty="filteredPayments.length === 0"
       empty-message="Belum ada transaksi pembayaran."
@@ -191,20 +167,6 @@ const updateStatus = async (id: number, newStatus: string) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           <span class="text-sm text-[#66706C]">{{ formatDate(payment.paid_at || payment.created_at) }}</span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-right">
-          <select 
-            :value="payment.status"
-            @change="updateStatus(payment.id, ($event.target as HTMLSelectElement).value)"
-            :disabled="isUpdating"
-            class="text-xs px-2 py-1.5 border border-[#E8E6DE] rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35]"
-          >
-            <option value="PENDING">Set PENDING</option>
-            <option value="PAID">Set PAID</option>
-            <option value="COMPLETED">Set COMPLETED</option>
-            <option value="FAILED">Set FAILED</option>
-            <option value="CANCELLED">Set CANCELLED</option>
-          </select>
         </td>
       </tr>
     </DataTable>
