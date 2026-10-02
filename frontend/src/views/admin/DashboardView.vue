@@ -1,10 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAdminDashboard } from '@/composables/useAdminDashboard'
-import { Banknote, ShoppingCart, Ticket, Users } from 'lucide-vue-next'
+import { Banknote, ShoppingCart, Ticket, Users, TrendingUp } from 'lucide-vue-next'
 import StatCard from '@/components/ui/StatCard.vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import api from '@/services/api'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js'
+import { Bar } from 'vue-chartjs'
+import { onMounted, ref } from 'vue'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const { isLoading, summary, recentOrders, error } = useAdminDashboard()
 
@@ -18,9 +32,51 @@ const formatCurrency = (value: number) => {
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('id-ID', {
-    day: 'numeric', month: 'short', year: 'numeric'
+    day: 'numeric', month: 'short'
   })
 }
+
+const trend = ref<any[]>([])
+const isChartLoading = ref(true)
+
+const fetchTrend = async () => {
+  try {
+    const response = await api.get('/admin/reports/summary?period=month')
+    if (response.data.success) {
+      trend.value = response.data.data.trend
+    }
+  } catch (e) {
+    console.error('Failed to load trend', e)
+  } finally {
+    isChartLoading.value = false
+  }
+}
+
+const trendChartData = computed(() => {
+  return {
+    labels: trend.value.map(t => formatDate(t.date)),
+    datasets: [
+      {
+        label: 'Pendapatan (Rp)',
+        backgroundColor: '#173B35',
+        borderRadius: 4,
+        data: trend.value.map(t => t.revenue)
+      }
+    ]
+  }
+})
+
+const trendChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false }
+  }
+}
+
+onMounted(() => {
+  fetchTrend()
+})
 
 // Convert summary data safely
 const totalRevenue = computed(() => summary.value?.revenue || 0)
@@ -109,8 +165,29 @@ const formatStatusText = (status: string) => {
       </StatCard>
     </div>
 
+    <!-- Trend Chart Section -->
+    <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col mt-6">
+      <div class="p-6 border-b border-[#E8E6DE]">
+        <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
+          <TrendingUp class="w-5 h-5 text-[#66706C]" />
+          Grafik Pendapatan (Bulan Ini)
+        </h3>
+      </div>
+      <div class="p-6 min-h-[300px] flex items-center justify-center">
+        <div v-if="isChartLoading" class="animate-pulse flex items-end justify-center gap-2 w-full h-full pb-4">
+          <div v-for="i in 10" :key="i" class="w-[8%] bg-[#E8E6DE] rounded-t" :style="{ height: `${Math.random() * 80 + 20}%` }"></div>
+        </div>
+        <div v-else-if="trend.length === 0" class="text-center text-sm text-[#66706C]">
+          Belum ada data pendapatan bulan ini.
+        </div>
+        <div v-else class="w-full h-[280px] relative">
+          <Bar :data="trendChartData" :options="trendChartOptions" />
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       
       <!-- Recent Bookings Table (Takes 2 columns) -->
       <div class="lg:col-span-2 space-y-4">

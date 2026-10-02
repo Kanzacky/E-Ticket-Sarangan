@@ -1,7 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
-import { TrendingUp, CreditCard, Ticket, Calendar } from 'lucide-vue-next'
+import { TrendingUp, CreditCard, Ticket, PieChart } from 'lucide-vue-next'
+import { computed } from 'vue'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement
+} from 'chart.js'
+import { Bar, Doughnut } from 'vue-chartjs'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
 interface ReportSummary {
   revenue: number
@@ -58,6 +72,53 @@ const formatDate = (dateStr: string) => {
   return new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium'
   }).format(new Date(dateStr))
+}
+
+const trendChartData = computed(() => {
+  return {
+    labels: trend.value.map(t => formatDate(t.date)),
+    datasets: [
+      {
+        label: 'Pendapatan (Rp)',
+        backgroundColor: '#173B35',
+        borderRadius: 4,
+        data: trend.value.map(t => t.revenue)
+      }
+    ]
+  }
+})
+
+const trendChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+}
+
+const topTicketsChartData = computed(() => {
+  return {
+    labels: topTickets.value.map(t => t.name),
+    datasets: [
+      {
+        backgroundColor: ['#173B35', '#D4A373', '#66706C', '#A3B18A', '#E8E6DE'],
+        data: topTickets.value.map(t => t.total_sold),
+        borderWidth: 0
+      }
+    ]
+  }
+})
+
+const topTicketsChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom' as const
+    }
+  }
 }
 </script>
 
@@ -140,41 +201,24 @@ const formatDate = (dateStr: string) => {
     <!-- Charts & Tables Area -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <!-- Trend Table (Left 2 cols) -->
+      <!-- Trend Table/Chart (Left 2 cols) -->
       <div class="lg:col-span-2 bg-white rounded-xl border border-[#E8E6DE] shadow-sm overflow-hidden flex flex-col">
         <div class="p-6 border-b border-[#E8E6DE]">
           <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
-            <Calendar class="w-5 h-5 text-[#66706C]" />
-            Tren Pendapatan Harian
+            <TrendingUp class="w-5 h-5 text-[#66706C]" />
+            Grafik Pendapatan Harian
           </h3>
         </div>
-        <div class="flex-1 overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#F7F5EF] border-y border-[#E8E6DE]">
-                <th class="px-6 py-3 text-xs font-bold text-[#1D2724] uppercase">Tanggal</th>
-                <th class="px-6 py-3 text-xs font-bold text-[#1D2724] uppercase text-right">Pendapatan</th>
-                <th class="px-6 py-3 text-xs font-bold text-[#1D2724] uppercase text-right">Jml Transaksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[#E8E6DE]">
-              <template v-if="isLoading">
-                <tr v-for="i in 5" :key="i" class="animate-pulse">
-                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-24"></div></td>
-                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-32 ml-auto"></div></td>
-                  <td class="px-6 py-4"><div class="h-4 bg-[#E8E6DE] rounded w-16 ml-auto"></div></td>
-                </tr>
-              </template>
-              <tr v-else-if="trend.length === 0">
-                <td colspan="3" class="px-6 py-8 text-center text-sm text-[#66706C]">Tidak ada transaksi pada periode ini.</td>
-              </tr>
-              <tr v-else v-for="(item, idx) in trend" :key="idx" class="hover:bg-[#F7F5EF]/50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1D2724]">{{ formatDate(item.date) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#1D2724] text-right">{{ formatCurrency(item.revenue) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[#66706C] text-right">{{ item.orders_count }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="p-6 flex-1 min-h-[350px] flex items-center justify-center">
+          <div v-if="isLoading" class="animate-pulse flex items-end justify-center gap-2 w-full h-full pb-4">
+            <div v-for="i in 7" :key="i" class="w-1/12 bg-[#E8E6DE] rounded-t" :style="{ height: `${Math.random() * 80 + 20}%` }"></div>
+          </div>
+          <div v-else-if="trend.length === 0" class="text-center text-sm text-[#66706C]">
+            Tidak ada transaksi pada periode ini.
+          </div>
+          <div v-else class="w-full h-full relative">
+            <Bar :data="trendChartData" :options="trendChartOptions" />
+          </div>
         </div>
       </div>
 
@@ -182,31 +226,17 @@ const formatDate = (dateStr: string) => {
       <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col">
         <div class="p-6 border-b border-[#E8E6DE]">
           <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
-            <Ticket class="w-5 h-5 text-[#66706C]" />
-            Tiket Terpopuler
+            <PieChart class="w-5 h-5 text-[#66706C]" />
+            Distribusi Tiket Terpopuler
           </h3>
         </div>
-        <div class="p-6 flex-1">
-          <div v-if="isLoading" class="space-y-4">
-            <div v-for="i in 5" :key="i" class="animate-pulse flex items-center justify-between">
-              <div class="flex items-center gap-3 w-full">
-                <div class="w-8 h-8 rounded-full bg-[#E8E6DE] shrink-0"></div>
-                <div class="h-4 bg-[#E8E6DE] rounded w-3/4"></div>
-              </div>
-              <div class="h-4 bg-[#E8E6DE] rounded w-8 shrink-0 ml-4"></div>
-            </div>
+        <div class="p-6 flex-1 min-h-[350px] flex flex-col items-center justify-center">
+          <div v-if="isLoading" class="animate-pulse w-48 h-48 rounded-full bg-[#E8E6DE]"></div>
+          <div v-else-if="topTickets.length === 0" class="text-center text-sm text-[#66706C]">
+            Belum ada penjualan tiket.
           </div>
-          <div v-else-if="topTickets.length === 0" class="text-center text-sm text-[#66706C] py-4">Belum ada data penjualan tiket.</div>
-          <div v-else class="space-y-4">
-            <div v-for="(ticket, idx) in topTickets" :key="idx" class="flex items-center justify-between">
-              <div class="flex items-center gap-3 overflow-hidden">
-                <div class="w-8 h-8 rounded-full bg-[#F7F5EF] flex items-center justify-center shrink-0 text-xs font-bold text-[#173B35]">
-                  #{{ idx + 1 }}
-                </div>
-                <div class="truncate text-sm font-bold text-[#1D2724]" :title="ticket.name">{{ ticket.name }}</div>
-              </div>
-              <div class="text-sm font-bold text-[#173B35] shrink-0">{{ ticket.total_sold }} <span class="text-xs font-normal text-[#66706C]">terjual</span></div>
-            </div>
+          <div v-else class="w-full h-full relative">
+            <Doughnut :data="topTicketsChartData" :options="topTicketsChartOptions" />
           </div>
         </div>
       </div>

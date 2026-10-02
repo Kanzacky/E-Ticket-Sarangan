@@ -111,6 +111,7 @@ const faqs = [
           src="/images/sarangan-hero-2.jpg"
           alt="Telaga Sarangan"
           class="h-full w-full object-cover object-center"
+          fetchpriority="high"
         />
         <!-- Overlay gelap merata untuk keterbacaan teks -->
         <div class="absolute inset-0 bg-[#0d1e1b]/65"></div>
