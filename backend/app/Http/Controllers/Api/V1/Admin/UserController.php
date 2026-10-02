@@ -55,13 +55,14 @@ class UserController extends Controller
             ->whereIn('orders.status', ['PAID', 'COMPLETED'])
             ->sum('quantity');
 
-        $totalVisitors = Order::whereIn('status', ['PAID', 'COMPLETED'])->count();
+        $totalVisitors = \App\Models\User::where('role', 'wisatawan')->count();
 
-        $newUsersToday = \App\Models\User::whereDate('created_at', \Carbon\Carbon::today())->count();
-        $newUsersThisMonth = \App\Models\User::whereMonth('created_at', \Carbon\Carbon::now()->month)->count();
+        $newUsersToday = \App\Models\User::where('role', 'wisatawan')->whereDate('created_at', \Carbon\Carbon::today())->count();
+        $newUsersThisMonth = \App\Models\User::where('role', 'wisatawan')->whereMonth('created_at', \Carbon\Carbon::now()->month)->count();
         $activeSessions = \Illuminate\Support\Facades\DB::table('personal_access_tokens')
             ->where('last_used_at', '>=', \Carbon\Carbon::now()->subHours(24))
-            ->count();
+            ->distinct()
+            ->count('tokenable_id');
         $totalUsers = \App\Models\User::count();
 
         return response()->json([
