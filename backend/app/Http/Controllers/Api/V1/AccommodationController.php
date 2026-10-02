@@ -27,10 +27,10 @@ class AccommodationController extends Controller
 
         // Sorting
         match ($sort) {
-            'distance' => $query->sortByDistance('asc'),
-            'price_asc' => $query->orderBy('price_per_night', 'asc'),
+            'distance'   => $query->orderBy('distance_km', 'asc'),
+            'price_asc'  => $query->orderBy('price_per_night', 'asc'),
             'price_desc' => $query->orderBy('price_per_night', 'desc'),
-            default => $query->orderByDesc('rating'),
+            default      => $query->orderByDesc('rating'),
         };
 
         $paginated = $query->paginate($perPage);
