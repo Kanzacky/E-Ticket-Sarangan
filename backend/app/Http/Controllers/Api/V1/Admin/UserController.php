@@ -43,31 +43,16 @@ class UserController extends Controller
 
     public function dashboard(): JsonResponse
     {
-        $revenue = Order::whereIn('status', ['PAID', 'COMPLETED'])
-            ->sum('total_amount');
-
-        $orders = Order::with('user:id,name,email')
-            ->latest()
-            ->take(5)
-            ->get(['id', 'user_id', 'order_code', 'visit_date', 'customer_name', 'total_amount', 'status', 'created_at']);
-
-        $totalTickets = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereIn('orders.status', ['PAID', 'COMPLETED'])
-            ->sum('quantity');
-
-        $totalVisitors = \App\Models\User::where('role', 'wisatawan')->count();
-
-        $newUsersToday = \App\Models\User::where('role', 'wisatawan')->whereDate('created_at', \Carbon\Carbon::today())->count();
-        $newUsersThisMonth = \App\Models\User::where('role', 'wisatawan')->whereMonth('created_at', \Carbon\Carbon::now()->month)->count();
-        $activeSessions = \Illuminate\Support\Facades\DB::table('personal_access_tokens')
-            ->where('last_used_at', '>=', \Carbon\Carbon::now()->subHours(24))
-            ->distinct()
-            ->count('tokenable_id');
-        $totalUsers = \App\Models\User::count();
-
-        return response()->json([
-            'success' => true,
-            'data' => [
+        $data = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_data', 60, function () {
+            $revenue = Order::whereIn('status', ['PAID', 'COMPLETED'])->sum('total_amount');
+            $orders = Order::with('user:id,name,email')->latest()->take(5)->get(['id', 'user_id', 'order_code', 'visit_date', 'customer_name', 'total_amount', 'status', 'created_at']);
+            $totalTickets = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')->whereIn('orders.status', ['PAID', 'COMPLETED'])->sum('quantity');
+            $totalVisitors = \App\Models\User::where('role', 'wisatawan')->count();
+            $newUsersToday = \App\Models\User::where('role', 'wisatawan')->whereDate('created_at', \Carbon\Carbon::today())->count();
+            $newUsersThisMonth = \App\Models\User::where('role', 'wisatawan')->whereMonth('created_at', \Carbon\Carbon::now()->month)->count();
+            $activeSessions = \Illuminate\Support\Facades\DB::table('personal_access_tokens')->where('last_used_at', '>=', \Carbon\Carbon::now()->subHours(24))->distinct()->count('tokenable_id');
+            
+            return [
                 'summary' => [
                     'revenue' => $revenue,
                     'orders' => Order::count(),
@@ -79,9 +64,14 @@ class UserController extends Controller
                     'new_today' => $newUsersToday,
                     'new_month' => $newUsersThisMonth,
                     'active_sessions' => $activeSessions,
-                    'total_users' => $totalUsers
+                    'total_users' => \App\Models\User::count()
                 ]
-            ],
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
         ]);
     }
 
