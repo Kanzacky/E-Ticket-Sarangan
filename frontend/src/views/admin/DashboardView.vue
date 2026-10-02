@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAdminDashboard } from '@/composables/useAdminDashboard'
-import { Banknote, ShoppingCart, Ticket, Users, TrendingUp } from 'lucide-vue-next'
+import { Banknote, ShoppingCart, Ticket, Users, TrendingUp, PieChart, Activity } from 'lucide-vue-next'
 import StatCard from '@/components/ui/StatCard.vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
@@ -13,14 +13,15 @@ import {
   Legend,
   BarElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
+  ArcElement
 } from 'chart.js'
-import { Bar } from 'vue-chartjs'
+import { Bar, Doughnut } from 'vue-chartjs'
 import { onMounted, ref } from 'vue'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
-const { isLoading, summary, recentOrders, error } = useAdminDashboard()
+const { isLoading, summary, recentOrders, userInsights, error } = useAdminDashboard()
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -37,6 +38,7 @@ const formatDate = (dateString: string) => {
 }
 
 const trend = ref<any[]>([])
+const topTickets = ref<any[]>([])
 const isChartLoading = ref(true)
 
 const fetchTrend = async () => {
@@ -44,6 +46,7 @@ const fetchTrend = async () => {
     const response = await api.get('/admin/reports/summary?period=month')
     if (response.data.success) {
       trend.value = response.data.data.trend
+      topTickets.value = response.data.data.top_tickets
     }
   } catch (e) {
     console.error('Failed to load trend', e)
@@ -71,6 +74,27 @@ const trendChartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false }
+  }
+}
+
+const topTicketsChartData = computed(() => {
+  return {
+    labels: topTickets.value.map(t => t.name),
+    datasets: [
+      {
+        backgroundColor: ['#173B35', '#D4A373', '#66706C', '#A3B18A', '#E8E6DE'],
+        data: topTickets.value.map(t => t.total_sold),
+        borderWidth: 0
+      }
+    ]
+  }
+})
+
+const topTicketsChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom' as const }
   }
 }
 
@@ -165,25 +189,100 @@ const formatStatusText = (status: string) => {
       </StatCard>
     </div>
 
-    <!-- Trend Chart Section -->
-    <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col mt-6">
-      <div class="p-6 border-b border-[#E8E6DE]">
-        <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
-          <TrendingUp class="w-5 h-5 text-[#66706C]" />
-          Grafik Pendapatan (Bulan Ini)
-        </h3>
+    <!-- Widgets Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      
+      <!-- Trend Chart -->
+      <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col">
+        <div class="p-6 border-b border-[#E8E6DE]">
+          <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
+            <TrendingUp class="w-5 h-5 text-[#66706C]" />
+            Pendapatan
+          </h3>
+        </div>
+        <div class="p-6 min-h-[250px] flex items-center justify-center">
+          <div v-if="isChartLoading" class="animate-pulse flex items-end justify-center gap-2 w-full h-full pb-4">
+            <div v-for="i in 10" :key="i" class="w-[8%] bg-[#E8E6DE] rounded-t" :style="{ height: `${Math.random() * 80 + 20}%` }"></div>
+          </div>
+          <div v-else-if="trend.length === 0" class="text-center text-sm text-[#66706C]">
+            Belum ada data.
+          </div>
+          <div v-else class="w-full h-[220px] relative">
+            <Bar :data="trendChartData" :options="trendChartOptions" />
+          </div>
+        </div>
       </div>
-      <div class="p-6 min-h-[300px] flex items-center justify-center">
-        <div v-if="isChartLoading" class="animate-pulse flex items-end justify-center gap-2 w-full h-full pb-4">
-          <div v-for="i in 10" :key="i" class="w-[8%] bg-[#E8E6DE] rounded-t" :style="{ height: `${Math.random() * 80 + 20}%` }"></div>
+
+      <!-- Ticket Comparison -->
+      <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col">
+        <div class="p-6 border-b border-[#E8E6DE]">
+          <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
+            <PieChart class="w-5 h-5 text-[#66706C]" />
+            Perbandingan Tiket
+          </h3>
         </div>
-        <div v-else-if="trend.length === 0" class="text-center text-sm text-[#66706C]">
-          Belum ada data pendapatan bulan ini.
-        </div>
-        <div v-else class="w-full h-[280px] relative">
-          <Bar :data="trendChartData" :options="trendChartOptions" />
+        <div class="p-6 min-h-[250px] flex items-center justify-center">
+          <div v-if="isChartLoading" class="animate-pulse w-40 h-40 rounded-full bg-[#E8E6DE]"></div>
+          <div v-else-if="topTickets.length === 0" class="text-center text-sm text-[#66706C]">
+            Belum ada data.
+          </div>
+          <div v-else class="w-full h-[220px] relative">
+            <Doughnut :data="topTicketsChartData" :options="topTicketsChartOptions" />
+          </div>
         </div>
       </div>
+
+      <!-- User Insights -->
+      <div class="bg-white rounded-xl border border-[#E8E6DE] shadow-sm flex flex-col">
+        <div class="p-6 border-b border-[#E8E6DE]">
+          <h3 class="text-base font-bold text-[#1D2724] flex items-center gap-2">
+            <Activity class="w-5 h-5 text-[#66706C]" />
+            Insight Pengguna
+          </h3>
+        </div>
+        <div class="p-6 min-h-[250px] flex flex-col justify-center gap-6">
+          <div v-if="isLoading" class="space-y-6">
+            <div v-for="i in 3" :key="i" class="animate-pulse">
+              <div class="h-4 bg-[#E8E6DE] rounded w-2/3 mb-2"></div>
+              <div class="h-8 bg-[#E8E6DE] rounded w-1/3"></div>
+            </div>
+          </div>
+          <template v-else>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-[#66706C]">Pendaftar Baru Hari Ini</p>
+                <h4 class="text-2xl font-black text-[#1D2724]">{{ userInsights?.new_today || 0 }}</h4>
+              </div>
+              <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                <Users class="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+            <div class="flex items-center justify-between border-t border-[#E8E6DE] pt-4">
+              <div>
+                <p class="text-sm font-medium text-[#66706C]">Pendaftar Bulan Ini</p>
+                <h4 class="text-2xl font-black text-[#1D2724]">{{ userInsights?.new_month || 0 }}</h4>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <TrendingUp class="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <div class="flex items-center justify-between border-t border-[#E8E6DE] pt-4">
+              <div>
+                <p class="text-sm font-medium text-[#66706C]">Akun Login (Aktif)</p>
+                <h4 class="text-2xl font-black text-[#1D2724]">{{ userInsights?.active_sessions || 0 }}</h4>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-bold text-emerald-600">Online</span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
     </div>
 
     <!-- Main Content Area -->

@@ -11,6 +11,12 @@ export function useAdminDashboard() {
     visitors: 0
   })
   const recentOrders = ref<any[]>([])
+  const userInsights = ref({
+    new_today: 0,
+    new_month: 0,
+    active_sessions: 0,
+    total_users: 0
+  })
 
   onMounted(async () => {
     try {
@@ -21,6 +27,9 @@ export function useAdminDashboard() {
       if (data.success) {
         summary.value = data.data.summary
         recentOrders.value = data.data.recent_orders
+        if (data.data.user_insights) {
+          userInsights.value = data.data.user_insights
+        }
       } else {
         error.value = data.message || 'Gagal memuat dashboard'
       }
@@ -35,6 +44,7 @@ export function useAdminDashboard() {
     isLoading,
     error,
     summary,
-    recentOrders
+    recentOrders,
+    userInsights
   }
 }

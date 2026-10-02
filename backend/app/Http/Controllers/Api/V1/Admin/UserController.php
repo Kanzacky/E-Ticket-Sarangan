@@ -57,6 +57,13 @@ class UserController extends Controller
 
         $totalVisitors = Order::whereIn('status', ['PAID', 'COMPLETED'])->count();
 
+        $newUsersToday = \App\Models\User::whereDate('created_at', \Carbon\Carbon::today())->count();
+        $newUsersThisMonth = \App\Models\User::whereMonth('created_at', \Carbon\Carbon::now()->month)->count();
+        $activeSessions = \Illuminate\Support\Facades\DB::table('personal_access_tokens')
+            ->where('last_used_at', '>=', \Carbon\Carbon::now()->subHours(24))
+            ->count();
+        $totalUsers = \App\Models\User::count();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -67,6 +74,12 @@ class UserController extends Controller
                     'visitors' => $totalVisitors,
                 ],
                 'recent_orders' => $orders,
+                'user_insights' => [
+                    'new_today' => $newUsersToday,
+                    'new_month' => $newUsersThisMonth,
+                    'active_sessions' => $activeSessions,
+                    'total_users' => $totalUsers
+                ]
             ],
         ]);
     }
