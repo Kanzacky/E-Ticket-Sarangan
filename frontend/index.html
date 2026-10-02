@@ -5,6 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>e-Ticket Sarangan</title>
+
+    <!-- Preload LCP hero image — eliminates 19s resource load delay -->
+    <link rel="preload" as="image" href="/images/sarangan-hero-2.jpg" fetchpriority="high" />
+
+    <!-- DNS prefetch for backend API to reduce connection time -->
+    <link rel="dns-prefetch" href="https://e-ticket-sarangan-backend-rouge.vercel.app" />
+    <link rel="preconnect" href="https://e-ticket-sarangan-backend-rouge.vercel.app" crossorigin />
   </head>
   <body>
     <div id="app"></div>

@@ -1,20 +1,20 @@
 <?php
 
 use App\Http\Controllers\Api\V1\HealthController;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Support\Facades\Route;
 
-// Public endpoints — registered OUTSIDE the web/api middleware groups
-// (via withRouting then:), sehingga tidak bergantung pada session, cookie,
-// Blade view, atau APP_KEY. Header CORS tetap dipasang oleh HandleCors
-// (global middleware) untuk semua path di bawah `api/*`.
+// Health routes are registered OUTSIDE the api middleware group (via withRouting then:).
+// HandleCors must be added explicitly so CORS headers are present on all responses,
+// including error responses. Without this, a 500 here looks like a CORS error in browser.
 
-// Root endpoint — JSON sederhana.
-Route::get('/', HealthController::class.'@root');
+Route::middleware([HandleCors::class])->group(function () {
+    // Root endpoint — simple JSON ping.
+    Route::get('/', HealthController::class.'@root');
 
-// Health check lengkap (status aplikasi + koneksi database).
-// Bentuk response mengikuti kontrak frontend:
-//   { success, message, data: { status, app, version, database } }
-Route::get('/api/health', HealthController::class);
+    // Full health check (app status + database connection).
+    Route::get('/api/health', HealthController::class);
 
-// Cek koneksi database saja (dipisah agar health check tetap ringan).
-Route::get('/api/health/database', HealthController::class.'@database');
+    // Database-only check.
+    Route::get('/api/health/database', HealthController::class.'@database');
+});
