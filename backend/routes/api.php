@@ -100,6 +100,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{order_code}/stream', [\App\Http\Controllers\Api\V1\OrderStreamController::class, 'stream']);
     Route::post('/orders/{order_code}/pay', [OrderController::class, 'pay'])->middleware('throttle:10,1');
 
+    // Untuk keperluan uji/demo: tandai order PENDING sebagai PAID.
+    // Aman dibatasi token bila env MARK_PAID_TOKEN di-set; kalau kosong, terbuka untuk pengujian.
+    Route::post('/orders/{order_code}/mark-paid', function (\Illuminate\Http\Request $request, string $order_code) {
+        $token = env('MARK_PAID_TOKEN');
+        if ($token && $request->header('X-Mark-Paid-Token') !== $token) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+        $order = \App\Models\Order::where('order_code', $order_code)->first();
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Order tidak ditemukan'], 404);
+        }
+        $order->status = 'PAID';
+        $order->qr_expires_at = \Illuminate\Support\Carbon::parse($order->visit_date)->endOfDay();
+        $order->save();
+        return response()->json(['success' => true, 'message' => 'Order ditandai lunas untuk keperluan uji.', 'data' => $order]);
+    });
+
     Route::middleware('role:petugas')->group(function () {
         Route::post('/scan', [\App\Http\Controllers\Api\V1\ScannerController::class, 'verify'])->middleware('throttle:30,1');
         Route::get('/scan/history', [\App\Http\Controllers\Api\V1\ScannerController::class, 'history']);
