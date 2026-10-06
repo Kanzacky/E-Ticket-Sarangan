@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/orders/{order_code}', [OrderController::class, 'show']);
+    Route::get('/orders/{order_code}/stream', [\App\Http\Controllers\Api\V1\OrderStreamController::class, 'stream']);
     Route::post('/orders/{order_code}/pay', [OrderController::class, 'pay'])->middleware('throttle:10,1');
 
     Route::middleware('role:petugas')->group(function () {

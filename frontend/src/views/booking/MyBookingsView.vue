@@ -11,11 +11,12 @@ import {
   X,
   RefreshCw,
 } from 'lucide-vue-next'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import axios from 'axios'
 import QrcodeVue from 'qrcode.vue'
 
-import { getMyOrdersApi, type PaginatedMeta } from '@/services/order.service'
+import { getMyOrdersApi, getOrderByCodeApi, type PaginatedMeta } from '@/services/order.service'
+import { watchOrderStream } from '@/services/orderStream'
 import type { Order, OrderStatus } from '@/types/booking.types'
 import { formatCurrency, formatDateTime, formatDate } from '@/utils/formatters'
 import { useAuthStore } from '@/stores/auth'
@@ -73,6 +74,80 @@ watch(searchQuery, () => {
 })
 
 onMounted(() => void fetchOrders())
+
+// Polling: segarkan status pesanan saat modal detail/QR terbuka
+let pollTimer: ReturnType<typeof setInterval> | null = null
+let stopStream: (() => void) | null = null
+
+function stopPoll() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+watch(selectedOrder, (order) => {
+  stopPoll()
+  stopStream?.()
+  stopStream = null
+  if (!order || order.status === 'COMPLETED' || order.status === 'CANCELLED' || order.status === 'EXPIRED') {
+    return
+  }
+
+  // Realtime lewat SSE; kalau gagal, fallback ke polling 5 detik
+  let sseActive = false
+  stopStream = watchOrderStream(order.order_code, (status, fresh) => {
+    if (!sseActive) {
+      sseActive = true
+      stopPoll()
+    }
+    if (fresh && selectedOrder.value) {
+      const updated = fresh as Order
+      selectedOrder.value = updated
+      const idx = orders.value.findIndex((o) => o.order_code === updated.order_code)
+      if (idx !== -1) orders.value[idx] = updated
+    } else if (selectedOrder.value) {
+      getOrderByCodeApi(selectedOrder.value.order_code)
+        .then((updated) => {
+          selectedOrder.value = updated
+          const idx = orders.value.findIndex((o) => o.order_code === updated.order_code)
+          if (idx !== -1) orders.value[idx] = updated
+        })
+        .catch(() => {})
+    }
+    if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'EXPIRED') {
+      stopPoll()
+      stopStream?.()
+      stopStream = null
+    }
+  })
+
+  pollTimer = setInterval(async () => {
+    if (sseActive) return // SSE aktif, polling tidak diperlukan
+    if (!selectedOrder.value) {
+      stopPoll()
+      return
+    }
+    try {
+      const fresh = await getOrderByCodeApi(selectedOrder.value.order_code)
+      selectedOrder.value = fresh
+      const idx = orders.value.findIndex((o) => o.order_code === fresh.order_code)
+      if (idx !== -1) orders.value[idx] = fresh
+      if (fresh.status === 'COMPLETED' || fresh.status === 'CANCELLED' || fresh.status === 'EXPIRED') {
+        stopPoll()
+        stopStream?.()
+        stopStream = null
+      }
+    } catch {
+      // Pertahankan tampilan terakhir jika gagal memuat ulang
+    }
+  }, 5000)
+})
+
+onUnmounted(() => {
+  stopPoll()
+  stopStream?.()
+})
 
 function selectStatus(key: string) {
   selectedStatus.value = key
