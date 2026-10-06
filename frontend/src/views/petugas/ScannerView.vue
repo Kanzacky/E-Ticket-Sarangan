@@ -158,27 +158,27 @@ function playSound(type: 'success' | 'error') {
       <!-- Camera status pill -->
       <div
         class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-        :class="isCameraReady && scanState === 'scanning'
+        :class="isCameraReady && !['camera_error'].includes(scanState)
           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
           : 'bg-[#F0EEE8] text-[#66706C] border-[#E2DFD8]'"
       >
         <span
           class="w-2 h-2 rounded-full"
-          :class="isCameraReady && scanState === 'scanning' ? 'bg-emerald-500 animate-pulse' : 'bg-[#66706C]'"
+          :class="isCameraReady && !['camera_error'].includes(scanState) ? 'bg-emerald-500 animate-pulse' : 'bg-[#66706C]'"
         ></span>
-        {{ isCameraReady && scanState === 'scanning' ? 'Kamera Aktif' : 'Menginisialisasi...' }}
+        {{ isCameraReady && !['camera_error'].includes(scanState) ? 'Kamera Aktif' : 'Menginisialisasi...' }}
       </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════
-         SCANNER VIEWPORT
+         SCANNER VIEWPORT – camera only, no result overlays
     ══════════════════════════════════════════════════════════════════════ -->
     <div class="relative rounded-2xl overflow-hidden bg-[#111916] shadow-lg shadow-black/20 border border-[#1D2724]/50"
          style="aspect-ratio: 1 / 1; max-height: 480px;">
 
-      <!-- Camera feed via vue-qrcode-reader -->
+      <!-- Camera feed via vue-qrcode-reader (stays alive during result states) -->
       <qrcode-stream
-        v-if="scanState === 'scanning' || scanState === 'loading'"
+        v-if="scanState !== 'camera_error'"
         :constraints="{ facingMode }"
         @detect="onDecode"
         @camera-on="onCameraReady"
@@ -225,7 +225,7 @@ function playSound(type: 'success' | 'error') {
       </qrcode-stream>
 
       <!-- Camera not ready placeholder (before camera initializes) -->
-      <div v-if="(scanState === 'scanning') && !isCameraReady && !cameraError"
+      <div v-if="scanState !== 'camera_error' && !isCameraReady && !cameraError"
            class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111916]">
         <Loader2 class="w-8 h-8 text-white/40 animate-spin" />
         <p class="text-white/40 text-sm">Menghubungkan kamera...</p>
@@ -248,149 +248,11 @@ function playSound(type: 'success' | 'error') {
           <RotateCcw class="w-4 h-4" /> Coba Lagi
         </button>
       </div>
-
-      <!-- ── RESULT OVERLAYS ──────────────────────────────────────────── -->
-      <!-- SUCCESS -->
-      <Transition
-        enter-active-class="transition-all duration-300 ease-out"
-        enter-from-class="opacity-0 scale-95"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-to-class="opacity-0 scale-95"
-      >
-        <div v-if="scanState === 'valid'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <!-- Icon -->
-          <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4 flex-shrink-0">
-            <CheckCircle class="w-9 h-9 text-emerald-600" />
-          </div>
-          <h2 class="text-xl font-black text-emerald-700 mb-1">Tiket Valid</h2>
-          <p class="text-[#66706C] text-xs mb-5">Check-in berhasil diproses oleh sistem.</p>
-
-          <!-- Data rows -->
-          <div v-if="scannedData" class="w-full max-w-xs space-y-2.5 text-left mb-6">
-            <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
-              <span class="text-xs text-[#66706C] font-medium shrink-0">Kode</span>
-              <span class="text-xs font-bold text-[#1D2724] text-right font-mono">{{ scannedData.code }}</span>
-            </div>
-            <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
-              <span class="text-xs text-[#66706C] font-medium shrink-0">Nama</span>
-              <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.name }}</span>
-            </div>
-            <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
-              <span class="text-xs text-[#66706C] font-medium shrink-0">Tanggal</span>
-              <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.date }}</span>
-            </div>
-            <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
-              <span class="text-xs text-[#66706C] font-medium shrink-0">Jenis</span>
-              <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.type }}</span>
-            </div>
-            <div class="flex justify-between items-center gap-3 py-2">
-              <span class="text-xs text-[#66706C] font-medium shrink-0">Pengunjung</span>
-              <span class="text-xs font-black text-[#173B35] bg-emerald-50 px-2.5 py-1 rounded-lg">{{ scannedData.qty }} Orang</span>
-            </div>
-          </div>
-
-          <button
-            @click="resetScanner"
-            class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#173B35] hover:bg-[#112a25] transition-colors shadow-sm"
-          >
-            Scan Berikutnya
-          </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- USED -->
-      <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
-        <div v-if="scanState === 'used'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-            <AlertTriangle class="w-9 h-9 text-amber-600" />
-          </div>
-          <h2 class="text-xl font-black text-amber-700 mb-1">Tiket Sudah Digunakan</h2>
-          <p class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini telah digunakan sebelumnya. Pengunjung tidak dapat masuk kembali dengan tiket yang sama.</p>
-          <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
-            Scan Ulang
-          </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- EXPIRED -->
-      <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
-        <div v-if="scanState === 'expired'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <Clock class="w-9 h-9 text-slate-500" />
-          </div>
-          <h2 class="text-xl font-black text-slate-700 mb-1">Tiket Kedaluwarsa</h2>
-          <p class="text-[#66706C] text-sm mb-6 max-w-xs">Masa berlaku tiket ini telah habis. Pengunjung perlu membeli tiket baru.</p>
-          <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
-            Scan Ulang
-          </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- UNPAID -->
-      <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
-        <div v-if="scanState === 'unpaid'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-            <ShieldOff class="w-9 h-9 text-orange-500" />
-          </div>
-          <h2 class="text-xl font-black text-orange-600 mb-1">Pembayaran Belum Lunas</h2>
-          <p class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini belum dibayar. Pengunjung harus menyelesaikan pembayaran terlebih dahulu.</p>
-          <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
-            Scan Ulang
-          </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- NOT FOUND -->
-      <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
-        <div v-if="scanState === 'notfound'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <HelpCircle class="w-9 h-9 text-slate-400" />
-          </div>
-          <h2 class="text-xl font-black text-slate-600 mb-1">Tiket Tidak Ditemukan</h2>
-          <p class="text-[#66706C] text-sm mb-6 max-w-xs">QR Code ini tidak terdaftar dalam sistem e-Ticket Sarangan. Pastikan QR Code benar.</p>
-          <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
-            Scan Ulang
-          </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- INVALID / GENERIC ERROR -->
-      <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
-        <div v-if="scanState === 'invalid'"
-             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
-          <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-            <XCircle class="w-9 h-9 text-red-500" />
-          </div>
-          <h2 class="text-xl font-black text-red-600 mb-1">Tiket Tidak Valid</h2>
-          <p v-if="errorMessage" class="text-[#66706C] text-sm mb-6 max-w-xs">{{ errorMessage }}</p>
-          <p v-else class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini tidak dapat diverifikasi oleh sistem.</p>
-          <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
-            Scan Ulang
-          </button>
-          </div>
-        </div>
-      </Transition>
     </div>
 
     <!-- ── Camera Controls ──────────────────────────────────────────────── -->
     <div
-      v-if="scanState === 'scanning' || scanState === 'loading'"
+      v-if="scanState !== 'camera_error'"
       class="flex items-center justify-center gap-3"
     >
       <button
@@ -425,6 +287,223 @@ function playSound(type: 'success' | 'error') {
     </div>
 
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       POPUP MODAL – Scan Results (outside scanner viewport, fixed overlay)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <Teleport to="body">
+    <!-- SUCCESS -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'valid'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <!-- Card -->
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <!-- Icon -->
+            <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4 flex-shrink-0 result-icon-pop">
+              <CheckCircle class="w-9 h-9 text-emerald-600" />
+            </div>
+            <h2 class="text-xl font-black text-emerald-700 mb-1">Tiket Valid</h2>
+            <p class="text-[#66706C] text-xs mb-5">Check-in berhasil diproses oleh sistem.</p>
+
+            <!-- Data rows -->
+            <div v-if="scannedData" class="w-full max-w-xs space-y-2.5 text-left mb-6">
+              <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
+                <span class="text-xs text-[#66706C] font-medium shrink-0">Kode</span>
+                <span class="text-xs font-bold text-[#1D2724] text-right font-mono">{{ scannedData.code }}</span>
+              </div>
+              <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
+                <span class="text-xs text-[#66706C] font-medium shrink-0">Nama</span>
+                <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.name }}</span>
+              </div>
+              <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
+                <span class="text-xs text-[#66706C] font-medium shrink-0">Tanggal</span>
+                <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.date }}</span>
+              </div>
+              <div class="flex justify-between items-start gap-3 py-2 border-b border-[#F0EEE8]">
+                <span class="text-xs text-[#66706C] font-medium shrink-0">Jenis</span>
+                <span class="text-xs font-bold text-[#1D2724] text-right">{{ scannedData.type }}</span>
+              </div>
+              <div class="flex justify-between items-center gap-3 py-2">
+                <span class="text-xs text-[#66706C] font-medium shrink-0">Pengunjung</span>
+                <span class="text-xs font-black text-[#173B35] bg-emerald-50 px-2.5 py-1 rounded-lg">{{ scannedData.qty }} Orang</span>
+              </div>
+            </div>
+
+            <button
+              @click="resetScanner"
+              class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#173B35] hover:bg-[#112a25] transition-colors shadow-sm"
+            >
+              Scan Berikutnya
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <!-- USED -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'used'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4 result-icon-pop">
+              <AlertTriangle class="w-9 h-9 text-amber-600" />
+            </div>
+            <h2 class="text-xl font-black text-amber-700 mb-1">Tiket Sudah Digunakan</h2>
+            <p class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini telah digunakan sebelumnya. Pengunjung tidak dapat masuk kembali dengan tiket yang sama.</p>
+            <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
+              Scan Ulang
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <!-- EXPIRED -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'expired'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 result-icon-pop">
+              <Clock class="w-9 h-9 text-slate-500" />
+            </div>
+            <h2 class="text-xl font-black text-slate-700 mb-1">Tiket Kedaluwarsa</h2>
+            <p class="text-[#66706C] text-sm mb-6 max-w-xs">Masa berlaku tiket ini telah habis. Pengunjung perlu membeli tiket baru.</p>
+            <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
+              Scan Ulang
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <!-- UNPAID -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'unpaid'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4 result-icon-pop">
+              <ShieldOff class="w-9 h-9 text-orange-500" />
+            </div>
+            <h2 class="text-xl font-black text-orange-600 mb-1">Pembayaran Belum Lunas</h2>
+            <p class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini belum dibayar. Pengunjung harus menyelesaikan pembayaran terlebih dahulu.</p>
+            <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
+              Scan Ulang
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <!-- NOT FOUND -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'notfound'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 result-icon-pop">
+              <HelpCircle class="w-9 h-9 text-slate-400" />
+            </div>
+            <h2 class="text-xl font-black text-slate-600 mb-1">Tiket Tidak Ditemukan</h2>
+            <p class="text-[#66706C] text-sm mb-6 max-w-xs">QR Code ini tidak terdaftar dalam sistem e-Ticket Sarangan. Pastikan QR Code benar.</p>
+            <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
+              Scan Ulang
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <!-- INVALID / GENERIC ERROR -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="scanState === 'invalid'"
+           class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+           @click.self="resetScanner">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <Transition
+          appear
+          enter-active-class="transition-all duration-300 ease-out delay-75"
+          enter-from-class="opacity-0 translate-y-4 scale-95"
+        >
+          <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 result-icon-pop">
+              <XCircle class="w-9 h-9 text-red-500" />
+            </div>
+            <h2 class="text-xl font-black text-red-600 mb-1">Tiket Tidak Valid</h2>
+            <p v-if="errorMessage" class="text-[#66706C] text-sm mb-6 max-w-xs">{{ errorMessage }}</p>
+            <p v-else class="text-[#66706C] text-sm mb-6 max-w-xs">Tiket ini tidak dapat diverifikasi oleh sistem.</p>
+            <button @click="resetScanner" class="w-full max-w-xs py-3 rounded-xl font-bold text-sm text-white bg-[#1D2724] hover:bg-black transition-colors">
+              Scan Ulang
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -439,4 +518,16 @@ function playSound(type: 'success' | 'error') {
   90%  { opacity: 1; }
   100% { top: 94%; opacity: 0; }
 }
+
+/* Result icon pop animation */
+.result-icon-pop {
+  animation: iconPop 0.4s ease-out 0.15s both;
+}
+
+@keyframes iconPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
 </style>
+
