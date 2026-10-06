@@ -258,7 +258,7 @@ function playSound(type: 'success' | 'error') {
         leave-to-class="opacity-0 scale-95"
       >
         <div v-if="scanState === 'valid'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <!-- Icon -->
           <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4 flex-shrink-0">
@@ -304,7 +304,7 @@ function playSound(type: 'success' | 'error') {
       <!-- USED -->
       <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
         <div v-if="scanState === 'used'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
             <AlertTriangle class="w-9 h-9 text-amber-600" />
@@ -321,7 +321,7 @@ function playSound(type: 'success' | 'error') {
       <!-- EXPIRED -->
       <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
         <div v-if="scanState === 'expired'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
             <Clock class="w-9 h-9 text-slate-500" />
@@ -338,7 +338,7 @@ function playSound(type: 'success' | 'error') {
       <!-- UNPAID -->
       <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
         <div v-if="scanState === 'unpaid'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
             <ShieldOff class="w-9 h-9 text-orange-500" />
@@ -355,7 +355,7 @@ function playSound(type: 'success' | 'error') {
       <!-- NOT FOUND -->
       <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
         <div v-if="scanState === 'notfound'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
             <HelpCircle class="w-9 h-9 text-slate-400" />
@@ -372,7 +372,7 @@ function playSound(type: 'success' | 'error') {
       <!-- INVALID / GENERIC ERROR -->
       <Transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 scale-95">
         <div v-if="scanState === 'invalid'"
-             class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+             class="absolute inset-0 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div class="bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-xl">
           <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
             <XCircle class="w-9 h-9 text-red-500" />
