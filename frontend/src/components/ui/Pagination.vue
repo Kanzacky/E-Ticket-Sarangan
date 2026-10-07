@@ -23,7 +23,7 @@ function pages(current: number, last: number): (number | string)[] {
 </script>
 
 <template>
-  <div v-if="lastPage > 1" class="flex items-center justify-between gap-4 py-3">
+  <div class="flex items-center justify-between gap-4 py-3">
     <p class="text-xs text-[#66706C] hidden sm:block">Total {{ total }} • Hal {{ currentPage }}/{{ lastPage }}</p>
     <div class="flex items-center gap-1 ml-auto">
       <button @click="emit('page-change', currentPage-1)" :disabled="currentPage<=1" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-[#E8E6DE] bg-white disabled:opacity-40 hover:bg-[#F7F5EF]">‹</button>
