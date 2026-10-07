@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Calendar, Ticket, Users, CreditCard, QrCode, ArrowLeft, Copy, ExternalLink, Clock, AlertCircle } from 'lucide-vue-next'
 import QrcodeVue from 'qrcode.vue'
 import { getOrderByCodeApi } from '@/services/order.service'
+import { watchOrderStream } from '@/services/orderStream'
 import type { Order } from '@/types/booking.types'
 import { formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
@@ -15,6 +16,8 @@ const error = ref('')
 const copied = ref(false)
 
 const orderCode = route.params.id as string
+
+let pollTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
   if (!orderCode) {
@@ -29,7 +32,62 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+  startPolling()
+  startStream()
 })
+
+let stopStream: (() => void) | null = null
+let sseActive = false
+
+function startStream() {
+  stopStream = watchOrderStream(orderCode, (status, fresh) => {
+    if (!sseActive) {
+      sseActive = true
+      stopPolling() // SSE sudah berjalan, polling tidak diperlukan lagi
+    }
+    if (fresh) {
+      order.value = fresh as Order
+    } else {
+      refreshOrder()
+    }
+    if (['COMPLETED', 'EXPIRED', 'CANCELLED'].includes(status)) {
+      stopPolling()
+      stopStream?.()
+      stopStream = null
+    }
+  })
+}
+
+onUnmounted(() => stopStream?.())
+
+async function refreshOrder() {
+  if (!orderCode) return
+  try {
+    order.value = await getOrderByCodeApi(orderCode)
+  } catch {
+    // Pertahankan tampilan terakhir jika gagal memuat ulang
+  }
+}
+
+function startPolling() {
+  stopPolling()
+  pollTimer = setInterval(async () => {
+    if (order.value && ['COMPLETED', 'EXPIRED', 'CANCELLED'].includes(order.value.status)) {
+      stopPolling()
+      return
+    }
+    await refreshOrder()
+  }, 5000)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+onUnmounted(stopPolling)
 
 function copyCode() {
   if (order.value) {

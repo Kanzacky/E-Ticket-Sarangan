@@ -73,7 +73,15 @@ class XenditWebhookController extends Controller
             return response()->json(['message' => 'Webhook accommodation handled'], 200);
         }
 
+        // external_id bisa berupa "order_code" (dari store) atau "order_code-time"
+        // (dari endpoint pay/regenerate invoice). Coba exact match dulu, lalu prefix.
         $order = Order::where('order_code', $externalId)->first();
+        if (!$order) {
+            $baseExternalId = preg_replace('/-\d+$/', '', $externalId);
+            if ($baseExternalId !== $externalId) {
+                $order = Order::where('order_code', $baseExternalId)->first();
+            }
+        }
 
         if (!$order) {
             // Return 200 OK even if order is not found so Xendit doesn't keep retrying
