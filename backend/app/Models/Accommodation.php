@@ -23,8 +23,11 @@ class Accommodation extends Model
         'facilities',
         'is_active',
         'google_place_id',
+        'google_maps_url',
+        'website_url',
         'latitude',
         'longitude',
+        'distance_km',
         'source',
     ];
 
@@ -32,14 +35,14 @@ class Accommodation extends Model
     {
         return [
             'price_per_night' => 'integer',
-            'total_rooms' => 'integer',
+            'total_rooms'     => 'integer',
             'available_rooms' => 'integer',
-            'rating' => 'decimal:1',
-            'facilities' => 'array',
-            'is_active' => 'boolean',
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
-            'distance_km' => 'decimal:3',
+            'rating'          => 'decimal:1',
+            'facilities'      => 'array',
+            'is_active'       => 'boolean',
+            'latitude'        => 'decimal:7',
+            'longitude'       => 'decimal:7',
+            'distance_km'     => 'decimal:3',
         ];
     }
 
@@ -56,5 +59,17 @@ class Accommodation extends Model
     public function scopeSortByDistance($query, string $direction = 'asc')
     {
         return $query->orderBy('distance_km', $direction);
+    }
+
+    /** Generate Google Maps search URL jika belum ada yang tersimpan */
+    public function getGoogleMapsLinkAttribute(): string
+    {
+        if ($this->google_maps_url) {
+            return $this->google_maps_url;
+        }
+        if ($this->latitude && $this->longitude) {
+            return "https://www.google.com/maps/search/?api=1&query={$this->latitude},{$this->longitude}";
+        }
+        return "https://www.google.com/maps/search/?api=1&query=" . urlencode($this->name . ' Sarangan Magetan');
     }
 }

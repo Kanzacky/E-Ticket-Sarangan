@@ -22,6 +22,9 @@ export interface Accommodation {
   facilities: string[] | null
   is_active: boolean
   google_place_id?: string | null
+  google_maps_url?: string | null
+  google_maps_link?: string | null
+  website_url?: string | null
   latitude?: number | null
   longitude?: number | null
   distance_km?: number | null

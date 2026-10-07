@@ -10,6 +10,12 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/accommodations',
+    name: 'accommodations',
+    component: () => import('@/views/wisatawan/AccommodationsView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/auth/LoginView.vue'),
@@ -75,21 +81,6 @@ const routes: RouteRecordRaw[] = [
         path: '/profile',
         name: 'wisatawan.profile',
         component: () => import('@/views/wisatawan/ProfileView.vue'),
-      },
-      {
-        path: '/accommodations',
-        name: 'wisatawan.accommodations',
-        component: () => import('@/views/wisatawan/AccommodationsView.vue'),
-      },
-      {
-        path: '/accommodations/:id',
-        name: 'wisatawan.accommodation-detail',
-        component: () => import('@/views/wisatawan/AccommodationDetailView.vue'),
-      },
-      {
-        path: '/my-accommodations',
-        name: 'wisatawan.accommodation-bookings',
-        component: () => import('@/views/wisatawan/MyAccommodationBookingsView.vue'),
       },
     ],
   },

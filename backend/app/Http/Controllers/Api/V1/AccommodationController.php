@@ -9,12 +9,13 @@ use Illuminate\Http\JsonResponse;
 class AccommodationController extends Controller
 {
     /**
-     * GET /api/accommodations — daftar penginapan aktif.
+     * GET /api/accommodations — daftar penginapan aktif, diurutkan by rating.
+     * Menggunakan Overpass/OSM data yang sudah di-sync ke database (gratis, tanpa API key).
      */
     public function index(\Illuminate\Http\Request $request): JsonResponse
     {
         $perPage = min((int) $request->input('per_page', 12), 50);
-        $sort = $request->input('sort'); // 'distance', 'rating', 'price'
+        $sort    = $request->input('sort', 'rating'); // default rating tertinggi
 
         $query = Accommodation::where('is_active', true);
 
@@ -35,15 +36,22 @@ class AccommodationController extends Controller
 
         $paginated = $query->paginate($perPage);
 
+        // Tambahkan google_maps_link (accessor) ke setiap item
+        $items = collect($paginated->items())->map(function (Accommodation $a) {
+            $arr = $a->toArray();
+            $arr['google_maps_link'] = $a->google_maps_link;
+            return $arr;
+        });
+
         return response()->json([
             'success' => true,
-            'message' => 'Daftar penginapan berhasil dimuat.',
-            'data' => $paginated->items(),
-            'meta' => [
+            'message' => 'Daftar rekomendasi penginapan berhasil dimuat.',
+            'data'    => $items,
+            'meta'    => [
                 'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'per_page' => $paginated->perPage(),
-                'total' => $paginated->total(),
+                'last_page'    => $paginated->lastPage(),
+                'per_page'     => $paginated->perPage(),
+                'total'        => $paginated->total(),
             ],
         ]);
     }
@@ -55,9 +63,12 @@ class AccommodationController extends Controller
     {
         $accommodation = Accommodation::where('is_active', true)->findOrFail($id);
 
+        $arr = $accommodation->toArray();
+        $arr['google_maps_link'] = $accommodation->google_maps_link;
+
         return response()->json([
             'success' => true,
-            'data' => $accommodation,
+            'data'    => $arr,
         ]);
     }
 }
