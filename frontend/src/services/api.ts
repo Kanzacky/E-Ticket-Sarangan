@@ -1,47 +1,61 @@
-import axios, { type AxiosInstance } from 'axios'
-
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-// Base URL backend production (Vercel Container):
-//   https://e-ticket-sarangan-backend.vercel.app/api
-// Di-set via env VITE_API_URL (Vite convention) — lihat .env.production
-// atau Environment Variables di Vercel Dashboard (frontend project).
-// JANGAN pakai localhost atau URL frontend sebagai base URL production.
 const apiBaseUrl = import.meta.env.VITE_API_URL
 
 if (!apiBaseUrl) {
   console.warn(
     '[api] VITE_API_URL belum dikonfigurasi. Fallback ke "/api". ' +
-      'Set VITE_API_URL di .env.production atau Vercel env agar request ' +
-      'mengarah ke backend production.',
+      'Set VITE_API_URL di .env.production atau Vercel env.',
   )
 }
 
 const api: AxiosInstance = axios.create({
   baseURL: apiBaseUrl || '/api',
-  timeout: 15000,
+  timeout: 20000, // 20s — lebih toleran untuk Railway cold start
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 })
 
+// ─── Request interceptor: pasang token ─────────────────────────────────────
 api.interceptors.request.use((config) => {
   const authStore = useAuthStore()
-
   if (authStore.token) {
     config.headers.Authorization = `Bearer ${authStore.token}`
   }
-
   return config
 })
 
+// ─── Response interceptor: retry otomatis + logout 401 ────────────────────
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const config = error.config as AxiosRequestConfig & { _retryCount?: number }
+
+    // Logout kalau 401
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
       authStore.logout()
+      return Promise.reject(error)
+    }
+
+    // Retry otomatis untuk network error atau 5xx (bukan 4xx client error)
+    const isNetworkError = !error.response
+    const isServerError = error.response?.status >= 500
+    const shouldRetry = isNetworkError || isServerError
+
+    if (shouldRetry && config && !config._retryCount) {
+      config._retryCount = 0
+    }
+
+    const MAX_RETRIES = 2
+    if (shouldRetry && config && (config._retryCount ?? 0) < MAX_RETRIES) {
+      config._retryCount = (config._retryCount ?? 0) + 1
+      const delay = config._retryCount * 1500 // 1.5s, 3s
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      return api(config)
     }
 
     return Promise.reject(error)
@@ -68,18 +82,10 @@ export interface HealthResponse {
   data?: HealthData
 }
 
-/**
- * GET /health — health check backend.
- *
- * Robust terhadap bentuk JSON: status "Terhubung" ditentukan dari HTTP 2xx
- * (axios resolve), bukan dari field `success`. Semua field opsional agar
- * tidak error bila backend mengembalikan struktur berbeda.
- */
 export const getHealth = () =>
   api.get<HealthResponse>('/health').then((response) => response.data)
 
 // --- Auth Endpoints ---
-
 
 export interface AuthUser {
   id: number
@@ -93,6 +99,7 @@ export interface AuthResponse {
   user: AuthUser
   access_token: string
 }
+
 export interface LoginRequest {
   email: string
   password: string

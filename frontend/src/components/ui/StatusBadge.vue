@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckCircle2, CircleAlert, LoaderCircle } from 'lucide-vue-next'
+import { CheckCircle2, CircleAlert, XCircle, Clock, Ban } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -16,7 +16,7 @@ const config = computed(() => {
     case 'danger':
       return {
         classes: 'bg-red-50 text-red-700 border-red-200',
-        icon: CircleAlert,
+        icon: XCircle,
       }
     case 'warning':
       return {
@@ -26,12 +26,12 @@ const config = computed(() => {
     case 'info':
       return {
         classes: 'bg-sky-50 text-sky-700 border-sky-200',
-        icon: LoaderCircle,
+        icon: Clock,
       }
     default:
       return {
         classes: 'bg-slate-50 text-slate-600 border-slate-200',
-        icon: LoaderCircle,
+        icon: Ban,
       }
   }
 })

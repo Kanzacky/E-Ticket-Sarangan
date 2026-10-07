@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Edit, Plus, Trash2, X } from 'lucide-vue-next'
@@ -205,7 +205,7 @@ const deleteTicket = async (id: number) => {
           <span class="text-sm text-[#1D2724]">{{ ticket.quota }} /hari</span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <StatusBadge :tone="ticket.status === 'active' ? 'success' : 'neutral'">
+          <StatusBadge :tone="ticket.status?.toLowerCase() === 'active' ? 'success' : 'neutral'">
             <span class="capitalize">{{ ticket.status }}</span>
           </StatusBadge>
         </td>

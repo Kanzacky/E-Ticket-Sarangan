@@ -1,4 +1,168 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
+import { ref, onMounted, computed, watch } from 'vue'
+import api from '@/services/api'
+import { Search, CreditCard } from 'lucide-vue-next'
+import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+
+interface Payment {
+  id: number
+  transaction_id: string
+  customer_name: string
+  payment_method: string
+  amount: number
+  status: string
+  paid_at: string | null
+  created_at: string
+}
+
+const payments = ref<Payment[]>([])
+const isLoading = ref(true)
+const error = ref('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
+const filterStatus = ref('all')
+const fetchPayments = async () => {
+  isLoading.value = true
+  error.value = ''
+  try {
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+    const response = await api.get('/admin/payments?'+params.toString())
+    if (response.data.success) {
+      if (response.data.meta) {
+        payments.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        payments.value = response.data.data
+        total.value = payments.value.length
+        lastPage.value = 1
+      }
+    }
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Gagal memuat data pembayaran'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchPayments()
+})
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchPayments() }, 400)
+})
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchPayments() }
+
+watch(filterStatus, () => { currentPage.value=1; void fetchPayments() })
+
+const filteredPayments = computed(() => {
+  return payments.value.filter(p => {
+    const matchesSearch = 
+      p.transaction_id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      p.customer_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    
+    const matchesStatus = filterStatus.value === 'all' || p.status === filterStatus.value
+    
+    return matchesSearch && matchesStatus
+  })
+})
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+  }).format(value)
+}
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return '-'
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium', timeStyle: 'short'
+  }).format(new Date(dateStr))
+}
+
+</script>
+
+<template>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-black text-[#173B35]">Pembayaran</h1>
+      <p class="text-sm font-medium text-[#66706C] mt-1">Kelola dan pantau transaksi pembayaran masuk.</p>
+    </div>
+
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+      {{ error }}
+    </div>
+
+    <!-- Data Table -->
+    <DataTable
+      :headers="['ID Transaksi', 'Pelanggan', 'Metode', 'Nominal', 'Status', 'Waktu Bayar']"
+      :is-loading="isLoading"
+      :is-empty="filteredPayments.length === 0"
+      empty-message="Belum ada transaksi pembayaran."
+    >
+      <template #toolbar>
+        <div class="flex flex-col sm:flex-row gap-3 w-full">
+          <div class="relative flex-1 sm:max-w-xs">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="w-4 h-4 text-[#66706C]" />
+            </div>
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Cari ID TRX atau Nama..." 
+              class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+            >
+          </div>
+          
+          <select 
+            v-model="filterStatus"
+            class="text-sm px-3 py-2 border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+          >
+            <option value="all">Semua Status</option>
+            <option value="PAID">Lunas (PAID)</option>
+            <option value="COMPLETED">Sudah Masuk (COMPLETED)</option>
+            <option value="PENDING">Menunggu (PENDING)</option>
+            <option value="FAILED">Gagal (FAILED)</option>
+            <option value="CANCELLED">Batal (CANCELLED)</option>
+          </select>
+        </div>
+      </template>
+
+      <tr v-for="payment in filteredPayments" :key="payment.id" class="hover:bg-[#F7F5EF]/50 transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-[#173B35]/5 flex items-center justify-center shrink-0">
+              <CreditCard class="w-4 h-4 text-[#173B35]" />
+            </div>
+            <span class="text-sm font-bold text-[#1D2724]">{{ payment.transaction_id }}</span>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#1D2724]">{{ payment.customer_name }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-xs font-medium px-2 py-1 bg-[#F7F5EF] text-[#66706C] rounded-md">{{ payment.payment_method }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm font-bold text-[#1D2724]">{{ formatCurrency(payment.amount) }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <StatusBadge :tone="payment 
+    $val = <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, CreditCard } from 'lucide-vue-next'
@@ -162,6 +326,382 @@ const formatDate = (dateStr: string | null) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'COMPLETED' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger'))">
+            <span class="font-semibold">{{ payment.status }}</span>
+          </StatusBadge>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#66706C]">{{ formatDate(payment.paid_at || payment.created_at) }}</span>
+        </td>
+      </tr>
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
+  </div>
+</template>
+.Groups[1].Value.ToLower()
+    ".status?.toLowerCase() === '$val'"
+   ? 'success' : (payment 
+    $val = <script setup lang="ts">
+import { ref, onMounted, computed, watch } from 'vue'
+import api from '@/services/api'
+import { Search, CreditCard } from 'lucide-vue-next'
+import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+
+interface Payment {
+  id: number
+  transaction_id: string
+  customer_name: string
+  payment_method: string
+  amount: number
+  status: string
+  paid_at: string | null
+  created_at: string
+}
+
+const payments = ref<Payment[]>([])
+const isLoading = ref(true)
+const error = ref('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
+const filterStatus = ref('all')
+const fetchPayments = async () => {
+  isLoading.value = true
+  error.value = ''
+  try {
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+    const response = await api.get('/admin/payments?'+params.toString())
+    if (response.data.success) {
+      if (response.data.meta) {
+        payments.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        payments.value = response.data.data
+        total.value = payments.value.length
+        lastPage.value = 1
+      }
+    }
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Gagal memuat data pembayaran'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchPayments()
+})
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchPayments() }, 400)
+})
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchPayments() }
+
+watch(filterStatus, () => { currentPage.value=1; void fetchPayments() })
+
+const filteredPayments = computed(() => {
+  return payments.value.filter(p => {
+    const matchesSearch = 
+      p.transaction_id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      p.customer_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    
+    const matchesStatus = filterStatus.value === 'all' || p.status === filterStatus.value
+    
+    return matchesSearch && matchesStatus
+  })
+})
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+  }).format(value)
+}
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return '-'
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium', timeStyle: 'short'
+  }).format(new Date(dateStr))
+}
+
+</script>
+
+<template>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-black text-[#173B35]">Pembayaran</h1>
+      <p class="text-sm font-medium text-[#66706C] mt-1">Kelola dan pantau transaksi pembayaran masuk.</p>
+    </div>
+
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+      {{ error }}
+    </div>
+
+    <!-- Data Table -->
+    <DataTable
+      :headers="['ID Transaksi', 'Pelanggan', 'Metode', 'Nominal', 'Status', 'Waktu Bayar']"
+      :is-loading="isLoading"
+      :is-empty="filteredPayments.length === 0"
+      empty-message="Belum ada transaksi pembayaran."
+    >
+      <template #toolbar>
+        <div class="flex flex-col sm:flex-row gap-3 w-full">
+          <div class="relative flex-1 sm:max-w-xs">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="w-4 h-4 text-[#66706C]" />
+            </div>
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Cari ID TRX atau Nama..." 
+              class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+            >
+          </div>
+          
+          <select 
+            v-model="filterStatus"
+            class="text-sm px-3 py-2 border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+          >
+            <option value="all">Semua Status</option>
+            <option value="PAID">Lunas (PAID)</option>
+            <option value="COMPLETED">Sudah Masuk (COMPLETED)</option>
+            <option value="PENDING">Menunggu (PENDING)</option>
+            <option value="FAILED">Gagal (FAILED)</option>
+            <option value="CANCELLED">Batal (CANCELLED)</option>
+          </select>
+        </div>
+      </template>
+
+      <tr v-for="payment in filteredPayments" :key="payment.id" class="hover:bg-[#F7F5EF]/50 transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-[#173B35]/5 flex items-center justify-center shrink-0">
+              <CreditCard class="w-4 h-4 text-[#173B35]" />
+            </div>
+            <span class="text-sm font-bold text-[#1D2724]">{{ payment.transaction_id }}</span>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#1D2724]">{{ payment.customer_name }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-xs font-medium px-2 py-1 bg-[#F7F5EF] text-[#66706C] rounded-md">{{ payment.payment_method }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm font-bold text-[#1D2724]">{{ formatCurrency(payment.amount) }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'COMPLETED' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger'))">
+            <span class="font-semibold">{{ payment.status }}</span>
+          </StatusBadge>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#66706C]">{{ formatDate(payment.paid_at || payment.created_at) }}</span>
+        </td>
+      </tr>
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
+  </div>
+</template>
+.Groups[1].Value.ToLower()
+    ".status?.toLowerCase() === '$val'"
+   ? 'success' : (payment 
+    $val = <script setup lang="ts">
+import { ref, onMounted, computed, watch } from 'vue'
+import api from '@/services/api'
+import { Search, CreditCard } from 'lucide-vue-next'
+import DataTable from '@/components/ui/DataTable.vue'
+import Pagination from '@/components/ui/Pagination.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+
+interface Payment {
+  id: number
+  transaction_id: string
+  customer_name: string
+  payment_method: string
+  amount: number
+  status: string
+  paid_at: string | null
+  created_at: string
+}
+
+const payments = ref<Payment[]>([])
+const isLoading = ref(true)
+const error = ref('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const lastPage = ref(1)
+const filterStatus = ref('all')
+const fetchPayments = async () => {
+  isLoading.value = true
+  error.value = ''
+  try {
+    const params = new URLSearchParams()
+    params.set('page', String(currentPage.value))
+    params.set('per_page', String(perPage.value))
+    if (searchQuery.value.trim()) params.set('search', searchQuery.value.trim())
+    if (filterStatus.value !== 'all') params.set('status', filterStatus.value)
+    const response = await api.get('/admin/payments?'+params.toString())
+    if (response.data.success) {
+      if (response.data.meta) {
+        payments.value = response.data.data
+        total.value = response.data.meta.total
+        lastPage.value = response.data.meta.last_page
+        currentPage.value = response.data.meta.current_page
+      } else {
+        payments.value = response.data.data
+        total.value = payments.value.length
+        lastPage.value = 1
+      }
+    }
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Gagal memuat data pembayaran'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchPayments()
+})
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1; void fetchPayments() }, 400)
+})
+function handlePageChange(p: number) { if (p<1||p>lastPage.value) return; currentPage.value=p; void fetchPayments() }
+
+watch(filterStatus, () => { currentPage.value=1; void fetchPayments() })
+
+const filteredPayments = computed(() => {
+  return payments.value.filter(p => {
+    const matchesSearch = 
+      p.transaction_id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      p.customer_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    
+    const matchesStatus = filterStatus.value === 'all' || p.status === filterStatus.value
+    
+    return matchesSearch && matchesStatus
+  })
+})
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+  }).format(value)
+}
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return '-'
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium', timeStyle: 'short'
+  }).format(new Date(dateStr))
+}
+
+</script>
+
+<template>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-black text-[#173B35]">Pembayaran</h1>
+      <p class="text-sm font-medium text-[#66706C] mt-1">Kelola dan pantau transaksi pembayaran masuk.</p>
+    </div>
+
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+      {{ error }}
+    </div>
+
+    <!-- Data Table -->
+    <DataTable
+      :headers="['ID Transaksi', 'Pelanggan', 'Metode', 'Nominal', 'Status', 'Waktu Bayar']"
+      :is-loading="isLoading"
+      :is-empty="filteredPayments.length === 0"
+      empty-message="Belum ada transaksi pembayaran."
+    >
+      <template #toolbar>
+        <div class="flex flex-col sm:flex-row gap-3 w-full">
+          <div class="relative flex-1 sm:max-w-xs">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="w-4 h-4 text-[#66706C]" />
+            </div>
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Cari ID TRX atau Nama..." 
+              class="w-full pl-9 pr-3 py-2 text-sm border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+            >
+          </div>
+          
+          <select 
+            v-model="filterStatus"
+            class="text-sm px-3 py-2 border border-[#E8E6DE] rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#173B35] focus:border-[#173B35]"
+          >
+            <option value="all">Semua Status</option>
+            <option value="PAID">Lunas (PAID)</option>
+            <option value="COMPLETED">Sudah Masuk (COMPLETED)</option>
+            <option value="PENDING">Menunggu (PENDING)</option>
+            <option value="FAILED">Gagal (FAILED)</option>
+            <option value="CANCELLED">Batal (CANCELLED)</option>
+          </select>
+        </div>
+      </template>
+
+      <tr v-for="payment in filteredPayments" :key="payment.id" class="hover:bg-[#F7F5EF]/50 transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-[#173B35]/5 flex items-center justify-center shrink-0">
+              <CreditCard class="w-4 h-4 text-[#173B35]" />
+            </div>
+            <span class="text-sm font-bold text-[#1D2724]">{{ payment.transaction_id }}</span>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#1D2724]">{{ payment.customer_name }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-xs font-medium px-2 py-1 bg-[#F7F5EF] text-[#66706C] rounded-md">{{ payment.payment_method }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm font-bold text-[#1D2724]">{{ formatCurrency(payment.amount) }}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'COMPLETED' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger'))">
+            <span class="font-semibold">{{ payment.status }}</span>
+          </StatusBadge>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm text-[#66706C]">{{ formatDate(payment.paid_at || payment.created_at) }}</span>
+        </td>
+      </tr>
+        <template #pagination>
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+    </template>
+  </DataTable>
+  </div>
+</template>
+.Groups[1].Value.ToLower()
+    ".status?.toLowerCase() === '$val'"
+   ? 'info' : 'danger'))">
             <span class="font-semibold">{{ payment.status }}</span>
           </StatusBadge>
         </td>
