@@ -21,7 +21,7 @@ import { onMounted, ref } from 'vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
-const { isLoading, summary, recentOrders, userInsights, error } = useAdminDashboard()
+const { isLoading, isRefreshing, isPolling, summary, recentOrders, userInsights, error, lastUpdated } = useAdminDashboard()
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -137,9 +137,25 @@ const formatStatusText = (status: string) => {
 <template>
   <div class="space-y-6">
     <!-- Header Area -->
-    <div>
-      <h1 class="text-2xl font-black text-[#173B35]">Dashboard</h1>
-      <p class="text-sm font-medium text-[#66706C] mt-1">Ringkasan aktivitas e-Ticket Sarangan hari ini.</p>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-[#173B35] flex items-center gap-2">
+          Dashboard
+          <span v-if="isRefreshing" class="inline-flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9965B] opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-[#C9965B]"></span>
+          </span>
+          <span v-else-if="isPolling" class="inline-flex h-2 w-2 relative">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+        </h1>
+        <p class="text-sm font-medium text-[#66706C] mt-1">Ringkasan aktivitas e-Ticket Sarangan hari ini.</p>
+      </div>
+      
+      <div v-if="lastUpdated" class="text-xs font-medium text-[#66706C] bg-white border border-[#E8E6DE] px-3 py-1.5 rounded-lg flex items-center gap-2">
+        <Activity class="w-3.5 h-3.5" :class="isRefreshing ? 'text-[#C9965B] animate-spin' : 'text-[#4F7465]'" />
+        Update terakhir: {{ lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit', second:'2-digit' }) }}
+      </div>
     </div>
 
     <!-- Error Message -->

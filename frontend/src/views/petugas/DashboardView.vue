@@ -5,7 +5,7 @@ import StatCard from '@/components/ui/StatCard.vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
-const { isLoading, summary, recentVisits, error } = usePetugasDashboard()
+const { isLoading, isRefreshing, isPolling, summary, recentVisits, error, lastUpdated } = usePetugasDashboard()
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -41,8 +41,23 @@ const formatStatusText = (status: string) => {
     <!-- Header Area -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-black text-[#173B35]">Operasional Hari Ini</h1>
-        <p class="text-sm font-medium text-[#66706C] mt-1">Pantau kunjungan dan validasi tiket hari ini.</p>
+        <h1 class="text-2xl font-black text-[#173B35] flex items-center gap-2">
+          Operasional Hari Ini
+          <span v-if="isRefreshing" class="inline-flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9965B] opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-[#C9965B]"></span>
+          </span>
+          <span v-else-if="isPolling" class="inline-flex h-2 w-2 relative">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+        </h1>
+        <div class="flex items-center gap-3 mt-1">
+          <p class="text-sm font-medium text-[#66706C]">Pantau kunjungan dan validasi tiket hari ini.</p>
+          <div v-if="lastUpdated" class="text-[10px] font-bold text-[#4F7465] bg-[#4F7465]/10 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+            <Clock class="w-3 h-3" :class="isRefreshing ? 'animate-spin' : ''" />
+            {{ lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit', second:'2-digit' }) }}
+          </div>
+        </div>
       </div>
       <router-link
         to="/petugas/scanner"
