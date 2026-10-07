@@ -8,7 +8,13 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'page-change', page: number): void
+  (e: 'update:perPage', limit: number): void
 }>()
+
+function onLimitChange(e: Event) {
+  const val = parseInt((e.target as HTMLSelectElement).value, 10)
+  emit('update:perPage', val)
+}
 
 function pages(current: number, last: number): (number | string)[] {
   const out: (number | string)[] = []
@@ -23,8 +29,21 @@ function pages(current: number, last: number): (number | string)[] {
 </script>
 
 <template>
-  <div class="flex items-center justify-between gap-4 py-3">
-    <p class="text-xs text-[#66706C] hidden sm:block">Total {{ total }} • Hal {{ currentPage }}/{{ lastPage }}</p>
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-3">
+    <div class="flex items-center gap-3">
+      <select 
+        :value="perPage" 
+        @change="onLimitChange"
+        class="text-xs border border-[#E8E6DE] rounded bg-white px-2 py-1 text-[#1D2724] focus:outline-none focus:border-[#173B35]"
+      >
+        <option :value="5">5 / halaman</option>
+        <option :value="10">10 / halaman</option>
+        <option :value="25">25 / halaman</option>
+        <option :value="50">50 / halaman</option>
+        <option :value="100">100 / halaman</option>
+      </select>
+      <p class="text-xs text-[#66706C] hidden sm:block">Total {{ total }} • Hal {{ currentPage }}/{{ lastPage }}</p>
+    </div>
     <div class="flex items-center gap-1 ml-auto">
       <button @click="emit('page-change', currentPage-1)" :disabled="currentPage<=1" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-[#E8E6DE] bg-white disabled:opacity-40 hover:bg-[#F7F5EF]">‹</button>
       <template v-for="(p,i) in pages(currentPage, lastPage)" :key="i">

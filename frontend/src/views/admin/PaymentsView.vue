@@ -170,7 +170,7 @@ const formatDate = (dateStr: string | null) => {
         </td>
       </tr>
         <template #pagination>
-      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" @update:perPage="v => { perPage = v; currentPage = 1; fetchPayments() }" />
     </template>
   </DataTable>
   </div>

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Edit, Plus, Trash2, X } from 'lucide-vue-next'
@@ -240,7 +240,7 @@ const deleteCategory = async (id: number) => {
         </td>
       </tr>
         <template #pagination>
-      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" @update:perPage="v => { perPage = v; currentPage = 1; fetchCategories() }" />
     </template>
   </DataTable>
 

@@ -79,7 +79,7 @@ const formatDate = (s: string) => new Date(s).toLocaleString('id-ID')
         <td class="px-6 py-3 text-xs max-w-xs truncate">{{ l.reason || '-' }}</td>
       </tr>
         <template #pagination>
-      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" @update:perPage="v => { perPage = v; currentPage = 1; fetch() }" />
     </template>
   </DataTable>
   </div>

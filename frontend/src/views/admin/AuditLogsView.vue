@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
@@ -86,7 +86,7 @@ const formatDate = (s: string) => new Date(s).toLocaleString('id-ID')
         <td class="px-6 py-3 text-xs">{{ log.ip_address || '-' }}</td>
       </tr>
         <template #pagination>
-      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" @update:perPage="v => { perPage = v; currentPage = 1; fetchLogs() }" />
     </template>
   </DataTable>
   </div>

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Edit, Plus, Trash2, X } from 'lucide-vue-next'
@@ -287,7 +287,7 @@ const deleteAccommodation = async (id: number) => {
         </td>
       </tr>
         <template #pagination>
-      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" />
+      <Pagination :current-page="currentPage" :last-page="lastPage" :total="total" :per-page="perPage" @page-change="handlePageChange" @update:perPage="v => { perPage = v; currentPage = 1; fetchAccommodations() }" />
     </template>
   </DataTable>
 
@@ -392,7 +392,7 @@ const deleteAccommodation = async (id: number) => {
             <input type="file" accept="image/jpeg,image/png,image/webp,image/jpg" @change="handleImageSelect" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#173B35] file:text-white hover:file:bg-[#112a26] file:text-xs file:font-bold" />
             <div v-if="imagePreview" class="mt-2">
               <img :src="imagePreview" alt="Preview" class="h-24 w-auto rounded-lg border border-[#E8E6DE] object-cover" />
-              <p class="text-xs text-[#66706C] mt-1">Preview — akan diupload ke Storage (s3/public)</p>
+              <p class="text-xs text-[#66706C] mt-1">Preview â€” akan diupload ke Storage (s3/public)</p>
             </div>
             <p class="text-xs text-[#66706C] mt-1">Jika memilih file, URL akan diabaikan.</p>
           </div>
