@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, Eye, Filter, X } from 'lucide-vue-next'
@@ -268,7 +268,7 @@ const updateStatus = async (newStatus: string) => {
           </div>
           
           <!-- Actions -->
-          <div v-if="selectedOrder.status === 'pending'" class="pt-4 border-t border-[#E8E6DE]">
+          <div v-if="selectedOrder.status?.toLowerCase() === 'pending'" class="pt-4 border-t border-[#E8E6DE]">
             <p class="text-xs font-bold text-[#1D2724] uppercase tracking-wider mb-3">Tindakan Khusus</p>
             <div class="flex gap-3">
               <button 

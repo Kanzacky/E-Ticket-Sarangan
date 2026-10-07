@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '@/services/api'
 import { Search, CreditCard } from 'lucide-vue-next'
@@ -161,7 +161,7 @@ const formatDate = (dateStr: string | null) => {
           <span class="text-sm font-bold text-[#1D2724]">{{ formatCurrency(payment.amount) }}</span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <StatusBadge :tone="payment.status === 'PAID' ? 'success' : (payment.status === 'COMPLETED' ? 'success' : (payment.status === 'PENDING' ? 'info' : 'danger'))">
+          <StatusBadge :tone="payment.status?.toUpperCase() === 'PAID' ? 'success' : (payment.status?.toUpperCase() === 'COMPLETED' ? 'success' : (payment.status?.toUpperCase() === 'PENDING' ? 'info' : 'danger'))">
             <span class="font-semibold">{{ payment.status }}</span>
           </StatusBadge>
         </td>
