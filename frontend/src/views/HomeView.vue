@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, Clock, Check, ChevronRight, Ticket, Calendar, Star, Building } from 'lucide-vue-next'
+import { MapPin, Clock, Check, ChevronRight, Ticket, Calendar, Star, Building, ExternalLink } from 'lucide-vue-next'
 import PublicNavbar from '@/components/layout/PublicNavbar.vue'
 import PublicFooter from '@/components/layout/PublicFooter.vue'
 import { onMounted, ref, computed } from 'vue'
@@ -61,12 +61,11 @@ function handlePesanTiket() {
   }
 }
 
-function handlePesanAkomodasi() {
-  if (authStore.isAuthenticated) {
-    void router.push('/accommodations')
-  } else {
-    void router.push({ name: 'login', query: { redirect: '/accommodations' } })
-  }
+function openGoogleMaps(item: Accommodation) {
+  const link = (item as any).google_maps_link ||
+    (item as any).google_maps_url ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + ' Sarangan Magetan')}`
+  window.open(link, '_blank', 'noopener,noreferrer')
 }
 
 const steps = [
@@ -359,13 +358,13 @@ const faqs = [
               Berbagai pilihan penginapan dan villa di sekitar Telaga Sarangan untuk melengkapi liburan Anda.
             </p>
           </div>
-          <button
-            @click="handlePesanAkomodasi"
+          <router-link
+            to="/accommodations"
             class="shrink-0 inline-flex items-center gap-1.5 text-sm font-bold text-[#173B35] hover:text-[#4F7465] transition group"
           >
             Lihat Semua Penginapan
             <ChevronRight class="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </router-link>
         </div>
 
         <!-- Loading -->
@@ -380,21 +379,22 @@ const faqs = [
             :key="item.id"
             class="group flex flex-col border border-[#E8E6DE] rounded-xl bg-white overflow-hidden transition-all hover:border-[#4F7465] hover:shadow-md"
           >
-            <!-- Card Header / Image Placeholder -->
-            <div class="relative h-48 bg-[#173B35] p-6 flex flex-col justify-between text-white overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-t from-[#1D2724] via-[#1D2724]/40 to-transparent z-10"></div>
-              <div class="relative z-20 flex justify-between items-start">
-                <span class="inline-flex items-center gap-1 rounded-full bg-[#C9965B] px-2.5 py-1 text-xs font-bold text-[#1D2724] backdrop-blur-md">
-                  <Star class="h-3.5 w-3.5 fill-[#1D2724]" /> {{ item.rating }}
+            <!-- Card Header -->
+            <div class="relative h-44 bg-gradient-to-br from-[#173B35] to-[#2D6A5A] p-5 flex flex-col justify-between text-white overflow-hidden">
+              <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px); background-size: 32px 32px;"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-[#1D2724]/80 to-transparent"></div>
+              <div class="relative z-10 flex justify-between items-start">
+                <span class="inline-flex items-center gap-1 rounded-full bg-[#C9965B] px-2.5 py-1 text-xs font-bold text-white">
+                  <Star class="h-3.5 w-3.5 fill-white" /> {{ item.rating }}
                 </span>
-                <span class="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-md border border-white/30">
-                  {{ item.available_rooms }} Kamar
+                <span v-if="(item as any).distance_km" class="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold border border-white/20">
+                  {{ (item as any).distance_km }} km
                 </span>
               </div>
-              <div class="relative z-20">
-                <h3 class="text-xl font-bold text-white mb-1">{{ item.name }}</h3>
+              <div class="relative z-10">
+                <h3 class="text-lg font-bold text-white mb-1 leading-tight">{{ item.name }}</h3>
                 <p class="text-xs text-white/80 flex items-center gap-1">
-                  <MapPin class="h-3.5 w-3.5 shrink-0" /> {{ item.address }}
+                  <MapPin class="h-3 w-3 shrink-0" /> {{ item.address }}
                 </p>
               </div>
             </div>
@@ -420,10 +420,10 @@ const faqs = [
               </div>
 
               <!-- Price & CTA -->
-              <div class="pt-5 border-t border-[#E8E6DE] flex items-center justify-between mt-auto">
+              <div class="pt-4 border-t border-[#E8E6DE] flex items-center justify-between mt-auto">
                 <div>
-                  <span class="text-xs text-[#66706C] block mb-0.5">Mulai dari</span>
-                  <span class="text-lg font-black text-[#173B35]">
+                  <span class="text-xs text-[#66706C] block mb-0.5">Estimasi mulai dari</span>
+                  <span class="text-base font-black text-[#173B35]">
                     Rp{{ formatPrice(item.price_per_night) }}
                     <span class="text-xs font-normal text-[#66706C]">/malam</span>
                   </span>
@@ -431,10 +431,11 @@ const faqs = [
 
                 <button
                   type="button"
-                  class="shrink-0 inline-flex items-center gap-1.5 rounded-[8px] bg-white border-2 border-[#173B35] px-4 py-2 text-sm font-bold text-[#173B35] transition hover:bg-[#F7F5EF] active:scale-95"
-                  @click="handlePesanAkomodasi"
+                  class="shrink-0 inline-flex items-center gap-1.5 rounded-[8px] bg-[#173B35] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1D2724] active:scale-95"
+                  @click="openGoogleMaps(item)"
                 >
-                  Lihat
+                  <ExternalLink class="w-3.5 h-3.5" />
+                  Google Maps
                 </button>
               </div>
             </div>
