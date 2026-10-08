@@ -19,8 +19,17 @@ const api: AxiosInstance = axios.create({
   },
 })
 
-// ─── Request interceptor: pasang token ─────────────────────────────────────
-api.interceptors.request.use((config) => {
+import { useServerWakeup } from '@/composables/useServerWakeup'
+
+// ─── Request interceptor: pasang token & wake-up ──────────────────────────
+api.interceptors.request.use(async (config) => {
+  // 1. Anti cold-start: tunggu server bangun sblm fetch apapun (kecuali ping/health)
+  if (config.url !== '/health' && config.url !== '/ping') {
+    const { ensureServerAwake } = useServerWakeup()
+    await ensureServerAwake()
+  }
+
+  // 2. Auth token
   const authStore = useAuthStore()
   if (authStore.token) {
     config.headers.Authorization = `Bearer ${authStore.token}`
