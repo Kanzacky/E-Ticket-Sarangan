@@ -12,7 +12,7 @@ if (!apiBaseUrl) {
 
 const api: AxiosInstance = axios.create({
   baseURL: apiBaseUrl || '/api',
-  timeout: 20000, // 20s — lebih toleran untuk Railway cold start
+  timeout: 12000, // 12s — Cukup untuk Railway cold start, mencegah loading terlalu lama
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

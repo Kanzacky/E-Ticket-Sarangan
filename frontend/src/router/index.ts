@@ -232,7 +232,14 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore()
   
   if (!authStore.isInitialized) {
-    await authStore.initialize()
+    const isPublic = to.meta.public === true
+    if (isPublic && !to.meta.guest) {
+      // Jangan await untuk route publik agar render instan tanpa blank screen
+      authStore.initialize().catch(() => {})
+    } else {
+      // Await khusus untuk route yg butuh auth atau guest (login/register)
+      await authStore.initialize()
+    }
   }
 
   const isPublic = to.meta.public === true
