@@ -14,7 +14,9 @@ export interface ScanResponse {
 }
 
 export const scanTicketApi = async (orderCode: string): Promise<ScanResponse> => {
-  const response = await api.post<ScanResponse>('/scan', { order_code: orderCode })
+  // Scan butuh response cepat — timeout 10s, bukan 30s global
+  // Jika server butuh lebih dari 10s untuk scan, ada masalah di backend
+  const response = await api.post<ScanResponse>('/scan', { order_code: orderCode }, { timeout: 10_000 })
   return response.data
 }
 

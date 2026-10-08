@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CheckCircle, XCircle, AlertTriangle, HelpCircle, RefreshCw, CameraOff, RotateCcw, Loader2, Clock, ShieldOff } from 'lucide-vue-next'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { scanTicketApi } from '@/services/scanner.service'
 import type { ScanResponseData } from '@/services/scanner.service'
 import axios from 'axios'
@@ -16,9 +16,15 @@ const cameraError = ref('')
 const isCameraReady = ref(false)
 const facingMode = ref<'environment' | 'user'>('environment')
 
-// Debounce: prevent duplicate scan within 1.5s
+// Debounce: prevent duplicate scan within 2.5s
 let lastScannedCode = ''
 let lastScanTime = 0
+// Auto-reset: kembali ke kamera otomatis setelah result tampil beberapa detik
+let autoResetTimer: ReturnType<typeof setTimeout> | null = null
+
+onUnmounted(() => {
+  if (autoResetTimer) clearTimeout(autoResetTimer)
+})
 
 // ─── Camera & Scanning Logic ──────────────────────────────────────────────────
 function onCameraReady() {
@@ -62,21 +68,25 @@ async function onDecode(result: any) {
 
   if (!code) return
 
-  // Debounce: skip duplicate scan within 1.5s
+  // Debounce: skip duplicate scan within 2.5s
   const now = Date.now()
-  if (code === lastScannedCode && now - lastScanTime < 1500) return
+  if (code === lastScannedCode && now - lastScanTime < 2500) return
   lastScannedCode = code
   lastScanTime = now
 
   scanState.value = 'loading'
   scannedData.value = null
   errorMessage.value = ''
+  if (autoResetTimer) clearTimeout(autoResetTimer)
 
   try {
+    // Scan endpoint butuh response cepat — pakai timeout 10s (tidak perlu 30s)
     const res = await scanTicketApi(code)
     scannedData.value = res.data ?? null
     scanState.value = 'valid'
     playSound('success')
+    // Auto-reset ke scanner setelah 4 detik (petugas tidak perlu tap manual)
+    autoResetTimer = setTimeout(() => resetScanner(), 4000)
   } catch (error: unknown) {
     playSound('error')
 
@@ -100,10 +110,13 @@ async function onDecode(result: any) {
       scanState.value = 'invalid'
       errorMessage.value = 'Terjadi kesalahan saat menghubungi server.'
     }
+    // Auto-reset setelah 3 detik untuk semua error (kecuali kamera error)
+    autoResetTimer = setTimeout(() => resetScanner(), 3000)
   }
 }
 
 function resetScanner() {
+  if (autoResetTimer) { clearTimeout(autoResetTimer); autoResetTimer = null }
   scanState.value = 'scanning'
   scannedData.value = null
   errorMessage.value = ''
