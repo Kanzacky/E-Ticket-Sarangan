@@ -19,17 +19,17 @@ let isServerWarm = false
 export function useServerWakeup() {
   /**
    * Panggil ini sebelum fetch data penting.
-   * Akan resolve setelah server terbukti aktif (atau timeout 15s).
+   * Resolve setelah server terbukti aktif, atau timeout 8s (fail-fast).
    */
   async function ensureServerAwake(): Promise<void> {
     if (isServerWarm) return
 
     if (!wakeupPromise) {
       wakeupPromise = new Promise<void>((resolve) => {
+        // 8 detik: cukup untuk cold start Railway, tidak terlalu lama untuk UX
         const timeout = setTimeout(() => {
-          // Tetap resolve meski timeout agar fetch data tidak terblokir selamanya
           resolve()
-        }, 15_000)
+        }, 8_000)
 
         getHealth()
           .then(() => {

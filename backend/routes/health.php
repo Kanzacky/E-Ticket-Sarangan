@@ -12,6 +12,9 @@ Route::middleware([HandleCors::class])->group(function () {
     // Root endpoint — simple JSON ping.
     Route::get('/', HealthController::class.'@root');
 
+    // Lightweight ping — tanpa DB, hanya untuk keep-alive Railway agar tidak sleep.
+    Route::get('/api/ping', fn () => response()->json(['ok' => true]));
+
     // Full health check (app status + database connection).
     Route::get('/api/health', HealthController::class);
 
