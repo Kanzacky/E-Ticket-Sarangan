@@ -1,8 +1,10 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { usePolling } from './usePolling'
+import { useServerWakeup } from './useServerWakeup'
 
 export function usePetugasDashboard() {
+  const { ensureServerAwake } = useServerWakeup()
   const isLoading = ref(true)
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
@@ -16,6 +18,9 @@ export function usePetugasDashboard() {
   const recentVisits = ref<any[]>([])
 
   async function fetchDashboard() {
+    // Pastikan server Railway sudah aktif sebelum fetch data
+    await ensureServerAwake()
+
     if (isLoading.value === false) {
       isRefreshing.value = true
     }
@@ -44,8 +49,8 @@ export function usePetugasDashboard() {
 
   onMounted(() => void fetchDashboard())
 
-  // Polling setiap 10 detik (petugas butuh update lebih cepat)
-  const { isPolling } = usePolling(fetchDashboard, 10_000)
+  // Polling setiap 20 detik — lebih hemat dari 10s, cukup untuk operasional real-time
+  const { isPolling } = usePolling(fetchDashboard, 20_000)
 
   return {
     isLoading,

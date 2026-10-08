@@ -18,9 +18,11 @@ import { createOrderApi, getTicketTypesApi, payOrderApi } from '@/services/order
 import { useAuthStore } from '@/stores/auth'
 import type { CreateOrderPayload, TicketType } from '@/types/booking.types'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+import { useApiCache } from '@/composables/useApiCache'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { cachedFetch } = useApiCache()
 const { t } = useI18n()
 
 // State
@@ -47,7 +49,13 @@ const selectedQuantities = reactive<Record<number, number>>({})
 onMounted(async () => {
   try {
     isLoadingTickets.value = true
-    const types = await getTicketTypesApi()
+    // Pakai cache yang sama dengan HomeView (key: 'home:ticket-types')
+    // Jika user datang dari HomeView, data sudah tersedia → instan tanpa request API
+    const types = await cachedFetch(
+      'home:ticket-types',
+      () => getTicketTypesApi(),
+      { ttlMs: 5 * 60 * 1000 }
+    )
     ticketTypes.value = types
     types.forEach((type) => {
       selectedQuantities[type.id] = 0

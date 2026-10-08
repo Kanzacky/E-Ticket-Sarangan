@@ -1,8 +1,10 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { usePolling } from './usePolling'
+import { useServerWakeup } from './useServerWakeup'
 
 export function useAdminDashboard() {
+  const { ensureServerAwake } = useServerWakeup()
   const isLoading = ref(true)
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
@@ -22,6 +24,9 @@ export function useAdminDashboard() {
   })
 
   async function fetchDashboard() {
+    // Pastikan server Railway sudah aktif sebelum fetch data dashboard
+    await ensureServerAwake()
+
     // Saat load pertama: tampilkan skeleton. Setelah itu: silent refresh.
     if (isLoading.value === false) {
       isRefreshing.value = true

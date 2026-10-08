@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presentasi e-Ticket Sarangan</title>
     <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/font/lucide.min.css" rel="stylesheet">
     <style>
         * {
@@ -13,30 +15,47 @@
             margin: 0;
             padding: 0;
         }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #ffffff; /* Sesuai permintaan background putih */
+            background-color: #ffffff;
+            /* Sesuai permintaan background putih */
             color: #111916;
-            overflow: hidden; 
-            background-image: 
+            overflow: hidden;
+            background-image:
                 radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
                 radial-gradient(circle at 85% 30%, rgba(23, 59, 53, 0.03) 0%, transparent 50%);
         }
-        
+
         #presentation-container {
             width: 100vw;
             height: 100vh;
             position: relative;
         }
-        
+
         /* Animasi Transisi & Keyframes */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         @keyframes pulse-soft {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .slide {
@@ -53,19 +72,33 @@
             visibility: hidden;
             transition: opacity 0.6s ease, visibility 0.6s;
         }
+
         .slide.active {
             opacity: 1;
             visibility: visible;
         }
+
         .slide.active .animate-item {
             animation: fadeInUp 0.8s ease forwards;
             opacity: 0;
         }
+
         /* Staggering animation delays */
-        .slide.active .animate-item:nth-child(1) { animation-delay: 0.1s; }
-        .slide.active .animate-item:nth-child(2) { animation-delay: 0.3s; }
-        .slide.active .animate-item:nth-child(3) { animation-delay: 0.5s; }
-        .slide.active .animate-item:nth-child(4) { animation-delay: 0.7s; }
+        .slide.active .animate-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .slide.active .animate-item:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .slide.active .animate-item:nth-child(3) {
+            animation-delay: 0.5s;
+        }
+
+        .slide.active .animate-item:nth-child(4) {
+            animation-delay: 0.7s;
+        }
 
         /* Typography & Layout */
         .slide-badge {
@@ -83,7 +116,7 @@
             margin-bottom: 24px;
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
-        
+
         h1 {
             font-size: 3.5rem;
             color: #173B35;
@@ -92,7 +125,7 @@
             font-weight: 800;
             letter-spacing: -1px;
         }
-        
+
         .content {
             font-size: 1.4rem;
             line-height: 1.6;
@@ -107,19 +140,22 @@
             gap: 24px;
             margin-top: 30px;
         }
+
         .card {
             background: #ffffff;
             border: 1px solid #E5E7EB;
             padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             transition: transform 0.3s, box-shadow 0.3s;
             border-left: 5px solid #10B981;
         }
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 30px rgba(16, 185, 129, 0.08);
         }
+
         .card h3 {
             font-size: 1.4rem;
             color: #173B35;
@@ -128,6 +164,7 @@
             align-items: center;
             gap: 10px;
         }
+
         .card p {
             font-size: 1.1rem;
             color: #66706C;
@@ -157,6 +194,7 @@
             gap: 15px;
             align-items: center;
         }
+
         .nav-btn {
             background-color: #173B35;
             border: none;
@@ -172,18 +210,20 @@
             gap: 8px;
             box-shadow: 0 4px 15px rgba(23, 59, 53, 0.2);
         }
+
         .nav-btn:hover:not(:disabled) {
             background-color: #10B981;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
         }
+
         .nav-btn:disabled {
             background-color: #F0EEE8;
             color: #9CA3AF;
             box-shadow: none;
             cursor: not-allowed;
         }
-        
+
         /* Progress Indicator */
         .progress-container {
             position: fixed;
@@ -194,6 +234,7 @@
             background: #F0EEE8;
             z-index: 100;
         }
+
         .progress-bar {
             height: 100%;
             background: linear-gradient(90deg, #10B981, #059669);
@@ -202,59 +243,83 @@
         }
 
         /* Highlight text */
-        .text-emerald { color: #10B981; }
+        .text-emerald {
+            color: #10B981;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
 
     <!-- Tombol Fullscreen -->
-    <button onclick="toggleFullScreen()" style="position: fixed; top: 30px; right: 40px; z-index: 1000; background: white; border: 1px solid #E5E7EB; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; color: #173B35; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <button onclick="toggleFullScreen()"
+        style="position: fixed; top: 30px; right: 40px; z-index: 1000; background: white; border: 1px solid #E5E7EB; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; color: #173B35; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s;"
+        onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
         <i class="icon-maximize" id="fullscreenIcon"></i>
     </button>
 
     <div id="presentation-container">
-        
+
         <!-- SLIDE 0 (COVER) -->
-        <div class="slide active" style="align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at top right, rgba(16,185,129,0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(59,130,246,0.08), transparent 40%);">
-            
+        <div class="slide active"
+            style="align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at top right, rgba(16,185,129,0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(59,130,246,0.08), transparent 40%);">
+
             <div class="animate-item" style="margin-bottom: 24px;">
-                <div style="display: inline-flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.1); color: #059669; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 1rem; letter-spacing: 1px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <div
+                    style="display: inline-flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.1); color: #059669; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 1rem; letter-spacing: 1px; border: 1px solid rgba(16, 185, 129, 0.2);">
                     <i class="icon-award"></i> INOTEK MAGETAN TAHAP 2 - 2026
                 </div>
             </div>
 
-            <h1 class="animate-item" style="font-size: 6rem; font-weight: 800; color: #111916; margin-bottom: 24px; letter-spacing: -2px; line-height: 1.1;">
+            <h1 class="animate-item"
+                style="font-size: 6rem; font-weight: 800; color: #111916; margin-bottom: 24px; letter-spacing: -2px; line-height: 1.1;">
                 e-Ticket <br><span style="color: #10B981; position: relative;">Sarangan
-                    <svg style="position: absolute; bottom: -10px; left: 0; width: 100%; height: 20px;" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M0 10 Q 50 20 100 10" fill="transparent" stroke="#10B981" stroke-width="4" opacity="0.3"></path>
+                    <svg style="position: absolute; bottom: -10px; left: 0; width: 100%; height: 20px;"
+                        viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0 10 Q 50 20 100 10" fill="transparent" stroke="#10B981" stroke-width="4"
+                            opacity="0.3"></path>
                     </svg>
                 </span>
             </h1>
 
-            <p class="animate-item" style="font-size: 1.5rem; color: #66706C; max-width: 700px; margin: 0 auto 60px auto; line-height: 1.6;">
-                Transformasi Digital Pariwisata Magetan yang <strong style="color: #111916;">Bebas Antre</strong> & <strong style="color: #111916;">Transparan</strong>.
+            <p class="animate-item"
+                style="font-size: 1.5rem; color: #66706C; max-width: 700px; margin: 0 auto 60px auto; line-height: 1.6;">
+                Transformasi Digital Pariwisata Magetan yang <strong style="color: #111916;">Bebas Antre</strong> &
+                <strong style="color: #111916;">Transparan</strong>.
             </p>
 
             <div class="animate-item" style="display: flex; justify-content: center; gap: 30px;">
-                <div style="background: white; padding: 20px 32px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 16px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 50px; height: 50px; background: #F0FDF4; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10B981;">
+                <div style="background: white; padding: 20px 32px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 16px; transition: transform 0.3s;"
+                    onmouseover="this.style.transform='translateY(-5px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                    <div
+                        style="width: 50px; height: 50px; background: #F0FDF4; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10B981;">
                         <i class="icon-user"></i>
                     </div>
                     <div style="text-align: left;">
-                        <p style="font-size: 0.9rem; color: #9CA3AF; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">Tim Inovator</p>
+                        <p
+                            style="font-size: 0.9rem; color: #9CA3AF; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">
+                            Tim Inovator</p>
                         <p style="font-size: 1.2rem; color: #173B35; font-weight: 700;">Zaki Adi Nugroho</p>
                     </div>
                 </div>
 
-                <div style="background: white; padding: 20px 32px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 16px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 50px; height: 50px; background: #EFF6FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3B82F6;">
+                <div style="background: white; padding: 20px 32px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 16px; transition: transform 0.3s;"
+                    onmouseover="this.style.transform='translateY(-5px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                    <div
+                        style="width: 50px; height: 50px; background: #EFF6FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3B82F6;">
                         <i class="icon-user"></i>
                     </div>
                     <div style="text-align: left;">
-                        <p style="font-size: 0.9rem; color: #9CA3AF; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">Tim Inovator</p>
-                        <p style="font-size: 1.2rem; color: #173B35; font-weight: 700;">Risky Muhammad R.</p>
+                        <p
+                            style="font-size: 0.9rem; color: #9CA3AF; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">
+                            Tim Inovator</p>
+                        <p style="font-size: 1.2rem; color: #173B35; font-weight: 700;">Rizky Muhammad R.</p>
                     </div>
                 </div>
             </div>
@@ -269,15 +334,18 @@
             <div class="content grid-cards animate-item">
                 <div class="card">
                     <h3><i class="icon-users" style="color: #F59E0B;"></i> Antrean Panjang (Bottleneck)</h3>
-                    <p>Sistem loket manual memakan waktu lama, memicu kemacetan parah di gerbang masuk Sarangan saat musim liburan.</p>
+                    <p>Sistem loket manual memakan waktu lama, memicu kemacetan parah di gerbang masuk Sarangan saat
+                        musim liburan.</p>
                 </div>
                 <div class="card">
                     <h3><i class="icon-banknote" style="color: #EF4444;"></i> Rawan Kebocoran PAD</h3>
-                    <p>Penggunaan tiket fisik (kertas) sangat rentan dimanipulasi, digunakan ulang, atau hilang dalam pencatatan.</p>
+                    <p>Penggunaan tiket fisik (kertas) sangat rentan dimanipulasi, digunakan ulang, atau hilang dalam
+                        pencatatan.</p>
                 </div>
                 <div class="card">
                     <h3><i class="icon-bar-chart-2" style="color: #3B82F6;"></i> Data Tidak Real-Time</h3>
-                    <p>Pemkab dan Dinas Pariwisata tidak bisa memantau total kunjungan & pendapatan secara presisi pada hari yang sama.</p>
+                    <p>Pemkab dan Dinas Pariwisata tidak bisa memantau total kunjungan & pendapatan secara presisi pada
+                        hari yang sama.</p>
                 </div>
             </div>
             <div class="footer-names animate-item">Zaki Adi Nugroho | Risky Muhammad Ristya | e-Ticket Sarangan</div>
@@ -292,18 +360,22 @@
             <div class="content grid-cards animate-item">
                 <div class="card" style="border-left-color: #3B82F6;">
                     <h3><i class="icon-smartphone" style="color: #3B82F6;"></i> Tren Cashless Society</h3>
-                    <p>Menyesuaikan gaya hidup wisatawan modern yang menginginkan transaksi cepat dan mulus menggunakan QRIS atau Virtual Account.</p>
+                    <p>Menyesuaikan gaya hidup wisatawan modern yang menginginkan transaksi cepat dan mulus menggunakan
+                        QRIS atau Virtual Account.</p>
                 </div>
                 <div class="card" style="border-left-color: #10B981;">
                     <h3><i class="icon-leaf" style="color: #10B981;"></i> Go Green (Paperless)</h3>
-                    <p>Langkah nyata melestarikan lingkungan Telaga Sarangan dengan menghapus jutaan produksi sampah sobekan tiket kertas.</p>
+                    <p>Langkah nyata melestarikan lingkungan Telaga Sarangan dengan menghapus jutaan produksi sampah
+                        sobekan tiket kertas.</p>
                 </div>
                 <div class="card" style="border-left-color: #F59E0B;">
                     <h3><i class="icon-shield-check" style="color: #F59E0B;"></i> Transparansi 100%</h3>
-                    <p>Digitalisasi menutup semua celah kecurangan. Setiap tiket memiliki identitas QR terenkripsi yang mustahil dipalsukan.</p>
+                    <p>Digitalisasi menutup semua celah kecurangan. Setiap tiket memiliki identitas QR terenkripsi yang
+                        mustahil dipalsukan.</p>
                 </div>
             </div>
-            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
+            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya
+                &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
         </div>
 
         <!-- SLIDE 3 (C) -->
@@ -311,43 +383,55 @@
             <div class="animate-item">
                 <span class="slide-badge"><i class="icon-cpu"></i> Tech Stack & Workflow</span>
             </div>
-            
+
             <div style="display: flex; gap: 30px; align-items: center; justify-content: space-between; width: 100%;">
                 <div style="flex: 1;">
                     <h1 class="animate-item">Arsitektur & <span class="text-emerald">Cara Kerja</span></h1>
                     <div class="content animate-item" style="margin-bottom: 20px; font-size: 1.1rem; max-width: 100%;">
-                        <strong>Tech Stack:</strong> Vue 3 (SPA), Laravel 12 (REST API), Supabase PostgreSQL, Xendit Gateway.<br>
-                        <strong>Anggaran/Alat:</strong> Sangat efisien! Sistem berupa Web-App, petugas cukup menggunakan HP standar untuk Scan QR.
+                        <strong>Tech Stack:</strong> Vue 3 (SPA), Laravel 12 (REST API), Supabase PostgreSQL, Xendit
+                        Gateway.<br>
+                        <strong>Anggaran/Alat:</strong> Sangat efisien! Sistem berupa Web-App, petugas cukup menggunakan
+                        HP standar untuk Scan QR.
                     </div>
-                    <div class="content grid-cards animate-item" style="grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                    <div class="content grid-cards animate-item"
+                        style="grid-template-columns: repeat(4, 1fr); gap: 15px;">
                         <div class="card" style="padding: 15px;">
                             <h3 style="font-size:1.1rem;">1. Beli Online</h3>
-                            <p style="font-size:0.95rem;">Wisatawan pesan tiket & akomodasi via Web tanpa perlu download aplikasi.</p>
+                            <p style="font-size:0.95rem;">Wisatawan pesan tiket & akomodasi via Web tanpa perlu download
+                                aplikasi.</p>
                         </div>
                         <div class="card" style="padding: 15px;">
                             <h3 style="font-size:1.1rem;">2. Bayar (Xendit)</h3>
-                            <p style="font-size:0.95rem;">Transaksi via QRIS/VA diproses otomatis oleh Webhook Xendit.</p>
+                            <p style="font-size:0.95rem;">Transaksi via QRIS/VA diproses otomatis oleh Webhook Xendit.
+                            </p>
                         </div>
                         <div class="card" style="padding: 15px;">
                             <h3 style="font-size:1.1rem;">3. Scan Petugas</h3>
-                            <p style="font-size:0.95rem;">Petugas memindai QR Code unik di HP wisatawan. Tiket otomatis hangus.</p>
+                            <p style="font-size:0.95rem;">Petugas memindai QR Code unik di HP wisatawan. Tiket otomatis
+                                hangus.</p>
                         </div>
                         <div class="card" style="padding: 15px;">
                             <h3 style="font-size:1.1rem;">4. Sinkronisasi</h3>
-                            <p style="font-size:0.95rem;">Data validasi & pendapatan masuk ke Dashboard Admin detik itu juga.</p>
+                            <p style="font-size:0.95rem;">Data validasi & pendapatan masuk ke Dashboard Admin detik itu
+                                juga.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bagian Kanan: QR Code -->
-                <div class="animate-item" style="background: white; padding: 24px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; flex-shrink: 0; min-width: 200px; display: flex; flex-direction: column; align-items: center; border-bottom: 4px solid #10B981;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://ticket-sarangan.up.railway.app/" alt="QR Code Live Demo" style="border-radius: 8px; margin-bottom: 15px; width: 150px; height: 150px;">
-                    <p style="font-size: 1.1rem; color: #173B35; font-weight: 800; margin-bottom: 4px;">Coba Sekarang!</p>
+                <div class="animate-item"
+                    style="background: white; padding: 24px; border-radius: 20px; border: 1px solid #E5E7EB; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; flex-shrink: 0; min-width: 200px; display: flex; flex-direction: column; align-items: center; border-bottom: 4px solid #10B981;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://ticket-sarangan.up.railway.app/"
+                        alt="QR Code Live Demo"
+                        style="border-radius: 8px; margin-bottom: 15px; width: 150px; height: 150px;">
+                    <p style="font-size: 1.1rem; color: #173B35; font-weight: 800; margin-bottom: 4px;">Coba Sekarang!
+                    </p>
                     <p style="font-size: 0.9rem; color: #66706C;">Scan QR ini untuk<br>membuka Live Demo</p>
                 </div>
             </div>
 
-            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
+            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya
+                &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
         </div>
 
         <!-- SLIDE 4 (D) -->
@@ -359,18 +443,22 @@
             <div class="content grid-cards animate-item">
                 <div class="card">
                     <h3><i class="icon-user-check" style="color: #F59E0B;"></i> Bagi Wisatawan</h3>
-                    <p>Bebas antre panas-panasan. Liburan jauh lebih terencana, nyaman, dan bisa sekalian booking akomodasi dari rumah.</p>
+                    <p>Bebas antre panas-panasan. Liburan jauh lebih terencana, nyaman, dan bisa sekalian booking
+                        akomodasi dari rumah.</p>
                 </div>
                 <div class="card">
                     <h3><i class="icon-zap" style="color: #3B82F6;"></i> Bagi Petugas Lapangan</h3>
-                    <p>Validasi dalam hitungan detik. Tidak ada lagi proses merobek tiket dan merekap uang tunai yang melelahkan.</p>
+                    <p>Validasi dalam hitungan detik. Tidak ada lagi proses merobek tiket dan merekap uang tunai yang
+                        melelahkan.</p>
                 </div>
                 <div class="card">
                     <h3><i class="icon-trending-up" style="color: #10B981;"></i> Bagi Pemerintah Daerah</h3>
-                    <p><strong>Zero Leakage!</strong> Pendapatan Asli Daerah (PAD) dijamin akurat, aman, dan bisa dimonitor lewat Dashboard Analitik.</p>
+                    <p><strong>Zero Leakage!</strong> Pendapatan Asli Daerah (PAD) dijamin akurat, aman, dan bisa
+                        dimonitor lewat Dashboard Analitik.</p>
                 </div>
             </div>
-            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
+            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya
+                &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
         </div>
 
         <!-- SLIDE 5 (E) -->
@@ -380,19 +468,23 @@
             </div>
             <h1 class="animate-item">Peta Jalan <span class="text-emerald">(Keberlanjutan)</span></h1>
             <div class="content animate-item" style="font-size: 1.2rem; margin-bottom: 20px;">
-                Saat ini, sistem kami <strong>sudah terintegrasi dengan pemesanan Akomodasi/Hotel</strong> melalui Google Places & API Xendit. Langkah kami selanjutnya adalah:
+                Saat ini, sistem kami <strong>sudah terintegrasi dengan pemesanan Akomodasi/Hotel</strong> melalui
+                Google Places & API Xendit. Langkah kami selanjutnya adalah:
             </div>
             <div class="content grid-cards animate-item" style="grid-template-columns: repeat(2, 1fr);">
                 <div class="card" style="border-left-width: 8px;">
                     <h3>1. Replikasi & Ekspansi Ekosistem</h3>
-                    <p>Arsitektur <em>scalable</em> kami (Vercel & Supabase) siap diterapkan ke destinasi wisata lain di Magetan (Mojosemi, Kebun Refugia) dalam satu sistem terpusat.</p>
+                    <p>Arsitektur <em>scalable</em> kami (Vercel & Supabase) siap diterapkan ke destinasi wisata lain di
+                        Magetan (Mojosemi, Kebun Refugia) dalam satu sistem terpusat.</p>
                 </div>
                 <div class="card" style="border-left-width: 8px;">
                     <h3>2. "Super App" UMKM & Pariwisata</h3>
-                    <p>Ke depannya, platform ini akan memperluas fitur katalog untuk merangkul UMKM lokal (oleh-oleh khas Magetan), menjadikannya Super App ekosistem wisata daerah.</p>
+                    <p>Ke depannya, platform ini akan memperluas fitur katalog untuk merangkul UMKM lokal (oleh-oleh
+                        khas Magetan), menjadikannya Super App ekosistem wisata daerah.</p>
                 </div>
             </div>
-            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
+            <div class="footer-names animate-item">Zaki Adi Nugroho &nbsp;&nbsp;&nbsp; Risky Muhammad Ristya
+                &nbsp;&nbsp;&nbsp; e-Ticket Sarangan</div>
         </div>
 
 
@@ -472,4 +564,5 @@
         }
     </script>
 </body>
+
 </html>

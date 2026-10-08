@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TicketType;
 use App\Http\Requests\Admin\TicketTypeRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class AdminTicketTypeController extends Controller
 {
@@ -35,6 +36,7 @@ class AdminTicketTypeController extends Controller
         $validated = $request->validated();
         $ticketType = TicketType::create($validated);
         \App\Services\AuditService::log($request,'create_ticket_type',TicketType::class,$ticketType->id,null,$validated);
+        Cache::forget('ticket_types_active');
         return response()->json(['success'=>true,'message'=>'Jenis tiket berhasil dibuat','data'=>$ticketType->only(['id','name','description','price','quota','status'])],201);
     }
 
@@ -44,6 +46,7 @@ class AdminTicketTypeController extends Controller
         $old=$ticketType->toArray();
         $ticketType->update($validated);
         \App\Services\AuditService::log($request,'update_ticket_type',TicketType::class,$ticketType->id,$old,$validated);
+        Cache::forget('ticket_types_active');
         return response()->json(['success'=>true,'message'=>'Jenis tiket berhasil diperbarui','data'=>$ticketType->only(['id','name','description','price','quota','status'])]);
     }
 
@@ -52,6 +55,7 @@ class AdminTicketTypeController extends Controller
         $old=$ticketType->toArray();
         $ticketType->delete();
         \App\Services\AuditService::log(request(),'delete_ticket_type',TicketType::class,$old['id']??null,$old,null);
+        Cache::forget('ticket_types_active');
         return response()->json(['success'=>true,'message'=>'Jenis tiket berhasil dihapus']);
     }
 }

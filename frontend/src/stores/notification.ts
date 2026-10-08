@@ -8,6 +8,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
   const isLoading = ref(false)
   let pollTimer: ReturnType<typeof setInterval> | null = null
+  let isFetchingCount = false
 
   const unread = computed(() => notifications.value.filter(n => !n.read_at))
 
@@ -23,9 +24,13 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   async function fetchUnreadCount() {
+    if (isFetchingCount || document.hidden) return
+    isFetchingCount = true
     try {
       unreadCount.value = await getUnreadCountApi()
-    } catch {}
+    } catch {} finally {
+      isFetchingCount = false
+    }
   }
 
   async function markAsRead(id: number) {
@@ -41,10 +46,17 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadCount.value = 0
   }
 
+  function handleVisibility() {
+    if (!document.hidden && pollTimer) {
+      void fetchUnreadCount()
+    }
+  }
+
   function startPolling(intervalMs = 30000) {
     if (pollTimer) return
     void fetchUnreadCount()
     pollTimer = setInterval(() => { void fetchUnreadCount() }, intervalMs)
+    document.addEventListener('visibilitychange', handleVisibility)
   }
 
   function stopPolling() {
@@ -52,6 +64,7 @@ export const useNotificationStore = defineStore('notification', () => {
       clearInterval(pollTimer)
       pollTimer = null
     }
+    document.removeEventListener('visibilitychange', handleVisibility)
   }
 
   return { notifications, unreadCount, unread, isLoading, fetchAll, fetchUnreadCount, markAsRead, markAllAsRead, startPolling, stopPolling }

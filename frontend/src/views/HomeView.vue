@@ -5,15 +5,17 @@ import PublicFooter from '@/components/layout/PublicFooter.vue'
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { useApiHealth } from '@/composables/useApiHealth'
 import { getTicketTypesApi } from '@/services/order.service'
 import { getAccommodationsApi, type Accommodation } from '@/services/accommodation.service'
 import type { TicketType } from '@/types/booking.types'
 import { useAuthStore } from '@/stores/auth'
+import { useServerWakeup } from '@/composables/useServerWakeup'
+import { useApiCache } from '@/composables/useApiCache'
 
-const { check } = useApiHealth()
 const router = useRouter()
 const authStore = useAuthStore()
+const { ensureServerAwake } = useServerWakeup()
+const { cachedFetch } = useApiCache()
 
 const ticketTypes = ref<TicketType[]>([])
 const isLoadingTickets = ref(true)
@@ -21,23 +23,46 @@ const accommodations = ref<Accommodation[]>([])
 const isLoadingAccommodations = ref(true)
 
 onMounted(async () => {
-  void check()
-  
-  // Fetch tickets
-  getTicketTypesApi()
-    .then(res => {
-      ticketTypes.value = res.filter(t => t.status === 'ACTIVE')
-    })
-    .catch(error => console.error('Failed to fetch ticket types', error))
-    .finally(() => { isLoadingTickets.value = false })
+  // 1. Bangunkan server Railway dulu — hanya 1 request /health, tidak ada yang timeout bersamaan
+  await ensureServerAwake()
 
-  // Fetch accommodations
-  getAccommodationsApi({ per_page: 3 })
-    .then(res => {
-      accommodations.value = res.data.slice(0, 3)
-    })
-    .catch(error => console.error('Failed to fetch accommodations', error))
-    .finally(() => { isLoadingAccommodations.value = false })
+  // 2. Setelah server terbukti aktif, tembak kedua request secara paralel + gunakan cache
+  const [ticketRes, accommodationRes] = await Promise.allSettled([
+    cachedFetch(
+      'home:ticket-types',
+      () => getTicketTypesApi(),
+      {
+        ttlMs: 5 * 60 * 1000, // 5 menit
+        onUpdate: (fresh) => {
+          ticketTypes.value = fresh.filter(t => t.status === 'ACTIVE')
+        }
+      }
+    ),
+    cachedFetch(
+      'home:accommodations-3',
+      () => getAccommodationsApi({ per_page: 3 }),
+      {
+        ttlMs: 5 * 60 * 1000, // 5 menit
+        onUpdate: (fresh) => {
+          accommodations.value = fresh.data.slice(0, 3)
+        }
+      }
+    ),
+  ])
+
+  if (ticketRes.status === 'fulfilled') {
+    ticketTypes.value = ticketRes.value.filter(t => t.status === 'ACTIVE')
+  } else {
+    console.error('Failed to fetch ticket types:', ticketRes.reason)
+  }
+  isLoadingTickets.value = false
+
+  if (accommodationRes.status === 'fulfilled') {
+    accommodations.value = accommodationRes.value.data.slice(0, 3)
+  } else {
+    console.error('Failed to fetch accommodations:', accommodationRes.reason)
+  }
+  isLoadingAccommodations.value = false
 })
 
 const regularTickets = computed(() => ticketTypes.value.filter(t => !t.name.toLowerCase().includes('paket')))
