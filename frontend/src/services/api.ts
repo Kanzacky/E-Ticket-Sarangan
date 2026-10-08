@@ -12,7 +12,7 @@ if (!apiBaseUrl) {
 
 const api: AxiosInstance = axios.create({
   baseURL: apiBaseUrl || '/api',
-  timeout: 12000, // 12s — Cukup untuk Railway cold start, mencegah loading terlalu lama
+  timeout: 30000, // 30s — Wajib untuk Railway cold start, karena server bisa memakan 15-25s untuk bangun
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -53,7 +53,10 @@ api.interceptors.response.use(
     // Retry otomatis untuk network error atau 5xx (bukan 4xx client error)
     const isNetworkError = !error.response
     const isServerError = error.response?.status >= 500
-    const shouldRetry = isNetworkError || isServerError
+    
+    // Jangan retry endpoint wakeup agar tidak membuat antrean panjang saat cold start
+    const isWakeupEndpoint = config.url === '/health' || config.url === '/ping'
+    const shouldRetry = (isNetworkError || isServerError) && !isWakeupEndpoint
 
     if (shouldRetry && config && !config._retryCount) {
       config._retryCount = 0
@@ -92,7 +95,7 @@ export interface HealthResponse {
 }
 
 export const getHealth = () =>
-  api.get<HealthResponse>('/health').then((response) => response.data)
+  api.get<HealthResponse>('/health', { timeout: 35000 }).then((response) => response.data)
 
 // --- Auth Endpoints ---
 

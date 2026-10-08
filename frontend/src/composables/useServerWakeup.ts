@@ -26,10 +26,11 @@ export function useServerWakeup() {
 
     if (!wakeupPromise) {
       wakeupPromise = new Promise<void>((resolve) => {
-        // 8 detik: cukup untuk cold start Railway, tidak terlalu lama untuk UX
+        // 25 detik: Beri waktu cukup panjang untuk Railway cold start
+        // Jika kita resolve terlalu cepat, request selanjutnya akan gagal/timeout
         const timeout = setTimeout(() => {
           resolve()
-        }, 8_000)
+        }, 25_000)
 
         getHealth()
           .then(() => {
